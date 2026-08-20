@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HORIZON WEAR — Moda Masculina Premium</title>
+<link rel="icon" type="image/png" href="../img/logo-icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-soft:#121212;
+    --card:#161616;
+    --gold:#d4af37;
+    --gold-soft:#c5a059;
+    --gold-light:#e8c988;
+    --white:#f5f4f2;
+    --muted:#9a9a9d;
+    --line:#242424;
+    --whatsapp:#25D366;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);color:var(--white);
+    font-family:'Inter',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  ul{list-style:none;}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+  .container{max-width:1440px;margin:0 auto;padding:0 60px;}
+  h1,h2,h3,h4{font-family:'Montserrat',sans-serif;}
+
+  /* ===== Top bar ===== */
+  .topbar{background:#000;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.04em;color:#c9c9cb;}
+  .topbar .container{display:flex;justify-content:space-between;align-items:center;height:38px;}
+  .topbar span{display:flex;align-items:center;gap:8px;}
+  .topbar strong{color:var(--gold-light);font-weight:600;}
+
+  /* ===== Header ===== */
+  header.main{background:#000;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--line);}
+  header.main .container{display:flex;align-items:center;justify-content:space-between;height:88px;gap:24px;}
+  .logo{display:flex;align-items:center;cursor:pointer;flex:0 0 auto;gap:12px;}
+  .logo-icon{height:48px;width:48px;object-fit:contain;flex:0 0 auto;display:block;}
+  .logo-word{display:flex;flex-direction:column;line-height:1;}
+  .logo-word .lw-main{font-family:'Montserrat',sans-serif;font-weight:800;font-size:18px;letter-spacing:.05em;color:var(--white);}
+  .logo-word .lw-sub{font-family:'Montserrat',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.42em;color:var(--gold);margin-top:3px;padding-left:1px;}
+  .logo-word .lw-main.lw-gold{color:var(--gold);}
+  .logo-word .lw-sub.lw-white{color:var(--white);}
+
+  .footer-logo{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+  .footer-logo .logo-icon{height:58px;width:58px;}
+  .footer-logo .logo-word .lw-main{font-size:21px;}
+  .footer-logo .logo-word .lw-sub{font-size:11.5px;}
+  .footer-arc{height:14px;width:auto;display:block;margin-top:6px;opacity:.9;}
+
+  nav.primary{flex:1;display:flex;justify-content:center;}
+  nav.primary ul{display:flex;gap:32px;}
+  nav.primary li{position:relative;}
+  nav.primary a,nav.primary .navbtn{
+    font-size:12.5px;letter-spacing:.08em;font-weight:600;color:#dcdcdc;
+    display:flex;align-items:center;gap:5px;padding-bottom:4px;
+    background:none;border:none;
+  }
+  nav.primary a:hover,nav.primary .navbtn:hover{color:var(--gold-light);}
+  nav.primary li.active>a,nav.primary li.active>.navbtn{color:var(--gold);}
+  nav.primary li.active>a::after,nav.primary li.active>.navbtn::after{
+    content:"";position:absolute;left:0;right:0;bottom:-8px;height:2px;background:var(--gold);
+  }
+  .dropdown{
+    position:absolute;top:28px;left:-14px;background:#111;border:1px solid var(--line);
+    min-width:170px;border-radius:6px;padding:8px;display:none;flex-direction:column;
+    box-shadow:0 12px 30px rgba(0,0,0,.5);
+  }
+  .has-dropdown:hover .dropdown{display:flex;}
+  .dropdown a{padding:9px 12px;font-size:12px;border-radius:4px;color:#d8d8d8;}
+  .dropdown a:hover{background:#1c1c1c;color:var(--gold-light);}
+
+  .header-icons{display:flex;align-items:center;gap:22px;flex:0 0 auto;}
+  .header-icons button{background:none;border:none;color:var(--white);font-size:17px;position:relative;}
+  .header-icons button:hover{color:var(--gold-light);}
+  .cart-badge{
+    position:absolute;top:-9px;right:-11px;background:var(--gold);color:#000;
+    font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .search-bar{
+    display:flex;align-items:center;gap:8px;background:#151515;border:1px solid var(--line);
+    border-radius:20px;padding:0 6px 0 14px;height:38px;overflow:hidden;
+    width:0;opacity:0;transition:width .25s ease,opacity .2s ease;
+  }
+  .search-bar.open{width:230px;opacity:1;}
+  .search-bar input{
+    background:none;border:none;outline:none;color:var(--white);font-size:12.5px;width:100%;
+  }
+  .search-bar input::placeholder{color:var(--muted);}
+  .search-bar button{color:var(--muted);width:26px;height:26px;border-radius:50%;}
+  .search-bar button:hover{color:var(--gold-light);}
+
+  /* ===== Hero ===== */
+  .hero{position:relative;background:linear-gradient(120deg,#000 38%, #1a1a1a 100%);overflow:hidden;border-bottom:1px solid var(--line);}
+  .hero .container{display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:560px;}
+  .hero-copy{padding:60px 0;position:relative;z-index:2;}
+  .eyebrow{display:flex;align-items:center;gap:10px;color:var(--gold);font-size:12.5px;letter-spacing:.18em;font-weight:700;margin-bottom:22px;}
+  .eyebrow::before{content:"";width:28px;height:1px;background:var(--gold);}
+  .hero-copy h1{font-size:54px;line-height:1.05;font-weight:800;text-transform:uppercase;letter-spacing:.01em;margin-bottom:6px;}
+  .hero-copy h1 .accent{color:var(--gold);display:block;}
+  .hero-copy p.lead{color:#c7c7ca;font-size:15px;letter-spacing:.03em;margin:22px 0 34px;max-width:420px;}
+  .btn-gold{
+    display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#101010;
+    font-size:12.5px;font-weight:700;letter-spacing:.1em;padding:16px 32px;border-radius:3px;
+    border:none;transition:background .2s,transform .2s;
+  }
+  .btn-gold:hover{background:var(--gold-light);transform:translateY(-1px);}
+  .btn-outline{
+    display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--gold-light);
+    border:1px solid var(--gold-soft);font-size:12.5px;font-weight:700;letter-spacing:.1em;
+    padding:15px 30px;border-radius:3px;transition:all .2s;
+  }
+  .btn-outline:hover{background:var(--gold);color:#101010;}
+  .hero-photo{height:100%;display:flex;align-items:flex-end;justify-content:center;}
+  .hero-photo img{
+    height:560px;width:100%;object-fit:cover;object-position:top;
+    mask-image:linear-gradient(to left, black 70%, transparent 100%);
+    -webkit-mask-image:linear-gradient(to left, black 70%, transparent 100%);
+  }
+
+  /* ===== Features strip ===== */
+  .features{background:#000;border-bottom:1px solid var(--line);}
+  .features .container{display:grid;grid-template-columns:repeat(4,1fr);}
+  .feature{display:flex;align-items:center;gap:14px;padding:26px 30px;border-left:1px solid var(--line);}
+  .feature:first-child{border-left:none;padding-left:0;}
+  .feature .icon{width:34px;color:var(--gold-light);font-size:22px;text-align:center;}
+  .feature h4{font-size:12.5px;letter-spacing:.04em;margin-bottom:3px;}
+  .feature p{font-size:12px;color:var(--muted);}
+
+  /* ===== Section heading ===== */
+  .section{padding:64px 0;}
+  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:34px;}
+  .section-head::before{content:"";width:28px;height:1px;background:var(--gold);}
+  .section-head h2{font-size:13px;letter-spacing:.2em;font-weight:700;}
+  .section-head-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px;}
+
+  /* ===== Categories ===== */
+  .cat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:18px;}
+  .cat-card{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:3/4;background:var(--card);border:1px solid var(--line);}
+  .cat-card img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
+  .cat-card:hover img{transform:scale(1.06);}
+  .cat-overlay{position:absolute;left:0;right:0;bottom:0;padding:16px 14px;background:linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0));}
+  .cat-overlay h3{font-size:12.5px;letter-spacing:.03em;font-weight:700;margin-bottom:3px;}
+  .cat-overlay span{font-size:10px;letter-spacing:.1em;color:var(--gold-light);}
+
+  /* ===== Product grid (shared) ===== */
+  .product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .product-card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s, transform .2s;}
+  .product-card:hover{border-color:#3a3a3a;transform:translateY(-3px);}
+  .product-media{position:relative;aspect-ratio:4/5;background:#e9e6e0;overflow:hidden;}
+  .product-media img{width:100%;height:100%;object-fit:cover;}
+  .tag-novo{position:absolute;top:12px;left:12px;background:var(--gold);color:#101010;font-size:10px;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:3px;}
+  .product-info{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1;}
+  .product-info h4{font-size:13.5px;font-weight:600;}
+  .product-info .cat{font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;}
+  .price-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:auto;}
+  .price{font-size:15px;color:var(--gold-light);font-weight:700;}
+  .price small{display:block;font-size:10.5px;color:var(--muted);font-weight:400;}
+  .add-cart-btn{
+    background:var(--gold);color:#101010;border:none;border-radius:4px;
+    font-size:11.5px;font-weight:700;letter-spacing:.06em;padding:10px;
+    display:flex;align-items:center;justify-content:center;gap:6px;transition:background .2s;
+  }
+  .add-cart-btn:hover{background:var(--gold-light);}
+  .add-cart-btn.added{background:#2f7d4c;color:#fff;}
+
+  /* ===== Carousel nav (home lançamentos) ===== */
+  .carousel-nav{display:flex;gap:10px;}
+  .carousel-nav button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--white);display:flex;align-items:center;justify-content:center;}
+  .carousel-nav button:hover{border-color:var(--gold);color:var(--gold-light);}
+  .arrivals-track{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:6px;}
+
+  /* ===== Produtos page filters ===== */
+  .page-header-block{padding:56px 0 30px;border-bottom:1px solid var(--line);background:#000;}
+  .page-header-block h1{font-size:34px;letter-spacing:.02em;margin-bottom:10px;}
+  .page-header-block p{color:var(--muted);font-size:13.5px;max-width:520px;}
+  .filters-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px;}
+  .filter-chip{
+    padding:10px 20px;border-radius:30px;border:1px solid var(--line);background:var(--card);
+    color:#d8d8d8;font-size:12px;letter-spacing:.05em;font-weight:600;transition:all .2s;
+  }
+  .filter-chip:hover{border-color:var(--gold-soft);color:var(--gold-light);}
+  .filter-chip.active{background:var(--gold);color:#101010;border-color:var(--gold);}
+  .results-count{color:var(--muted);font-size:12.5px;margin-bottom:20px;}
+  .empty-state{text-align:center;padding:80px 20px;color:var(--muted);}
+  .empty-state i{font-size:34px;margin-bottom:14px;color:var(--gold-soft);display:block;}
+
+  /* ===== Sobre page ===== */
+  .about-hero{position:relative;background:linear-gradient(180deg,#000, #141414);padding:80px 0;border-bottom:1px solid var(--line);text-align:center;}
+  .about-hero h1{font-size:38px;margin-bottom:16px;}
+  .about-hero p{color:var(--muted);max-width:640px;margin:0 auto;font-size:14.5px;line-height:1.8;}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;padding:70px 0;}
+  .about-grid img{border-radius:10px;width:100%;aspect-ratio:4/5;object-fit:cover;}
+  .about-grid h2{font-size:24px;margin-bottom:18px;}
+  .about-grid p{color:#c7c7ca;font-size:14px;line-height:1.85;margin-bottom:16px;}
+  .value-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding-bottom:70px;}
+  .value-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:30px;}
+  .value-card i{color:var(--gold-light);font-size:24px;margin-bottom:16px;display:block;}
+  .value-card h3{font-size:15px;margin-bottom:10px;}
+  .value-card p{color:var(--muted);font-size:13px;line-height:1.7;}
+  .academic-note{
+    background:var(--card);border:1px dashed var(--gold-soft);border-radius:8px;
+    padding:26px 30px;margin:0 0 70px;display:flex;gap:16px;align-items:flex-start;
+  }
+  .academic-note i{color:var(--gold-light);font-size:20px;margin-top:2px;}
+  .academic-note p{font-size:13px;color:#cfcfcf;line-height:1.8;}
+  .academic-note strong{color:var(--gold-light);}
+
+  /* ===== Política de Privacidade page ===== */
+  .policy-wrap{max-width:840px;margin:0 auto;padding:60px 0 100px;}
+  .policy-updated{color:var(--muted);font-size:12.5px;margin-bottom:36px;display:flex;align-items:center;gap:8px;}
+  .policy-toc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px 28px;margin-bottom:48px;}
+  .policy-toc h4{font-size:11.5px;letter-spacing:.14em;color:var(--gold-light);margin-bottom:16px;}
+  .policy-toc ol{padding-left:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+  .policy-toc a{font-size:13px;color:#d8d8d8;}
+  .policy-toc a:hover{color:var(--gold-light);}
+  .policy-block{margin-bottom:36px;padding-bottom:36px;border-bottom:1px solid var(--line);scroll-margin-top:110px;}
+  .policy-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .policy-block h3{font-size:16.5px;color:var(--gold-light);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .policy-block h3 i{font-size:14px;color:var(--gold);}
+  .policy-block p{color:#c7c7ca;font-size:13.5px;line-height:1.85;margin-bottom:12px;}
+  .policy-block ul{margin:10px 0 14px 0;display:flex;flex-direction:column;gap:9px;}
+  .policy-block ul li{color:#c7c7ca;font-size:13.5px;line-height:1.7;padding-left:22px;position:relative;}
+  .policy-block ul li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--gold);}
+  .policy-block strong{color:var(--white);}
+  .policy-contact-box{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px 30px;
+    display:flex;gap:16px;align-items:flex-start;margin-top:8px;
+  }
+  .policy-contact-box i{color:var(--gold-light);font-size:20px;margin-top:2px;}
+  .policy-contact-box p{margin-bottom:6px;}
+  .policy-contact-box a{color:var(--gold-light);}
+  .policy-contact-box a:hover{text-decoration:underline;}
+
+  /* ===== Contato page ===== */
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;padding:70px 0;}
+  .wa-card{
+    background:linear-gradient(135deg,#12351f,#0a0a0a);
+    border:1px solid #1f4a2c;border-radius:12px;padding:36px;margin-bottom:26px;
+  }
+  .wa-card h3{font-size:19px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .wa-card h3 i{color:var(--whatsapp);}
+  .wa-card p{color:#c7c7ca;font-size:13.5px;margin-bottom:22px;line-height:1.7;}
+  .btn-whatsapp{
+    display:inline-flex;align-items:center;gap:10px;background:var(--whatsapp);color:#04170a;
+    font-weight:700;font-size:13px;letter-spacing:.03em;padding:15px 26px;border-radius:6px;border:none;
+    transition:filter .2s;
+  }
+  .btn-whatsapp:hover{filter:brightness(1.08);}
+  .info-list{display:flex;flex-direction:column;gap:18px;}
+  .info-item{display:flex;gap:16px;align-items:flex-start;}
+  .info-item i{color:var(--gold-light);font-size:18px;width:22px;margin-top:2px;}
+  .info-item h4{font-size:13.5px;margin-bottom:4px;}
+  .info-item p{color:var(--muted);font-size:12.5px;line-height:1.6;}
+  .contact-form{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:34px;}
+  .contact-form h3{font-size:17px;margin-bottom:22px;}
+  .form-group{margin-bottom:18px;display:flex;flex-direction:column;gap:8px;}
+  .form-group label{font-size:11.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;}
+  .form-group input,.form-group textarea{
+    background:#0e0e0e;border:1px solid var(--line);border-radius:5px;padding:12px 14px;
+    color:var(--white);font-size:13px;outline:none;transition:border-color .2s;resize:vertical;
+  }
+  .form-group input:focus,.form-group textarea:focus{border-color:var(--gold-soft);}
+  .form-submit{
+    width:100%;background:var(--gold);color:#101010;border:none;border-radius:5px;
+    padding:14px;font-weight:700;font-size:12.5px;letter-spacing:.08em;margin-top:6px;transition:background .2s;
+  }
+  .form-submit:hover{background:var(--gold-light);}
+  .form-note{font-size:11.5px;color:var(--muted);margin-top:12px;text-align:center;}
+
+  /* ===== Cart sidebar ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .overlay.open{opacity:1;pointer-events:auto;}
+  .cart-sidebar{
+    position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;background:#101010;
+    border-left:1px solid var(--line);z-index:201;display:flex;flex-direction:column;
+    transform:translateX(100%);transition:transform .3s ease;
+  }
+  .cart-sidebar.open{transform:translateX(0);}
+  .cart-header{display:flex;justify-content:space-between;align-items:center;padding:22px 24px;border-bottom:1px solid var(--line);}
+  .cart-header h3{font-size:16px;letter-spacing:.03em;}
+  .cart-header button{background:none;border:none;color:var(--muted);font-size:18px;}
+  .cart-header button:hover{color:var(--white);}
+  .cart-items{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:18px;}
+  .cart-item{display:flex;gap:14px;}
+  .cart-item img{width:70px;height:84px;object-fit:cover;border-radius:5px;flex:0 0 auto;}
+  .cart-item-info{flex:1;display:flex;flex-direction:column;gap:6px;}
+  .cart-item-info h5{font-size:13px;}
+  .cart-item-info .cat{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .qty-row{display:flex;align-items:center;gap:10px;margin-top:auto;}
+  .qty-row button{width:22px;height:22px;border-radius:4px;border:1px solid var(--line);background:#1a1a1a;color:var(--white);font-size:12px;display:flex;align-items:center;justify-content:center;}
+  .qty-row span{font-size:12.5px;min-width:16px;text-align:center;}
+  .cart-item .remove{background:none;border:none;color:#7a7a7a;font-size:14px;align-self:flex-start;}
+  .cart-item .remove:hover{color:#e05252;}
+  .cart-item-price{font-size:13px;color:var(--gold-light);font-weight:700;white-space:nowrap;}
+  .cart-empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:13.5px;}
+  .cart-empty i{font-size:30px;display:block;margin-bottom:14px;color:#3a3a3a;}
+  .cart-footer{border-top:1px solid var(--line);padding:22px 24px;}
+  .cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:14.5px;}
+  .cart-total-row strong{color:var(--gold-light);font-size:19px;}
+
+  footer{background:#000;border-top:1px solid var(--line);padding:50px 0 24px;margin-top:0;}
+  .footer-cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding-bottom:36px;border-bottom:1px solid var(--line);}
+  .footer-cols h5{font-size:12px;letter-spacing:.12em;color:var(--gold-light);margin-bottom:18px;}
+  .footer-cols p{font-size:12.5px;color:var(--muted);line-height:1.7;max-width:280px;}
+  .footer-cols ul li{margin-bottom:10px;}
+  .footer-cols ul a{font-size:12.5px;color:#c7c7ca;}
+  .footer-cols ul a:hover{color:var(--gold-light);}
+  .footer-social{display:flex;gap:12px;margin-top:16px;}
+  .footer-social a{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:#c7c7ca;}
+  .footer-social a:hover{border-color:var(--gold-soft);color:var(--gold-light);}
+  .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:22px;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:10px;}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#161616;border:1px solid var(--gold-soft);color:var(--white);
+    padding:14px 24px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;
+    z-index:300;opacity:0;pointer-events:none;transition:all .3s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{color:var(--gold-light);}
+
+  @media (max-width:1100px){
+    .container{padding:0 24px;}
+    nav.primary{display:none;}
+    .cat-grid{grid-template-columns:repeat(4,1fr);}
+    .arrivals-track{grid-template-columns:repeat(3,1fr);}
+    .product-grid{grid-template-columns:repeat(3,1fr);}
+    .hero .container{grid-template-columns:1fr;min-height:auto;}
+    .hero-photo{display:none;}
+    .features .container{grid-template-columns:repeat(2,1fr);}
+    .feature{border-left:none;border-top:1px solid var(--line);padding-left:0;}
+    .footer-cols{grid-template-columns:1fr 1fr;}
+    .about-grid{grid-template-columns:1fr;}
+    .value-cards{grid-template-columns:1fr 1fr;}
+    .contact-grid{grid-template-columns:1fr;}
+    .search-bar.open{width:170px;}
+  }
+  @media (max-width:640px){
+    .cat-grid{grid-template-columns:repeat(2,1fr);}
+    .arrivals-track{grid-template-columns:repeat(2,1fr);}
+    .product-grid{grid-template-columns:repeat(2,1fr);}
+    .hero-copy h1{font-size:34px;}
+    .footer-cols{grid-template-columns:1fr;}
+    .value-cards{grid-template-columns:1fr;}
+    .cart-sidebar{width:100vw;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<div class="topbar">
+  <div class="container">
+    <span><i class="fa-solid fa-truck"></i> FRETE GRÁTIS PARA TODO O BRASIL</span>
+    <span>10% OFF NA PRIMEIRA COMPRA &nbsp;|&nbsp; CUPOM: <strong>HORIZON10</strong></span>
+    <span><i class="fa-solid fa-rotate"></i> TROCA FÁCIL EM ATÉ 7 DIAS</span>
+  </div>
+</div>
+
+<!-- ===================== HEADER ===================== -->
+<header class="main">
+  <div class="container">
+    <div class="logo" onclick="showPage('home')">
+      <img class="logo-icon" src="../img/logo-icone.png" alt="Horizon Wear">
+      <div class="logo-word">
+        <span class="lw-main lw-gold">HORIZON</span>
+        <span class="lw-sub lw-white">WEAR</span>
+      </div>
+    </div>
+
+    <nav class="primary">
+      <ul id="navList">
+        <li class="active" data-page="home"><a href="#" onclick="showPage('home');return false;">INÍCIO</a></li>
+        <li class="has-dropdown" data-page="produtos">
+          <button class="navbtn" onclick="showPage('produtos','todos');return false;">PRODUTOS <i class="fa-solid fa-chevron-down" style="font-size:9px;"></i></button>
+          <div class="dropdown">
+            <a href="#" onclick="showPage('produtos','roupas');return false;">Roupas</a>
+            <a href="#" onclick="showPage('produtos','calcados');return false;">Calçados</a>
+            <a href="#" onclick="showPage('produtos','relogios');return false;">Relógios</a>
+            <a href="#" onclick="showPage('produtos','acessorios');return false;">Acessórios</a>
+          </div>
+        </li>
+        <li data-page="lancamentos"><a href="#" onclick="showPage('home');setTimeout(()=>document.getElementById('lancamentos').scrollIntoView({behavior:'smooth'}),50);return false;">LANÇAMENTOS</a></li>
+        <li data-page="acessorios"><a href="#" onclick="showPage('produtos','acessorios');return false;">ACESSÓRIOS</a></li>
+        <li data-page="calcados"><a href="#" onclick="showPage('produtos','calcados');return false;">CALÇADOS</a></li>
+        <li data-page="sobre"><a href="#" onclick="showPage('sobre');return false;">SOBRE NÓS</a></li>
+        <li data-page="contato"><a href="#" onclick="showPage('contato');return false;">CONTATO</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-icons">
+      <div class="search-bar" id="searchBar">
+        <input type="text" id="searchInput" placeholder="Buscar produtos..." oninput="handleSearchInput(this.value)">
+        <button onclick="toggleSearch()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <button aria-label="Pesquisar" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <a href="../sistema_login.py" aria-label="Conta / Login" style="background:none;border:none;color:var(--white);font-size:17px;position:relative;display:inline-flex;"><i class="fa-regular fa-user"></i></a>
+      <button aria-label="Carrinho" onclick="toggleCart(true)">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="cart-badge" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== PAGE: HOME ===================== -->
+<main id="page-home">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <div class="eyebrow">SEU ESTILO. SUA ESSÊNCIA.</div>
+        <h1>VISTA SEU<span class="accent">MELHOR HORIZONTE.</span></h1>
+        <p class="lead">Moda masculina para homens que fazem a diferença.</p>
+        <a href="#" class="btn-gold" onclick="showPage('produtos','todos');return false;"><i class="fa-solid fa-bag-shopping"></i> COMPRAR AGORA</a>
+      </div>
+      <div class="hero-photo">
+        <img src="../img/hero.png" alt="Modelo vestindo camiseta preta Horizon Wear">
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <div class="feature"><div class="icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>FRETE GRÁTIS</h4><p>Para todo o Brasil</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>COMPRA SEGURA</h4><p>Ambiente 100% seguro</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-credit-card"></i></div><div><h4>PARCELE EM ATÉ 12X</h4><p>No cartão de crédito</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-arrows-rotate"></i></div><div><h4>TROCA FÁCIL</h4><p>Até 7 dias após o recebimento</p></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="categorias">
+    <div class="container">
+      <div class="section-head"><h2>CATEGORIAS</h2></div>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="lancamentos">
+    <div class="container">
+      <div class="section-head-row">
+        <div class="section-head" style="margin-bottom:0;"><h2>LANÇAMENTOS</h2></div>
+        <div class="carousel-nav">
+          <button onclick="document.getElementById('arrivalsTrack').scrollBy({left:-300,behavior:'smooth'})"><i class="fa-solid fa-chevron-left"></i></button>
+          <button onclick="document.getElementById('arrivalsTrack').scrollBy({left:300,behavior:'smooth'})"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="arrivals-track" id="arrivalsTrack"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ===================== PAGE: PRODUTOS ===================== -->
+<main id="page-produtos" style="display:none;">
+  <div class="page-header-block">
+    <div class="container">
+      <h1>Nossos Produtos</h1>
+      <p>Peças pensadas para o homem contemporâneo: elegância, conforto e atitude em cada detalhe.</p>
+    </div>
+  </div>
+  <div class="section" style="padding-top:34px;">
+    <div class="container">
+      <div class="filters-row" id="filtersRow"></div>
+      <p class="results-count" id="resultsCount"></p>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <p>Nenhum produto encontrado. Tente outra busca ou categoria.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== PAGE: SOBRE ===================== -->
+<main id="page-sobre" style="display:none;">
+  <section class="about-hero">
+    <div class="container">
+      <h1>Sobre a Horizon Wear</h1>
+      <p>Moda masculina premium para o homem que constrói seu próprio caminho — elegância moderna, sofisticação discreta e essência autêntica em cada peça.</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="about-grid">
+      <img src="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=800&q=80&auto=format&fit=crop" alt="Estilo Horizon Wear">
+      <div>
+        <h2>Nossa Missão</h2>
+        <p>A Horizon Wear nasceu com um propósito claro: oferecer moda masculina premium que una elegância moderna, qualidade superior e sofisticação para o homem contemporâneo — aquele que valoriza estilo com propósito.</p>
+        <p>Cada peça da nossa coleção é selecionada para representar confiança, essência e atitude. Acreditamos que o estilo é uma extensão do caráter, e vestir bem é também uma forma de comunicar quem você é.</p>
+        <p>Do tecido ao acabamento, cuidamos de cada detalhe para que você vista seu melhor horizonte, todos os dias.</p>
+      </div>
+    </div>
+
+    <div class="academic-note">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <p><strong>Projeto Acadêmico:</strong> Este site foi desenvolvido por um estudante da <strong>EEEP Dona Creusa do Carmo Rocha</strong> como parte de um trabalho escolar proposto pelo professor <strong>Anderson</strong>. A Horizon Wear é um projeto conceitual criado para fins educacionais, simulando um e-commerce completo de moda masculina.</p>
+    </div>
+
+    <div class="value-cards">
+      <div class="value-card">
+        <i class="fa-solid fa-gem"></i>
+        <h3>Qualidade Premium</h3>
+        <p>Materiais selecionados e acabamento cuidadoso em todas as peças da coleção.</p>
+      </div>
+      <div class="value-card">
+        <i class="fa-solid fa-compass"></i>
+        <h3>Identidade Própria</h3>
+        <p>Design autoral que reflete atitude, essência e estilo contemporâneo.</p>
+      </div>
+      <div class="value-card">
+        <i class="fa-solid fa-handshake"></i>
+        <h3>Compromisso com o Cliente</h3>
+        <p>Atendimento próximo, entrega ágil e uma experiência de compra segura.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== PAGE: POLÍTICA DE PRIVACIDADE ===================== -->
+<main id="page-privacidade" style="display:none;">
+  <section class="about-hero">
+    <div class="container">
+      <h1>Política de Privacidade</h1>
+      <p>A sua confiança é essencial para nós. Aqui explicamos, de forma clara e transparente, como a Horizon Wear coleta, usa, armazena e protege as suas informações.</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="policy-wrap">
+      <p class="policy-updated"><i class="fa-regular fa-clock"></i> Última atualização: 20 de agosto de 2026</p>
+
+      <div class="policy-toc">
+        <h4>NESTA PÁGINA</h4>
+        <ol>
+          <li><a href="#pp-1">Introdução</a></li>
+          <li><a href="#pp-2">Quais dados coletamos</a></li>
+          <li><a href="#pp-3">Como usamos seus dados</a></li>
+          <li><a href="#pp-4">Cookies e tecnologias similares</a></li>
+          <li><a href="#pp-5">Compartilhamento com terceiros</a></li>
+          <li><a href="#pp-6">Armazenamento e segurança</a></li>
+          <li><a href="#pp-7">Seus direitos (LGPD)</a></li>
+          <li><a href="#pp-8">Retenção dos dados</a></li>
+          <li><a href="#pp-9">Alterações nesta política</a></li>
+          <li><a href="#pp-10">Fale com a gente</a></li>
+        </ol>
+      </div>
+
+      <div class="policy-block" id="pp-1">
+        <h3><i class="fa-solid fa-circle-info"></i> 1. Introdução</h3>
+        <p>A Horizon Wear valoriza a privacidade e a segurança das informações de todas as pessoas que visitam ou realizam compras em nosso site. Esta Política de Privacidade explica, de maneira simples, quais dados coletamos, para que finalidade os utilizamos e quais direitos você possui sobre eles.</p>
+        <p>Ao navegar em nosso site e utilizar nossos serviços, você concorda com as práticas descritas neste documento, elaborado em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>.</p>
+      </div>
+
+      <div class="policy-block" id="pp-2">
+        <h3><i class="fa-solid fa-database"></i> 2. Quais dados coletamos</h3>
+        <p>Coletamos apenas as informações necessárias para oferecer uma boa experiência de compra e atendimento. Entre elas:</p>
+        <ul>
+          <li><strong>Dados de identificação:</strong> nome completo, e-mail e número de telefone/WhatsApp.</li>
+          <li><strong>Dados de pedido:</strong> produtos escolhidos, endereço de entrega e forma de pagamento selecionada.</li>
+          <li><strong>Dados de navegação:</strong> páginas visitadas, produtos pesquisados e itens adicionados ao carrinho durante a sessão.</li>
+          <li><strong>Dados de contato voluntário:</strong> informações enviadas por você através do formulário de contato ou do WhatsApp.</li>
+        </ul>
+        <p>Não coletamos dados sensíveis (como origem racial, saúde ou convicções religiosas) e não solicitamos informações além do necessário para a finalidade de cada funcionalidade do site.</p>
+      </div>
+
+      <div class="policy-block" id="pp-3">
+        <h3><i class="fa-solid fa-gears"></i> 3. Como usamos seus dados</h3>
+        <p>As informações coletadas são utilizadas exclusivamente para:</p>
+        <ul>
+          <li>Processar e confirmar pedidos, incluindo o envio de detalhes via WhatsApp;</li>
+          <li>Responder dúvidas, solicitações e mensagens enviadas pelo formulário de contato;</li>
+          <li>Melhorar a navegação, o desempenho e a usabilidade do site;</li>
+          <li>Personalizar a exibição de produtos e categorias de acordo com o seu interesse;</li>
+          <li>Cumprir obrigações legais, quando aplicável.</li>
+        </ul>
+        <p>Em nenhuma hipótese utilizamos seus dados para fins diversos dos descritos acima sem o seu consentimento.</p>
+      </div>
+
+      <div class="policy-block" id="pp-4">
+        <h3><i class="fa-solid fa-cookie-bite"></i> 4. Cookies e tecnologias similares</h3>
+        <p>O site pode utilizar cookies e tecnologias semelhantes para lembrar suas preferências de navegação, manter os itens do seu carrinho de compras e entender como os visitantes utilizam nossas páginas, permitindo melhorias contínuas na experiência de uso.</p>
+        <p>Você pode, a qualquer momento, desativar os cookies diretamente nas configurações do seu navegador. Essa ação pode, no entanto, afetar algumas funcionalidades do site, como a manutenção dos itens no carrinho.</p>
+      </div>
+
+      <div class="policy-block" id="pp-5">
+        <h3><i class="fa-solid fa-share-nodes"></i> 5. Compartilhamento com terceiros</h3>
+        <p>A Horizon Wear <strong>não vende, aluga ou comercializa</strong> seus dados pessoais com terceiros. As informações podem ser compartilhadas apenas nas seguintes situações:</p>
+        <ul>
+          <li>Com serviços de entrega/transportadora, exclusivamente para viabilizar o envio do seu pedido;</li>
+          <li>Com o WhatsApp, para atendimento e confirmação de pedidos, quando você opta por esse canal;</li>
+          <li>Quando exigido por lei, ordem judicial ou autoridade competente.</li>
+        </ul>
+      </div>
+
+      <div class="policy-block" id="pp-6">
+        <h3><i class="fa-solid fa-shield-halved"></i> 6. Armazenamento e segurança</h3>
+        <p>Adotamos medidas técnicas e organizacionais razoáveis para proteger seus dados contra acessos não autorizados, perda, alteração ou divulgação indevida. Ainda assim, nenhum sistema é 100% infalível — caso identifique qualquer atividade suspeita envolvendo seus dados, entre em contato conosco imediatamente.</p>
+      </div>
+
+      <div class="policy-block" id="pp-7">
+        <h3><i class="fa-solid fa-user-shield"></i> 7. Seus direitos (LGPD)</h3>
+        <p>De acordo com a Lei Geral de Proteção de Dados, você tem direito a:</p>
+        <ul>
+          <li>Confirmar a existência de tratamento dos seus dados;</li>
+          <li>Acessar, corrigir ou atualizar seus dados pessoais;</li>
+          <li>Solicitar a anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+          <li>Solicitar a portabilidade dos seus dados a outro fornecedor de serviço;</li>
+          <li>Revogar o consentimento e solicitar a exclusão dos dados tratados com base nele;</li>
+          <li>Obter informações sobre com quem seus dados foram compartilhados.</li>
+        </ul>
+        <p>Para exercer qualquer um desses direitos, basta entrar em contato pelos canais indicados ao final desta página.</p>
+      </div>
+
+      <div class="policy-block" id="pp-8">
+        <h3><i class="fa-solid fa-box-archive"></i> 8. Retenção dos dados</h3>
+        <p>Mantemos seus dados apenas pelo tempo necessário para cumprir as finalidades descritas nesta política ou por prazos exigidos por lei, obrigações fiscais e contratuais. Após esse período, os dados são eliminados ou anonimizados de forma segura.</p>
+      </div>
+
+      <div class="policy-block" id="pp-9">
+        <h3><i class="fa-solid fa-file-pen"></i> 9. Alterações nesta política</h3>
+        <p>Esta Política de Privacidade pode ser atualizada periodicamente para refletir melhorias no site ou mudanças na legislação. Recomendamos revisar esta página com regularidade. A data da última atualização estará sempre indicada no topo do documento.</p>
+      </div>
+
+      <div class="policy-block" id="pp-10">
+        <h3><i class="fa-solid fa-headset"></i> 10. Fale com a gente</h3>
+        <p>Se você tiver dúvidas sobre esta Política de Privacidade ou quiser exercer algum dos seus direitos como titular de dados, entre em contato:</p>
+        <div class="policy-contact-box">
+          <i class="fa-solid fa-envelope"></i>
+          <div>
+            <p><strong>E-mail:</strong> <a href="mailto:cauan.sousa2527@gmail.com">cauan.sousa2527@gmail.com</a></p>
+            <p><strong>WhatsApp:</strong> <a href="#" id="waPolicyLink" target="_blank">(85) 98103-3964</a></p>
+          </div>
+        </div>
+        <p style="margin-top:18px;font-size:12px;color:var(--muted);"><i class="fa-solid fa-graduation-cap"></i> Este documento faz parte de um projeto acadêmico conceitual (EEEP Dona Creusa do Carmo Rocha) e simula, para fins educacionais, a política de privacidade de um e-commerce real.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== PAGE: CONTATO ===================== -->
+<main id="page-contato" style="display:none;">
+  <div class="page-header-block">
+    <div class="container">
+      <h1>Fale Conosco</h1>
+      <p>Dúvidas, sugestões ou pedidos personalizados — nossa equipe está pronta para te atender.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <div class="wa-card">
+          <h3><i class="fa-brands fa-whatsapp"></i> Atendimento via WhatsApp</h3>
+          <p>Fale diretamente com nossa equipe pelo WhatsApp e tire suas dúvidas sobre produtos, pedidos e trocas em tempo real.</p>
+          <a class="btn-whatsapp" id="waContactBtn" target="_blank">
+            <i class="fa-brands fa-whatsapp"></i> Falar com Atendimento — (85) 98103-3964
+          </a>
+        </div>
+
+        <div class="info-list">
+          <div class="info-item"><i class="fa-solid fa-location-dot"></i><div><h4>Endereço</h4><p>Atendimento 100% online, entregamos para todo o Brasil.</p></div></div>
+          <div class="info-item"><i class="fa-solid fa-clock"></i><div><h4>Horário de atendimento</h4><p>Segunda a sábado, das 9h às 19h.</p></div></div>
+          <div class="info-item"><i class="fa-solid fa-envelope"></i><div><h4>E-mail</h4><p>cauan.sousa2527@gmail.com</p></div></div>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <h3>Envie uma mensagem</h3>
+        <form id="contactForm" onsubmit="submitContactForm(event)">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="cName" required placeholder="Seu nome completo">
+          </div>
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="cEmail" required placeholder="seu@email.com">
+          </div>
+          <div class="form-group">
+            <label>Mensagem</label>
+            <textarea id="cMessage" rows="5" required placeholder="Como podemos te ajudar?"></textarea>
+          </div>
+          <button type="submit" class="form-submit">ENVIAR MENSAGEM</button>
+          <p class="form-note">Ao enviar, sua mensagem será encaminhada via WhatsApp para nossa equipe.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="container">
+    <div class="footer-cols">
+      <div>
+        <div class="logo" style="margin-bottom:16px;">
+          <img class="logo-footer" src="../img/logo-vertical.png" alt="Horizon Wear" style="width: 200px; height: 200px;">
+        </div>
+        <p>Moda masculina premium para homens que fazem a diferença. Estilo, qualidade e essência em cada peça.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/horizon._wear" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" id="waSocialLink" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div>
+        <h5>INSTITUCIONAL</h5>
+        <ul>
+          <li><a href="#" onclick="showPage('sobre');return false;">Sobre nós</a></li>
+          <li><a href="#" onclick="showPage('produtos','todos');return false;">Produtos</a></li>
+          <li><a href="#" onclick="showPage('privacidade');return false;">Política de privacidade</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>AJUDA</h5>
+        <ul>
+          <li><a href="https://www.correios.com.br/" target="_blank" rel="noopener">Trocas e devoluções</a></li>
+          <li><a href="#" id="waFormasPagamentoLink" target="_blank">Formas de pagamento</a></li>
+          <li><a href="https://www.google.com/maps" target="_blank" rel="noopener">Rastrear pedido</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>CONTATO</h5>
+        <ul>
+          <li><a href="mailto:cauan.sousa2527@gmail.com">cauan.sousa2527@gmail.com</a></li>
+          <li><a href="#" id="waFooterLink" target="_blank">(85) 98103-3964</a></li>
+          <li><a href="https://www.instagram.com/horizon._wear" target="_blank" rel="noopener">@horizon._wear</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 HORIZON WEAR. Todos os direitos reservados.</span>
+      <span>Projeto acadêmico — EEEP Dona Creusa do Carmo Rocha</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== CART SIDEBAR ===================== -->
+<div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
+<aside class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3><i class="fa-solid fa-bag-shopping"></i> Seu Carrinho</h3>
+    <button onclick="toggleCart(false)"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter">
+    <div class="cart-total-row"><span>Total</span><strong id="cartTotal">R$ 0,00</strong></div>
+    <a href="#" id="checkoutBtn" class="btn-whatsapp" style="width:100%;justify-content:center;" target="_blank">
+      <i class="fa-brands fa-whatsapp"></i> Finalizar Compra
+    </a>
+  </div>
+</aside>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg">Produto adicionado ao carrinho!</span></div>
+
+<script>
+/* ============ DATA ============ */
+const WHATSAPP_NUMBER = "5585981033964";
+
+const products = [
+  {id:1, name:"Camiseta Slim Fit Preta", cat:"camisetas", group:"roupas", price:129.90, img:"https://images.unsplash.com/photo-1782171059800-52b324c6ca3b?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", novo:true},
+  {id:2, name:"Camiseta Estampada Rock", cat:"camisetas", group:"roupas", price:139.90, img:"https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:3, name:"Calça Alfaiataria Bege", cat:"calças", group:"roupas", price:189.90, img:"https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:4, name:"Calça Jogger Preta", cat:"calças", group:"roupas", price:159.90, img:"https://images.unsplash.com/photo-1518292309104-b0ee1cfba4cc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fENhbCVDMyVBN2ElMjBKb2dnZXIlMjBQcmV0YXxlbnwwfHwwfHx8MA%3D%3D", novo:false},
+  {id:5, name:"Moletom Canguru Cinza", cat:"blusas", group:"roupas", price:219.90, img:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&q=80&auto=format&fit=crop", novo:true},
+  {id:6, name:"Blusa Estampada Premium", cat:"blusas", group:"roupas", price:149.90, img:"https://images.unsplash.com/photo-1522050664457-3cc2d06a2dac?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:7, name:"Tênis Urban Preto e Marrom", cat:"tênis", group:"calcados", price:279.90, img:"https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:8, name:"Sapato Social Couro", cat:"sapatos", group:"calcados", price:249.90, img:"https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:9, name:"Relógio Atemporal Couro Edition", cat:"relógios", group:"relogios", price:349.90, img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80&auto=format&fit=crop", novo:true},
+  {id:10, name:"Relógio Classic Bronze", cat:"relógios", group:"relogios", price:299.90, img:"https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:11, name:"Boné Aba Curva", cat:"chapéus", group:"acessorios", price:89.90, img:"https://images.unsplash.com/photo-1445282804813-123ac28fe498?w=500&q=80&auto=format&fit=crop", novo:true},
+  {id:12, name:"Chapéu Bucket Preto", cat:"chapéus", group:"acessorios", price:79.90, img:"https://images.unsplash.com/photo-1559510838-a61984e57aa5?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:13, name:"Corrente Prateada", cat:"correntes", group:"acessorios", price:99.90, img:"https://images.unsplash.com/photo-1619182597083-17bda72c1d56?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:14, name:"Perfume Bleu de Chanel", cat:"perfumes", group:"acessorios", price:159.90, img:"https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=500&q=80&auto=format&fit=crop", novo:false},
+  {id:15, name:"Jaqueta Couro Preta", cat:"jaquetas", group:"roupas", price:259.90, img:"https://images.unsplash.com/photo-1615818867864-4f1b2cba50da?w=500&q=80&auto=format&fit=crop", novo:true},
+  {id:16, name:"Camisa Social Branca", cat:"camisas", group:"roupas", price:179.90, img:"https://media.istockphoto.com/id/2169550665/pt/foto/smiling-man-posing-in-white-shirt-against-dark-background.webp?a=1&b=1&s=612x612&w=0&k=20&c=0EfRLpvrkllYg-xiJutdmHSRJSDxzS1dz8zAFcscUN8=", novo:false},
+  {id:17, name:"Óculos de Sol", cat:"óculos", group:"acessorios", price:149.90, img:"https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&q=80&auto=format&fit=crop", novo:true},
+  {id:18, name:"Tênis Casual Branco", cat:"tênis", group:"calcados", price:289.90, img:"https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?w=500&q=80&auto=format&fit=crop", novo:false},
+];
+
+const categories = [
+  {name:"CAMISETAS", key:"camisetas", group:"roupas", img:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80&auto=format&fit=crop"},
+  {name:"CALÇAS", key:"calças", group:"roupas", img:"https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80&auto=format&fit=crop"},
+  {name:"BLUSAS", key:"blusas", group:"roupas", img:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&q=80&auto=format&fit=crop"},
+  {name:"CHAPÉUS", key:"chapéus", group:"acessorios", img:"https://images.unsplash.com/photo-1640921866341-9f4f7fe4e64a?w=400&q=80&auto=format&fit=crop"},
+  {name:"RELÓGIOS", key:"relógios", group:"relogios", img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400&q=80&auto=format&fit=crop"},
+  {name:"CALÇADOS", key:"calçados", group:"calcados", img:"https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80&auto=format&fit=crop"},
+  {name:"ACESSÓRIOS", key:"acessórios", group:"acessorios", img:"https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&q=80&auto=format&fit=crop"},
+];
+
+const filterGroups = [
+  {key:"todos", label:"Todos"},
+  {key:"roupas", label:"Roupas"},
+  {key:"calcados", label:"Calçados"},
+  {key:"relogios", label:"Relógios"},
+  {key:"acessorios", label:"Acessórios"},
+];
+
+/* ============ STATE ============ */
+let cart = [];              // {id, qty}
+let activeFilter = "todos";
+let searchQuery = "";
+
+/* ============ HELPERS ============ */
+function formatBRL(v){ return "R$ " + v.toFixed(2).replace(".", ","); }
+function findProduct(id){ return products.find(p => p.id === id); }
+
+/* ============ NAVIGATION ============ */
+function showPage(page, filter){
+  document.querySelectorAll('main[id^="page-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('#navList li').forEach(li => li.classList.remove('active'));
+  const navLi = document.querySelector('#navList li[data-page="' + page + '"]');
+  if(navLi) navLi.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  if(page === 'produtos'){
+    if(filter) activeFilter = filter;
+    renderProducts();
+  }
+}
+
+/* ============ RENDER: CATEGORIES (home) ============ */
+function renderCategories(){
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = categories.map(c => `
+    <a class="cat-card" href="#" onclick="showPage('produtos','${c.group}');return false;">
+      <img src="${c.img}" alt="${c.name}">
+      <div class="cat-overlay"><h3>${c.name}</h3><span>VER MAIS</span></div>
+    </a>
+  `).join('');
+}
+
+/* ============ RENDER: ARRIVALS (home) ============ */
+function renderArrivals(){
+  const track = document.getElementById('arrivalsTrack');
+  const novos = products.filter(p => p.novo);
+  track.innerHTML = novos.map(p => productCardHTML(p)).join('');
+}
+
+/* ============ RENDER: PRODUCT GRID (produtos page) ============ */
+function renderFilters(){
+  const row = document.getElementById('filtersRow');
+  row.innerHTML = filterGroups.map(f => `
+    <button class="filter-chip ${f.key===activeFilter?'active':''}" onclick="setFilter('${f.key}')">${f.label}</button>
+  `).join('');
+}
+function setFilter(key){
+  activeFilter = key;
+  renderProducts();
+}
+function handleSearchInput(val){
+  searchQuery = val.toLowerCase().trim();
+  if(document.getElementById('page-produtos').style.display === 'none'){
+    showPage('produtos', activeFilter);
+  } else {
+    renderProducts();
+  }
+}
+function renderProducts(){
+  renderFilters();
+  let list = products.filter(p => activeFilter === 'todos' || p.group === activeFilter);
+  if(searchQuery){
+    list = list.filter(p => p.name.toLowerCase().includes(searchQuery) || p.cat.toLowerCase().includes(searchQuery));
+  }
+  const grid = document.getElementById('productGrid');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('resultsCount').textContent = list.length + (list.length===1 ? ' produto encontrado' : ' produtos encontrados');
+  if(list.length === 0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(p => productCardHTML(p)).join('');
+  }
+}
+function productCardHTML(p){
+  return `
+    <div class="product-card">
+      <div class="product-media">
+        ${p.novo ? '<span class="tag-novo">NOVO</span>' : ''}
+        <img src="${p.img}" alt="${p.name}">
+      </div>
+      <div class="product-info">
+        <span class="cat">${p.cat}</span>
+        <h4>${p.name}</h4>
+        <div class="price-row">
+          <span class="price">${formatBRL(p.price)}<small>6x de ${formatBRL(p.price/6)}</small></span>
+        </div>
+        <button class="add-cart-btn" id="add-${p.id}" onclick="addToCart(${p.id})">
+          <i class="fa-solid fa-bag-shopping"></i> ADICIONAR AO CARRINHO
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/* ============ SEARCH BAR TOGGLE ============ */
+function toggleSearch(){
+  const bar = document.getElementById('searchBar');
+  bar.classList.toggle('open');
+  if(bar.classList.contains('open')) document.getElementById('searchInput').focus();
+}
+
+/* ============ CART LOGIC ============ */
+function addToCart(id){
+  const existing = cart.find(i => i.id === id);
+  if(existing){ existing.qty += 1; } else { cart.push({id, qty:1}); }
+  renderCart();
+  showToast('Produto adicionado ao carrinho!');
+  const btn = document.getElementById('add-'+id);
+  if(btn){
+    btn.classList.add('added');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> ADICIONADO';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.innerHTML = '<i class="fa-solid fa-bag-shopping"></i> ADICIONAR AO CARRINHO';
+    }, 1200);
+  }
+}
+function changeQty(id, delta){
+  const item = cart.find(i => i.id === id);
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(i => i.id !== id); }
+  renderCart();
+}
+function removeFromCart(id){
+  cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+function cartTotal(){
+  return cart.reduce((sum, i) => sum + (findProduct(i.id).price * i.qty), 0);
+}
+function renderCart(){
+  const count = cart.reduce((s,i) => s + i.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+
+  const itemsEl = document.getElementById('cartItems');
+  const footerEl = document.getElementById('cartFooter');
+
+  if(cart.length === 0){
+    itemsEl.innerHTML = `<div class="cart-empty"><i class="fa-solid fa-bag-shopping"></i><p>Seu carrinho está vazio.<br>Adicione produtos para continuar.</p></div>`;
+    footerEl.style.display = 'none';
+    return;
+  }
+  footerEl.style.display = 'block';
+
+  itemsEl.innerHTML = cart.map(i => {
+    const p = findProduct(i.id);
+    return `
+      <div class="cart-item">
+        <img src="${p.img}" alt="${p.name}">
+        <div class="cart-item-info">
+          <h5>${p.name}</h5>
+          <span class="cat">${p.cat}</span>
+          <div class="qty-row">
+            <button onclick="changeQty(${p.id},-1)">−</button>
+            <span>${i.qty}</span>
+            <button onclick="changeQty(${p.id},1)">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;">
+          <button class="remove" onclick="removeFromCart(${p.id})"><i class="fa-solid fa-trash"></i></button>
+          <span class="cart-item-price">${formatBRL(p.price * i.qty)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('cartTotal').textContent = formatBRL(cartTotal());
+  updateCheckoutLink();
+}
+function toggleCart(open){
+  document.getElementById('cartSidebar').classList.toggle('open', open);
+  document.getElementById('overlay').classList.toggle('open', open);
+}
+function updateCheckoutLink(){
+  if(cart.length === 0) return;
+  let msg = "Olá! Gostaria de finalizar meu pedido na Horizon Wear:%0A%0A";
+  cart.forEach(i => {
+    const p = findProduct(i.id);
+    msg += `• ${p.name} (x${i.qty}) — ${formatBRL(p.price*i.qty)}%0A`;
+  });
+  msg += `%0ATotal: ${formatBRL(cartTotal())}`;
+  document.getElementById('checkoutBtn').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
+}
+
+/* ============ CONTACT FORM ============ */
+function submitContactForm(e){
+  e.preventDefault();
+  const name = document.getElementById('cName').value;
+  const email = document.getElementById('cEmail').value;
+  const message = document.getElementById('cMessage').value;
+  const text = encodeURIComponent(`Olá, meu nome é ${name} (${email}).\n\n${message}`);
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+  showToast('Mensagem preparada! Envie pelo WhatsApp.');
+  document.getElementById('contactForm').reset();
+}
+
+/* ============ TOAST ============ */
+let toastTimer;
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+/* ============ INIT ============ */
+function initWhatsappLinks(){
+  const baseMsg = encodeURIComponent("Olá! Vim pelo site da Horizon Wear e gostaria de mais informações.");
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${baseMsg}`;
+  document.getElementById('waContactBtn').href = waUrl;
+  document.getElementById('waFooterLink').href = waUrl;
+  document.getElementById('waSocialLink').href = waUrl;
+  document.getElementById('waPolicyLink').href = waUrl;
+
+  const paymentMsg = encodeURIComponent("Olá! Gostaria de saber quais são as formas de pagamento aceitas na Horizon Wear.");
+  document.getElementById('waFormasPagamentoLink').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${paymentMsg}`;
+}
+
+renderCategories();
+renderArrivals();
+renderFilters();
+renderCart();
+initWhatsappLinks();
+</script>
+</body>
+</html>
