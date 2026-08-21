@@ -1,17 +1,3 @@
-"""
-Sistema de Login e Cadastro - Horizon Wear
-Projeto academico - EEEP Dona Creusa do Carmo Rocha
-
-Sistema basico de autenticacao em Python puro (sem bibliotecas externas),
-usando um arquivo JSON como "banco de dados" simples. As senhas nunca sao
-guardadas em texto puro: sao protegidas com hash SHA-256 + salt aleatorio.
-
-Como usar:
-    python3 sistema_login.py
-
-Um arquivo "usuarios.json" sera criado automaticamente na primeira vez
-que alguem se cadastrar.
-"""
 
 import json
 import os
