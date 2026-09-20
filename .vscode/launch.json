@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Horizon Wear — FastAPI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["backend.app.main:app", "--host", "127.0.0.1", "--port", "8018", "--reload"],
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}" },
+      "jinja": true
+    }
+  ]
+}

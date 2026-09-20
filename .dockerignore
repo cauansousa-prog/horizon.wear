@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv
+.git
+.vscode
+__pycache__
+*.pyc
+.pytest_cache
+backups
+Css
+img
+sistema_login.py
+VALIDACAO.md
