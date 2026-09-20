@@ -30,3 +30,12 @@ Depois de o site estar no domínio final, cadastre `https://seu-dominio.com/api/
 ## Verificação depois da publicação
 
 Abra `https://seu-dominio.com/api/health` e `https://seu-dominio.com/api/health/ready`. Os dois devem responder com status 200 antes do teste de compra.
+
+
+## Vercel
+
+O projeto `horizon-wear` usa a raiz do repositório e o preset FastAPI, definido em `vercel.json`. `app.py` importa a aplicação existente; `requirements.txt` reutiliza as dependências do backend. A aplicação serve o frontend em `frontend/`, a API em `/api` e as páginas de produtos em `/produto/{slug}`. Os arquivos antigos da raiz são excluídos pela `.vercelignore`.
+
+Configure no ambiente Production: `SUPABASE_URL` (URL base sem `/rest/v1`), `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `PUBLIC_BASE_URL=https://horizonwear.vercel.app`. As chaves ficam somente no ambiente do servidor. No Supabase Auth, inclua `https://horizonwear.vercel.app/#conta` entre os redirects permitidos.
+
+Após o deploy, valide `/api/health`, `/api/health/ready`, o catálogo, o login e uma página `/produto/`. Pagamentos continuam dependentes das credenciais do Mercado Pago.
