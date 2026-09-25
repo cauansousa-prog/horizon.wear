@@ -7,6 +7,8 @@ __pycache__/
 .pytest_cache/
 usuarios.json
 backups/
+work/
+outputs/
 
 # Runtime output and local state
 *.log
