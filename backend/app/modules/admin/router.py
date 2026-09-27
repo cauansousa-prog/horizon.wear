@@ -1,9 +1,11 @@
 from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel,Field,ConfigDict,model_validator
+from typing import Literal
 from fastapi import APIRouter,Depends,HTTPException,Query
 from ...auth import User,current_user
 from ...database import Database,get_database
+from ..payments.gateway import privileged_rpc
 
 router=APIRouter(prefix='/admin',tags=['administração'])
 async def admin(user:User=Depends(current_user),db:Database=Depends(get_database)):
@@ -46,6 +48,11 @@ class Category(BaseModel):
     imagem_url:str=Field(pattern=r'^https://',max_length=2048)
     ordem:int=Field(default=0,ge=0)
 
+class Fulfillment(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    status:Literal['preparando','enviado','entregue']
+    rastreio:str=Field(default='',max_length=120)
+
 @router.get('/dashboard')
 async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
     orders=[];offset=0
@@ -85,3 +92,16 @@ async def add_image(body:Image,user:User=Depends(admin),db:Database=Depends(get_
 @router.post('/categories',status_code=201)
 async def add_category(body:Category,user:User=Depends(admin),db:Database=Depends(get_database)):
     return await db.request('/rest/v1/categories',method='POST',token=user.token,json=body.model_dump())
+
+@router.patch('/orders/{order_id}/fulfillment')
+async def fulfillment(order_id:UUID,body:Fulfillment,user:User=Depends(admin),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/orders',token=user.token,
+                          params={'select':'id,status,review_required','id':'eq.'+str(order_id),'limit':'1'})
+    if not rows:raise HTTPException(404,'Pedido não encontrado.')
+    current=rows[0]
+    if current['review_required']:raise HTTPException(409,'Pedido em revisão de estoque.')
+    next_status={'pagamento_aprovado':'preparando','preparando':'enviado','enviado':'entregue'}.get(current['status'])
+    if body.status!=next_status:raise HTTPException(409,'Confirme o pagamento e avance uma etapa por vez.')
+    if body.status=='enviado' and not body.rastreio.strip():raise HTTPException(422,'Informe o código de rastreio.')
+    return await privileged_rpc(db,'horizon_advance_order',
+                                {'p_order':str(order_id),'p_target':body.status,'p_tracking':body.rastreio.strip()})
