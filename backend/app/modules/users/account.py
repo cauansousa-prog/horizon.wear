@@ -46,4 +46,4 @@ async def delete_address(address_id:UUID,user:User=Depends(current_user),db:Data
 
 @router.get('/orders')
 async def orders(user:User=Depends(current_user),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/orders',token=user.token,params={'select':'id,codigo,status,total,subtotal,frete,desconto,rastreio,created_at,order_items(nome_produto,tamanho,preco_unitario,quantidade),payments(metodo,status,valor)','user_id':'eq.'+user.id,'order':'created_at.desc','limit':'100'})
+    return await db.request('/rest/v1/orders',token=user.token,params={'select':'id,codigo,status,review_required,total,subtotal,frete,desconto,rastreio,created_at,order_items(nome_produto,tamanho,preco_unitario,quantidade),payments(metodo,status,valor)','user_id':'eq.'+user.id,'order':'created_at.desc','limit':'100'})

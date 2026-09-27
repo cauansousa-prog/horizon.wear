@@ -1,64 +1,56 @@
 # Horizon Wear
 
-Loja de moda masculina com frontend em HTML, CSS e JavaScript puro, API em Python/FastAPI e dados no Supabase PostgreSQL.
+Loja existente em HTML, CSS e JavaScript puro, API Python/FastAPI, Supabase PostgreSQL e Mercado Pago Checkout Transparente. Nenhum token privado é enviado ao navegador.
 
-## Entregue
+## Execução local
 
-- Catálogo carregado da API, categorias, busca, filtros e página individual da peça.
-- Controle de tamanho e estoque no carrinho; preços e disponibilidade são confirmados pelo servidor.
-- Carrinho local para visitante e sincronização com a conta após login.
-- Cadastro, login, recuperação de senha, perfil, endereços e histórico de pedidos via Supabase Auth.
-- Área administrativa protegida para catálogo, estoque, pedidos, pagamentos, cupons e avaliações.
-- Checkout preparado para Pix, boleto e cartão com idempotência, reserva de estoque, webhook assinado e atualização de pedido no servidor.
-- Páginas de privacidade, contato, trocas e devoluções e rastreio pelo histórico de pedidos.
-
-## Executar localmente
+Instale Python 3.13 ou superior e, na raiz do projeto:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8018 --reload
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
+Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8018
 ```
 
-Abra `http://127.0.0.1:8018/`. No VS Code, use a tarefa **Iniciar Horizon Wear**.
+Abra `http://127.0.0.1:8018/`. O catálogo e a conta exigem as chaves públicas do Supabase no `.env`. O checkout permanece indisponível até que as chaves privadas, a URL HTTPS e o webhook sejam configurados. O arquivo `.env` está excluído do Git e do Docker.
 
-## Variáveis de ambiente
+## Banco Supabase existente
 
-Copie `.env.example` para `.env`. As credenciais ficam somente no servidor e o arquivo `.env` não deve ser enviado ao Git.
+Este código usa o esquema português documentado em [supabase/INSPECAO_EXISTENTE.md](supabase/INSPECAO_EXISTENTE.md): `products`, `product_sizes`, `orders`, `payments` e as demais tabelas já presentes. No SQL Editor do projeto, aplique **nessa ordem**:
 
-Para catálogo, conta, carrinho e administração:
+1. `supabase/migrations/0002_existing_security.sql`: corrige a política recursiva de perfis, impede alterações diretas de papéis e pagamentos, e instala a função de carrinho.
+2. `supabase/migrations/0003_checkout_existing.sql`: adiciona reservas, idempotência, confirmação de pagamentos, baixa transacional de estoque e avanço seguro dos pedidos.
+3. `supabase/migrations/0004_public_catalog.sql`: permite que visitantes leiam produtos ativos sem consultar perfis privados.
+
+Não aplique `0001_foundation.sql` nesse banco. Esse arquivo é um rascunho anterior para outro esquema e foi mantido como histórico; ele não corresponde à API atual.
+
+Depois, execute as consultas em `supabase/tests/verify_schema.sql` e revise os resultados. A migração de checkout deve ser aplicada antes de ativar as credenciais de pagamento.
+
+## Pagamentos
+
+Configure no `.env`:
 
 ```text
 SUPABASE_URL=https://SEU-PROJETO.supabase.co
-SUPABASE_ANON_KEY=sua-chave-publica
-```
-
-Para pagamentos reais, configure também:
-
-```text
-SUPABASE_SERVICE_ROLE_KEY=chave-privada-do-servidor
-MERCADOPAGO_ACCESS_TOKEN=token-privado-do-mercado-pago
-MERCADOPAGO_PUBLIC_KEY=chave-publica-do-mercado-pago
+SUPABASE_ANON_KEY=chave-publica
+SUPABASE_SERVICE_ROLE_KEY=chave-privada
+MERCADOPAGO_ACCESS_TOKEN=token-privado
+MERCADOPAGO_PUBLIC_KEY=chave-publica
 MERCADOPAGO_WEBHOOK_SECRET=segredo-do-webhook
 PUBLIC_BASE_URL=https://seu-dominio.com
 ```
 
-O checkout permanece bloqueado até que essas cinco variáveis estejam configuradas. Isso evita criar pedidos ou cobranças sem uma confirmação segura do Mercado Pago. A chave `SUPABASE_SERVICE_ROLE_KEY` e o token de acesso do Mercado Pago nunca podem aparecer no HTML, JavaScript ou repositório.
+O Mercado Pago informa quais meios estão disponíveis. A loja oferece Pix, cartão via Card Payment Brick e boleto `bolbradesco` somente quando aparecerem na conta. O backend calcula preços e frete, cria o pedido com chave de idempotência, envia a cobrança para `/v1/payments`, confere o pagamento com o provedor e processa o webhook assinado. A baixa de estoque acontece uma vez, dentro da transação do Supabase. Se um pagamento aprovado encontrar estoque insuficiente, o pedido fica sinalizado para conferência administrativa e o estoque não fica negativo.
 
-## Banco de dados
+Registre no painel do Mercado Pago o webhook `https://seu-dominio.com/api/webhooks/mercadopago` para eventos de pagamento. O painel deve usar o mesmo segredo definido em `MERCADOPAGO_WEBHOOK_SECRET`.
 
-- `supabase/migrations/0001_foundation.sql` serve para um banco de desenvolvimento novo.
-- `supabase/migrations/0003_checkout_existing.sql` adapta o esquema já existente para checkout, reserva de estoque e idempotência.
-- Antes de usar checkout real, aplique a migração compatível no SQL Editor do Supabase e execute os scripts em `supabase/tests/`.
-
-## Validação
+## Testes
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Os testes cobrem rotas estáticas, autenticação, RLS encaminhado pelo JWT, catálogo, carrinho, validação de estoque, administração, webhook e a sintaxe das migrações.
+Os testes automatizados simulam os serviços externos e cobrem catálogo, conta, proteção administrativa, Pix, cartão, boleto, webhook e migrações SQL. Eles não substituem uma compra com credenciais de teste reais do Mercado Pago e o banco Supabase configurado.
 
-## Publicação
-
-Publique a API FastAPI em uma hospedagem com HTTPS e configure `PUBLIC_BASE_URL` com o domínio final. O endpoint de webhook será `https://seu-dominio.com/api/webhooks/mercadopago`; registre esse endereço no painel do Mercado Pago depois de publicar.
-
-O projeto inclui um `Dockerfile` pronto para hospedagem. Consulte [DEPLOY.md](DEPLOY.md) antes de publicar.
+Veja [DEPLOY.md](DEPLOY.md) para publicação.

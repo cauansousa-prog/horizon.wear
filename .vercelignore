@@ -4,6 +4,8 @@
 __pycache__/
 .pytest_cache/
 backups/
+work/
+outputs/
 *.log
 *.pid
 usuarios.json

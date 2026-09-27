@@ -8,6 +8,8 @@ __pycache__
 *.pyc
 .pytest_cache
 backups
+work
+outputs
 Css
 img
 sistema_login.py

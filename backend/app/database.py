@@ -15,9 +15,9 @@ class Database:
     async def request(self, path, *, token=None, params=None, method="GET", json=None):
         if not self.settings.database_configured:
             raise HTTPException(503, 'Configure SUPABASE_URL e SUPABASE_ANON_KEY no servidor.')
-        headers = {'apikey': self.settings.supabase_anon_key.get_secret_value(), 'Prefer':'return=representation'}
-        if token:
-            headers['Authorization'] = f'Bearer {token}'
+        anon_key = self.settings.supabase_anon_key.get_secret_value()
+        headers = {'apikey': anon_key, 'Authorization': f'Bearer {token or anon_key}',
+                   'Prefer': 'return=representation'}
         try:
             response = await self.client.request(method, self.settings.supabase_url + path, headers=headers, params=params, json=json)
         except httpx.RequestError:

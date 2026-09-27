@@ -1,7 +1,13 @@
 -- Executar após a migração. Revisão de estrutura sem alterar dados.
 select tablename, rowsecurity from pg_tables where schemaname='public'
-and tablename in ('profiles','addresses','products','product_variants','product_images','categories','cart','cart_items','orders','order_items','payments','coupons','reviews')
+and tablename in ('profiles','addresses','products','product_sizes','product_images','categories','cart','cart_items','orders','order_items','payments','coupons','reviews')
 order by tablename;
+select schemaname,tablename,rowsecurity from pg_tables where schemaname='private'
+and tablename in ('checkout_state','stock_reservations') order by tablename;
+select proname,pg_get_function_identity_arguments(oid) as arguments
+from pg_proc where pronamespace='public'::regnamespace
+and proname in ('horizon_set_cart_item','horizon_create_order','horizon_apply_payment','horizon_get_checkout','horizon_advance_order')
+order by proname;
 select tablename,policyname,roles,cmd,qual,with_check from pg_policies
 where schemaname='public' order by tablename,policyname;
 select conrelid::regclass as tabela,conname,pg_get_constraintdef(oid) as regra

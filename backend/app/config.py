@@ -37,6 +37,17 @@ class Settings(BaseSettings):
                 raise ValueError('SUPABASE_URL deve ser a URL HTTPS base do projeto.')
         return value
 
+    @field_validator('public_base_url')
+    @classmethod
+    def validate_public_url(cls, value):
+        from urllib.parse import urlsplit
+        value=value.rstrip('/')
+        if value:
+            parsed=urlsplit(value)
+            if parsed.scheme!='https' or not parsed.hostname or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
+                raise ValueError('PUBLIC_BASE_URL deve ser a origem HTTPS pública, sem caminho ou parâmetros.')
+        return value
+
     @property
     def database_configured(self):
         return bool(self.supabase_url and self.supabase_anon_key.get_secret_value())
