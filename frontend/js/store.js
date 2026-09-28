@@ -1,17 +1,20 @@
 const money = value => Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeImage = value => {if(!value)return '/img/logo-icone.png';try {const u=new URL(value,location.origin);return ['https:','http:'].includes(u.protocol)?esc(u.href):'/img/logo-icone.png';} catch{return '/img/logo-icone.png';}};
-let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve();
+let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve(), catalogState='loading';
 try {session=JSON.parse(localStorage.getItem('hw-session')||'null');} catch {localStorage.removeItem('hw-session');}
 const storageCart=()=>{try {const v=JSON.parse(localStorage.getItem('hw-cart')||'[]');return Array.isArray(v)?v.filter(i=>typeof i.size_id==='string'&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=99).slice(0,100):[];}catch{return [];}};
 function saveSession(value){session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
 async function api(path,options={},retry=true){
-  if(session?.refresh_token && session.expires_at*1000<Date.now()+30000 && !path.startsWith('/api/auth/')) {
+  const publicRead=(!options.method||options.method==='GET')&&/^\/api\/(products(?:[/?]|$)|categories(?:[/?]|$)|reviews\/)/.test(path);
+  if(!publicRead && session?.refresh_token && session.expires_at*1000<Date.now()+30000 && !path.startsWith('/api/auth/')) {
     if(!refreshPromise) refreshPromise=fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})}).then(async r=>{if(!r.ok)throw Error('Sua sessão expirou. Entre novamente.');saveSession(await r.json());}).finally(()=>refreshPromise=null);
     try{await refreshPromise;}catch(e){saveSession(null);throw e;}
   }
-  const headers={'Content-Type':'application/json',...(session?{Authorization:`Bearer ${session.access_token}`}:{})};
-  const r=await fetch(path,{...options,headers:{...headers,...options.headers}});
+  const headers={'Content-Type':'application/json',...(!publicRead&&session?{Authorization:`Bearer ${session.access_token}`}:{})};
+  const controller=publicRead?new AbortController():null;
+  const timer=controller?setTimeout(()=>controller.abort(),15000):null;
+  let r;try{r=await fetch(path,{...options,...(controller?{signal:controller.signal}:{}),headers:{...headers,...options.headers}});}catch(e){if(e.name==='AbortError')throw Error('A coleção demorou para responder. Tente novamente.');throw e;}finally{if(timer)clearTimeout(timer);}
   let data;try{data=await r.json();}catch{data=null;}
   if(!r.ok){if(r.status===401&&!path.startsWith('/api/auth/'))saveSession(null);throw Error(typeof data?.detail==='string'?data.detail:'Não foi possível concluir. Confira os dados e tente novamente.');}
   return data;
@@ -24,7 +27,7 @@ function showPage(page,filter){
  if(page!=='produto'){history.replaceState(null,'','/#'+page);document.title='Horizon Wear | '+({home:'Moda masculina premium',produtos:'Coleção',conta:'Minha conta',cadastro:'Criar conta',checkout:'Finalizar compra',sobre:'Sobre nós',contato:'Contato',privacidade:'Privacidade',trocas:'Trocas e devoluções'}[page]||'Coleção');}
  document.querySelectorAll('#navList li').forEach(li=>li.classList.toggle('active',li.dataset.page===page));
  toggleNavigation(false);window.scrollTo(0,0);
- if(page==='produtos'){if(filter)activeFilter=filter;renderProducts();}
+ if(page==='produtos'){if(filter)activeFilter=filter;document.getElementById('catalogSearch').value=searchQuery;renderProducts();}
  if(page==='conta')renderAccount();
  if(page==='cadastro')renderSignup();
  if(page==='checkout')openCheckout(true);
@@ -32,25 +35,36 @@ function showPage(page,filter){
 function goHome(){location.href='/';}
 function toggleSearch(){document.getElementById('searchBar').classList.toggle('open');document.getElementById('searchInput').focus();}
 function handleSearchInput(value){searchQuery=value.trim().toLocaleLowerCase('pt-BR');showPage('produtos');}
+function handleCatalogSearch(value){searchQuery=value.trim().toLocaleLowerCase('pt-BR');renderProducts();}
+function clearCatalogFilters(){activeFilter='todos';searchQuery='';document.getElementById('catalogSearch').value='';document.getElementById('searchInput').value='';document.getElementById('sizeFilter').value='';document.getElementById('maxPrice').value='';document.getElementById('availableFilter').checked=false;renderProducts();}
 function setFilter(key){activeFilter=key;renderProducts();}
 function renderFilters(){document.getElementById('filtersRow').innerHTML=['todos','roupas','calcados','relogios','acessorios'].map((key,i)=>`<button class="filter-chip ${key===activeFilter?'active':''}" data-filter="${key}">${['Todos','Roupas','Calçados','Relógios','Acessórios'][i]}</button>`).join('');}
 function price(p){return p.preco_promocional ?? p.preco;}
 function imageFor(p){return [...(p.product_images||[])].sort((a,b)=>a.ordem-b.ordem)[0]?.url||'/img/logo-icone.png';}
-function productCardHTML(p){return `<article class="product-card"><a class="product-media" href="/produto/${encodeURIComponent(p.slug)}">${p.lancamento?'<span class="tag-novo">NOVA COLEÇÃO</span>':''}<img loading="lazy" src="${safeImage(imageFor(p))}" alt="${esc(p.nome)}"></a><div class="product-info"><span class="cat">${esc(p.categories?.nome)}</span><h3><a href="/produto/${encodeURIComponent(p.slug)}">${esc(p.nome)}</a></h3><div class="price-row"><span class="price">${p.preco_promocional!=null?`<del>${money(p.preco)}</del> `:''}${money(price(p))}</span></div><a class="add-cart-btn" href="/produto/${encodeURIComponent(p.slug)}">Escolher tamanho <span aria-hidden="true">↗</span></a></div></article>`;}
+function productCardHTML(p){const available=p.product_sizes?.some(s=>s.estoque>0);return `<article class="product-card"><a class="product-media" href="/produto/${encodeURIComponent(p.slug)}">${p.lancamento?'<span class="tag-novo">NOVA COLEÇÃO</span>':''}<img loading="lazy" decoding="async" src="${safeImage(imageFor(p))}" alt="${esc(p.nome)}" width="500" height="600"></a><div class="product-info"><span class="cat">${esc(p.categories?.nome)}</span><h3><a href="/produto/${encodeURIComponent(p.slug)}">${esc(p.nome)}</a></h3><div class="price-row"><span class="price">${p.preco_promocional!=null?`<del>${money(p.preco)}</del> `:''}${money(price(p))}</span></div><span class="stock-note ${available?'available':''}">${available?'Disponível em estoque':'Indisponível no momento'}</span><a class="add-cart-btn" href="/produto/${encodeURIComponent(p.slug)}">${available?'Escolher tamanho':'Ver detalhes'} <span aria-hidden="true">↗</span></a></div></article>`;}
 function renderProducts(){
- renderFilters();let list=products.filter(p=>(activeFilter==='todos'||p.categories?.grupo===activeFilter)&&(!searchQuery||`${p.nome} ${p.descricao} ${p.categories?.nome}`.toLocaleLowerCase('pt-BR').includes(searchQuery)));
+ if(catalogState!=='ready'){document.getElementById('resultsCount').textContent=catalogState==='loading'?'Carregando coleção…':'Coleção temporariamente indisponível';document.getElementById('productGrid').innerHTML=catalogState==='loading'?'<p class="catalog-loading" role="status">Carregando produtos…</p>':'<div class="catalog-error" role="alert"><p>Não foi possível carregar a coleção agora.</p><button class="btn-outline" onclick="loadCatalog()">Tentar novamente</button></div>';document.getElementById('emptyState').style.display='none';return;}
+ renderFilters();let list=products.filter(p=>(activeFilter==='todos'||p.categories?.grupo===activeFilter||p.categories?.slug===activeFilter)&&(!searchQuery||`${p.nome} ${p.descricao} ${p.categories?.nome}`.toLocaleLowerCase('pt-BR').includes(searchQuery)));
  const size=document.getElementById('sizeFilter')?.value;const available=document.getElementById('availableFilter')?.checked;const max=Number(document.getElementById('maxPrice')?.value||0);
- if(size)list=list.filter(p=>p.product_sizes?.some(s=>s.tamanho===size&&s.estoque>0));if(available)list=list.filter(p=>p.product_sizes?.some(s=>s.estoque>0));if(max)list=list.filter(p=>Number(price(p))<=max);
+ if(size)list=list.filter(p=>p.product_sizes?.some(s=>s.tamanho===size));if(available)list=list.filter(p=>p.product_sizes?.some(s=>s.estoque>0));if(max)list=list.filter(p=>Number(price(p))<=max);
  const sort=document.getElementById('sortProducts')?.value;if(sort==='price')list.sort((a,b)=>price(a)-price(b));if(sort==='price-desc')list.sort((a,b)=>price(b)-price(a));if(sort==='sales')list.sort((a,b)=>b.vendas_total-a.vendas_total);
  document.getElementById('resultsCount').textContent=`${list.length} ${list.length===1?'peça':'peças'}`;document.getElementById('productGrid').innerHTML=list.map(productCardHTML).join('');document.getElementById('emptyState').style.display=list.length?'none':'block';
 }
 async function loadCatalog(){
+ catalogState='loading';
+ const track=document.getElementById('arrivalsTrack');track.setAttribute('aria-busy','true');
+ track.innerHTML='<p class="catalog-loading" role="status">Carregando sua próxima escolha…</p>';
  try{
-  categories=await api('/api/categories');products=[];let offset=0;while(true){const page=await api('/api/products?offset='+offset);products.push(...page);if(page.length<100)break;offset+=100;}
-  document.getElementById('catGrid').innerHTML=categories.map(c=>`<a class="cat-card" href="#produtos" data-category="${esc(c.grupo)}"><img loading="lazy" src="${safeImage(c.imagem_url)}" alt="${esc(c.nome)}"><div class="cat-overlay"><h3>${esc(c.nome)}</h3><span>EXPLORAR</span></div></a>`).join('');
-  document.getElementById('arrivalsTrack').innerHTML=products.filter(p=>p.lancamento).slice(0,8).map(productCardHTML).join('')||'<p>Novas peças chegam em breve.</p>';
-  document.getElementById('sizeFilter').innerHTML='<option value="">Todos os tamanhos</option>'+[...new Set(products.flatMap(p=>p.product_sizes.map(s=>s.tamanho)))].map(s=>`<option>${esc(s)}</option>`).join('');renderProducts();
- }catch(e){document.getElementById('arrivalsTrack').textContent='Não foi possível carregar a coleção. Atualize a página para tentar novamente.';document.getElementById('productGrid').textContent=e.message;showToast(e.message);}
+  const categoryRequest=api('/api/categories').catch(()=>[]);
+  const loaded=[];let offset=0;while(true){const page=await api('/api/products?offset='+offset);if(!Array.isArray(page))throw Error('Não foi possível carregar a coleção.');loaded.push(...page);if(page.length<100)break;offset+=100;}
+  products=loaded;categories=await categoryRequest;catalogState='ready';
+  if(!categories.length)categories=[...new Map(products.filter(p=>p.categories).map(p=>[p.categories.id,{...p.categories,imagem_url:imageFor(p)}])).values()];
+  document.getElementById('catGrid').innerHTML=categories.map(c=>`<a class="cat-card" href="#produtos" data-category="${esc(c.slug)}"><img loading="lazy" src="${safeImage(c.imagem_url)}" alt="${esc(c.nome)}" width="400" height="300"><div class="cat-overlay"><h3>${esc(c.nome)}</h3><span>EXPLORAR ↗</span></div></a>`).join('');
+  const selected=[...products].sort((a,b)=>Number(b.destaque)-Number(a.destaque));
+  track.innerHTML=selected.slice(0,8).map(productCardHTML).join('')||'<p class="catalog-loading">Nossa coleção está sendo preparada. Volte em breve.</p>';
+  document.getElementById('sizeFilter').innerHTML='<option value="">Todos os tamanhos</option>'+[...new Set(products.flatMap(p=>(p.product_sizes||[]).map(s=>s.tamanho)))].sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true})).map(s=>`<option>${esc(s)}</option>`).join('');renderProducts();
+ }catch(e){catalogState='error';const message='<div class="catalog-error" role="alert"><p>Não foi possível carregar a coleção agora.</p><button class="btn-outline" onclick="loadCatalog()">Tentar novamente</button></div>';track.innerHTML=message;renderProducts();}
+ finally{track.setAttribute('aria-busy','false');}
 }
 async function renderProduct(slug){
  showPage('produto');const el=document.getElementById('productDetail');el.textContent='Carregando a peça…';

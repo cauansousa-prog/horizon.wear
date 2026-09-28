@@ -15,14 +15,16 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/refinement.css"><link rel="stylesheet" href="css/experience.css?v=20260924b">
+<link rel="stylesheet" href="css/horizon.css?v=20260927">
 </head>
 <body>
+<a class="skip-link" href="#page-home">Pular para o conteúdo</a>
 
 
 <div class="topbar">
   <div class="container">
     <span><i class="fa-solid fa-truck"></i> FRETE GRÁTIS PARA TODO O BRASIL</span>
-    <span>10% OFF NA PRIMEIRA COMPRA &nbsp;|&nbsp; CUPOM: <strong>HORIZON10</strong></span>
+    <span>UM NOVO HORIZONTE PARA O SEU ESTILO <strong>↗</strong></span>
     <span><i class="fa-solid fa-rotate"></i> TROCA FÁCIL EM ATÉ 7 DIAS</span>
   </div>
 </div>
@@ -30,13 +32,13 @@
 
 <header class="main">
   <div class="container">
-    <div class="logo" onclick="location.href='/'">
+    <a class="logo" href="/" aria-label="Horizon Wear — início">
       <img class="logo-icon" src="img/logo-icone.png" alt="Horizon Wear">
       <div class="logo-word">
         <span class="lw-main lw-gold">HORIZON</span>
         <span class="lw-sub lw-white">WEAR</span>
       </div>
-    </div>
+    </a>
 
     <nav class="primary" id="primaryNav" aria-label="Navegação principal">
       <ul id="navList">
@@ -61,7 +63,7 @@
     <div class="header-icons"><button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="primaryNav" onclick="toggleNavigation()">☰</button>
       <div class="search-bar" id="searchBar">
         <input type="text" id="searchInput" placeholder="Buscar produtos..." oninput="handleSearchInput(this.value)">
-        <button onclick="toggleSearch()"><i class="fa-solid fa-xmark"></i></button>
+        <button aria-label="Fechar pesquisa" onclick="toggleSearch()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <button aria-label="Pesquisar" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
       <button aria-label="Minha conta" onclick="showPage('conta')"><i class="fa-regular fa-user"></i></button>
@@ -78,13 +80,15 @@
   <section class="hero">
     <div class="container">
       <div class="hero-copy">
-        <div class="eyebrow">SEU ESTILO. SUA ESSÊNCIA.</div>
-        <h1>VISTA SEU<span class="accent">MELHOR HORIZONTE.</span></h1>
-        <p class="lead">Moda masculina para homens que fazem a diferença.</p>
-        <a href="#" class="btn-gold" onclick="showPage('produtos','todos');return false;"><i class="fa-solid fa-bag-shopping"></i> COMPRAR AGORA</a>
+        <div class="eyebrow"><span class="hero-dot" aria-hidden="true"></span> HORIZON WEAR · NOVA SELEÇÃO</div>
+        <h1>Seu estilo.<span class="accent">Sem limites.</span></h1>
+        <p class="lead">Do básico que resolve ao detalhe que transforma. Encontre as peças que têm a sua cara.</p>
+        <div class="hero-actions"><a href="#produtos" class="btn-gold" onclick="showPage('produtos','todos');return false;">Explorar coleção <span aria-hidden="true">↗</span></a><a href="#lancamentos" class="hero-secondary">Ver novidades ↓</a></div>
+        <p class="hero-note">ROUPAS · CALÇADOS · ACESSÓRIOS</p>
       </div>
       <div class="hero-photo">
-        <img src="img/hero.png" alt="Modelo vestindo camiseta preta Horizon Wear">
+        <img src="img/hero.png" alt="Modelo com camiseta preta, óculos escuros e relógio" fetchpriority="high">
+        <div class="hero-photo-label"><span>ESSENCIAIS COM PERSONALIDADE</span><strong>Feito para o seu ritmo. ↗</strong></div>
       </div>
     </div>
   </section>
@@ -93,48 +97,42 @@
     <div class="container">
       <div class="feature"><div class="icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>FRETE GRÁTIS</h4><p>Para todo o Brasil</p></div></div>
       <div class="feature"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>COMPRA SEGURA</h4><p>Dados protegidos</p></div></div>
-      <div class="feature"><div class="icon"><i class="fa-solid fa-credit-card"></i></div><div><h4>PARCELE EM ATÉ 12X</h4><p>No cartão de crédito</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-bag-shopping"></i></div><div><h4>SEU ESTILO, SUA ESCOLHA</h4><p>Dos essenciais aos acessórios</p></div></div>
       <div class="feature"><div class="icon"><i class="fa-solid fa-arrows-rotate"></i></div><div><h4>TROCA FÁCIL</h4><p>Até 7 dias após o recebimento</p></div></div>
-    </div>
-  </section>
-
-  <section class="section" id="categorias">
-    <div class="container">
-      <div class="section-head"><h2>CATEGORIAS</h2></div>
-      <div class="cat-grid" id="catGrid"></div>
     </div>
   </section>
 
   <section class="section" id="lancamentos">
     <div class="container">
       <div class="section-head-row">
-        <div class="section-head" style="margin-bottom:0;"><h2>LANÇAMENTOS</h2></div>
-        <div class="carousel-nav">
-          <button onclick="document.getElementById('arrivalsTrack').scrollBy({left:-300,behavior:'smooth'})"><i class="fa-solid fa-chevron-left"></i></button>
-          <button onclick="document.getElementById('arrivalsTrack').scrollBy({left:300,behavior:'smooth'})"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
+        <div><p class="section-kicker">A SUA PRÓXIMA ESCOLHA</p><div class="section-head" style="margin-bottom:0;"><h2>Explore novos favoritos.</h2></div></div>
+        <a class="collection-link" href="#produtos" onclick="showPage('produtos','todos');return false;">Ver toda a coleção <span aria-hidden="true">↗</span></a>
       </div>
-      <div class="arrivals-track" id="arrivalsTrack"></div>
+      <div class="arrivals-track" id="arrivalsTrack" aria-live="polite"><p class="catalog-loading" role="status">Carregando sua próxima escolha…</p></div>
     </div>
   </section>
+  <section class="section categories-section" id="categorias"><div class="container"><p class="section-kicker">DO SEU JEITO</p><div class="section-head"><h2>Um estilo. Muitas possibilidades.</h2></div><div class="cat-grid" id="catGrid"></div></div></section>
+  <section class="editorial-band container"><div><p class="section-kicker">OS DETALHES FAZEM O LOOK</p><h2>Uma peça pode<br>mudar tudo.</h2><p>Relógios, bonés, óculos e mochilas para completar o seu estilo.</p><a class="btn-gold" href="#produtos" onclick="showPage('produtos','acessorios');return false;">Explorar acessórios ↗</a></div><img src="img/catalog/sunglasses.jpg" alt="Óculos de sol pretos com lentes escuras" loading="lazy"></section>
 </main>
 
 
 <main id="page-produtos" style="display:none;">
   <div class="page-header-block">
     <div class="container">
-      <h1>Nossos Produtos</h1>
-      <p>Peças pensadas para o homem contemporâneo: elegância, conforto e atitude em cada detalhe.</p>
+      <p class="section-kicker">ENCONTRE O SEU PRÓXIMO FAVORITO</p><h1>A coleção é sua.</h1>
+      <p>Explore roupas, calçados e acessórios. Escolha o que combina com você.</p>
     </div>
   </div>
   <div class="section" style="padding-top:34px;">
     <div class="container">
       <div class="filters-row" id="filtersRow"></div>
+      <label class="catalog-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="catalogSearch" type="search" placeholder="Busque por peça, cor ou estilo" aria-label="Buscar na coleção" oninput="handleCatalogSearch(this.value)"></label>
       <div class="catalog-controls"><label>Ordenar<select id="sortProducts" onchange="renderProducts()"><option value="new">Mais recentes</option><option value="sales">Mais vendidos</option><option value="price">Menor preço</option><option value="price-desc">Maior preço</option></select></label><label>Tamanho<select id="sizeFilter" onchange="renderProducts()"></select></label><label>Preço até<input id="maxPrice" type="number" min="0" placeholder="R$" oninput="renderProducts()"></label><label><input id="availableFilter" type="checkbox" onchange="renderProducts()"> Em estoque</label></div><p class="results-count" id="resultsCount"></p>
       <div class="product-grid" id="productGrid"></div>
-      <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-state" id="emptyState" style="display:none;" role="status">
         <i class="fa-solid fa-magnifying-glass"></i>
         <p>Nenhum produto encontrado. Tente outra busca ou categoria.</p>
+        <button class="btn-outline" onclick="clearCatalogFilters()">Limpar filtros</button>
       </div>
     </div>
   </div>
@@ -423,10 +421,10 @@
 
 
 <div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
-<aside class="cart-sidebar" id="cartSidebar">
+<aside class="cart-sidebar" id="cartSidebar" inert aria-label="Carrinho de compras">
   <div class="cart-header">
     <h3><i class="fa-solid fa-bag-shopping"></i> Seu Carrinho</h3>
-    <button onclick="toggleCart(false)"><i class="fa-solid fa-xmark"></i></button>
+    <button aria-label="Fechar carrinho" onclick="toggleCart(false)"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-footer" id="cartFooter">
@@ -442,7 +440,7 @@
 
 <script src="js/api.js?v=20260924b"></script>
 <script src="js/contact.js?v=20260924b"></script>
-<script src="js/store.js?v=20260924b"></script>
+<script src="js/store.js?v=20260927"></script>
 <script src="js/checkout.js?v=20260924b"></script>
 </body>
 </html>
