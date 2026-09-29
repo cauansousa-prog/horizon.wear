@@ -25,8 +25,16 @@ def redirect_url(request:Request,db:Database):
 async def login(body:Credentials,db:Database=Depends(get_database)):
     return await db.request('/auth/v1/token',method='POST',params={'grant_type':'password'},json=body.model_dump())
 @router.post('/signup')
-async def signup(request:Request,body:Signup,db:Database=Depends(get_database)):
-    return await db.request('/auth/v1/signup',method='POST',json={'email':body.email,'password':body.password,'data':{'nome_completo':body.nome_completo},'options':{'email_redirect_to':redirect_url(request,db)}})
+async def signup(body:Signup,db:Database=Depends(get_database)):
+    """Cria uma conta já confirmada e inicia a sessão imediatamente."""
+    await db.admin_request('/auth/v1/admin/users',method='POST',json={
+        'email':body.email,
+        'password':body.password,
+        'email_confirm':True,
+        'user_metadata':{'nome_completo':body.nome_completo},
+    })
+    return await db.request('/auth/v1/token',method='POST',params={'grant_type':'password'},
+                            json={'email':body.email,'password':body.password})
 @router.post('/refresh')
 async def refresh(body:Refresh,db:Database=Depends(get_database)):
     return await db.request('/auth/v1/token',method='POST',params={'grant_type':'refresh_token'},json=body.model_dump())

@@ -75,20 +75,30 @@ def test_readiness_really_calls_database():
     assert len(calls)==1
 
 
-def test_auth_links_return_to_current_site():
+def test_signup_confirms_account_and_auth_links_return_to_current_site():
     captured=[]
     def handle(request):
         captured.append(request)
+        if request.url.path == '/auth/v1/token':
+            return httpx.Response(200,json={'access_token':'session-token','refresh_token':'refresh-token'})
         return httpx.Response(200,json={})
-    cfg=settings(supabase_url='https://example.supabase.co',supabase_anon_key='public-test-key')
+    cfg=settings(supabase_url='https://example.supabase.co',supabase_anon_key='public-test-key',supabase_service_role_key='server-only-key')
     with TestClient(create_app(cfg,httpx.MockTransport(handle))) as client:
-        client.post('/api/auth/signup',json={'nome_completo':'Teste','email':'teste@example.com','password':'senha-segura'})
+        signup=client.post('/api/auth/signup',json={'nome_completo':'Teste','email':'teste@example.com','password':'senha-segura'})
         client.post('/api/auth/recover',json={'email':'teste@example.com'})
         client.post('/api/auth/resend-confirmation',json={'email':'teste@example.com'})
-    payloads=[json.loads(request.content) for request in captured]
-    assert payloads[0]['options']['email_redirect_to']=='http://testserver/#conta'
-    assert payloads[1]['redirect_to']=='http://testserver/#conta'
-    assert payloads[2]['options']['email_redirect_to']=='http://testserver/#conta'
+    assert signup.status_code == 200
+    assert signup.json()['access_token'] == 'session-token'
+    assert captured[0].url.path == '/auth/v1/admin/users'
+    assert captured[0].headers['authorization'] == 'Bearer server-only-key'
+    assert captured[0].headers['apikey'] == 'server-only-key'
+    signup_payload=json.loads(captured[0].content)
+    assert signup_payload['email_confirm'] is True
+    assert signup_payload['user_metadata']['nome_completo'] == 'Teste'
+    assert captured[1].url.path == '/auth/v1/token'
+    payloads=[json.loads(request.content) for request in captured[2:]]
+    assert payloads[0]['redirect_to']=='http://testserver/#conta'
+    assert payloads[1]['options']['email_redirect_to']=='http://testserver/#conta'
 
 
 def test_sql_parses():
