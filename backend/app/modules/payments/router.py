@@ -34,13 +34,33 @@ class Checkout(BaseModel):
         if any(i.quantity<1 for i in self.items):raise ValueError('Carrinho inválido.')
         return self
 
+class Simulation(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    customer:Customer
+    items:list[Item]=Field(min_length=1,max_length=100)
+    method:Literal['pix','cartao','boleto']
+
+@router.post('/simulate')
+async def simulate(body:Simulation,idempotency_key:UUID=Header(),db:Database=Depends(get_database)):
+    """Demonstra a compra sem cobrar, reservar ou baixar o estoque real."""
+    if any(i.quantity<1 for i in body.items):
+        raise HTTPException(422,'Carrinho inválido.')
+    quote=await quote_items(body.items,db)
+    total=Decimal(quote['subtotal'])+Decimal(str(db.settings.shipping_flat_brl))
+    return {'order_id':str(idempotency_key),'code':'DEMO-'+str(idempotency_key)[:8].upper(),
+            'status':'simulated','simulation':True,'method':body.method,
+            'total':str(total.quantize(Decimal('.01'))),
+            'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
+                      'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]}
+
 def ready(settings):
     return bool(settings.supabase_service_role_key.get_secret_value() and settings.mercadopago_access_token.get_secret_value() and settings.mercadopago_webhook_secret.get_secret_value() and settings.public_base_url.startswith('https://'))
 
 @router.get('/config')
 async def config(db:Database=Depends(get_database)):
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
-    return {'available':bool(methods),'methods':methods,'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl)}
+    return {'available':bool(methods),'simulation_available':db.settings.database_configured,
+            'methods':methods,'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl)}
 
 @router.post('')
 async def checkout(body:Checkout,idempotency_key:UUID=Header(),checkout_token:str=Header(min_length=32,max_length=128),credentials:HTTPAuthorizationCredentials|None=Depends(bearer),db:Database=Depends(get_database)):

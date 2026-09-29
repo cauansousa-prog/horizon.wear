@@ -143,3 +143,30 @@ def test_admin_cannot_ship_unpaid_order():
             json={'status': 'enviado', 'rastreio': 'BR123'})
         assert result.status_code == 409
     assert '/rest/v1/rpc/horizon_advance_order' not in calls
+
+@pytest.mark.parametrize('method',['pix','cartao','boleto'])
+def test_simulated_purchase_never_charges_or_changes_stock(method):
+    def handle(request):
+        assert request.method=='GET'
+        assert request.url.host=='example.supabase.co'
+        assert request.url.path=='/rest/v1/product_sizes'
+        return httpx.Response(200,json=[{'id':SIZE,'tamanho':'M','estoque':12,
+            'products':{'id':ORDER,'nome':'Camiseta preta','slug':'camiseta-preta',
+                        'preco':100,'preco_promocional':90,'ativo':True,'product_images':[]}}])
+    cfg=Settings(_env_file=None,supabase_url='https://example.supabase.co',supabase_anon_key='public-key')
+    payload=body(method)
+    payload.pop('token',None)
+    payload.pop('payment_method_id',None)
+    with TestClient(create_app(cfg,httpx.MockTransport(handle))) as client:
+        config=client.get('/api/checkout/config').json()
+        assert config['simulation_available'] is True
+        assert config['available'] is False
+        result=client.post('/api/checkout/simulate',json=payload,headers={'Idempotency-Key':KEY})
+        assert result.status_code==200,result.text
+        data=result.json()
+        assert data['status']=='simulated' and data['simulation'] is True
+        assert data['total']=='90.00'
+        assert data['code'].startswith('DEMO-')
+        assert 'customer' not in data
+        payload['items'][0]['quantity']=13
+        assert client.post('/api/checkout/simulate',json=payload,headers={'Idempotency-Key':KEY}).status_code==409
