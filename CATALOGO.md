@@ -1,6 +1,6 @@
 # Catálogo e identidade visual — setembro de 2026
 
-38 produtos: 6 já existentes no Supabase, 12 recuperados do catálogo anterior em `frontend/js/app.js` e 20 novos cadastros.
+38 produtos: 6 já existentes no Supabase, 12 recuperados do catálogo anterior e 20 novos cadastros. O catálogo revisado está em `supabase/catalog/horizon-20260927.json`.
 
 Os nomes foram ajustados aos elementos visíveis nas fotografias: cor, tipo de peça, estampa e acabamento. As fotografias são referências de catálogo provenientes do Unsplash, revisadas visualmente e armazenadas em `frontend/img/catalog/`; as fontes estão em `supabase/catalog/image-sources.json`. A correspondência visual não confirma composição, autenticidade, fornecedor ou disponibilidade física. Esses dados devem ser confirmados pela loja antes de disponibilizar os novos produtos para venda.
 

@@ -13,7 +13,7 @@ Copy-Item .env.example .env
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8018
 ```
 
-Abra `http://127.0.0.1:8018/`. O catálogo e a conta exigem as chaves públicas do Supabase no `.env`. O checkout permanece indisponível até que as chaves privadas, a URL HTTPS e o webhook sejam configurados. O arquivo `.env` está excluído do Git e do Docker.
+Abra `http://127.0.0.1:8018/`. O catálogo e a conta exigem as chaves públicas do Supabase no `.env`. Sem a integração de pagamentos completa, o checkout permite pedidos de demonstração sem cobrança ou envio. O arquivo `.env` está excluído do Git e do Docker. Se o `.env` já existir, mantenha suas configurações.
 
 ## Banco Supabase existente
 

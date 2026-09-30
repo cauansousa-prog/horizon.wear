@@ -19,7 +19,7 @@ def settings(**kw):
 
 def test_static_files_and_private_files():
     with TestClient(create_app(settings())) as client:
-        for path in ['/', '/Index.html', '/css/style.css', '/js/app.js', '/js/api.js', '/img/hero.png']:
+        for path in ['/', '/Index.html', '/css/style.css', '/js/store.js', '/js/api.js', '/img/hero.png']:
             assert client.get(path).status_code == 200, path
         assert client.get('/produto/camiseta-slim-fit-preta').status_code == 200
         for path in ['/.env', '/backend/app/config.py', '/sistema_login.py', '/supabase/migrations/0001_foundation.sql', '/api/nonexistent']:
