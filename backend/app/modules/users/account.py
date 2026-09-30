@@ -6,11 +6,11 @@ from ...database import Database,get_database
 
 router=APIRouter(tags=['conta'])
 class Profile(BaseModel):
-    model_config=ConfigDict(extra='forbid')
+    model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
     nome_completo:str=Field(min_length=2,max_length=120)
     telefone:str=Field(default='',max_length=25)
 class Address(BaseModel):
-    model_config=ConfigDict(extra='forbid')
+    model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
     destinatario:str=Field(min_length=2,max_length=120)
     cep:str=Field(pattern=r'^\d{8}$')
     rua:str=Field(min_length=2,max_length=200)
@@ -25,7 +25,10 @@ class Address(BaseModel):
 
 @router.patch('/users/me')
 async def update_profile(body:Profile,user:User=Depends(current_user),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/profiles',method='PATCH',token=user.token,params={'id':'eq.'+user.id},json=body.model_dump())
+    rows=await db.request('/rest/v1/profiles',method='PATCH',token=user.token,
+        params={'id':'eq.'+user.id,'select':'id,full_name:nome_completo,phone:telefone'},json=body.model_dump())
+    if not rows:raise HTTPException(409,'Seus dados não foram salvos. Atualize a página e tente novamente.')
+    return rows[0]
 
 @router.get('/addresses')
 async def addresses(user:User=Depends(current_user),db:Database=Depends(get_database)):

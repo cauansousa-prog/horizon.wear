@@ -13,7 +13,7 @@ from .gateway import MercadoPago,privileged_rpc,apply_payment,payment_details
 
 router=APIRouter(prefix='/checkout',tags=['checkout'])
 class Customer(BaseModel):
-    model_config=ConfigDict(extra='forbid')
+    model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
     name:str=Field(min_length=2,max_length=120)
     email:str=Field(pattern=r'^[^\s@]+@[^\s@]+\.[^\s@]+$',max_length=254)
     cpf:str=Field(pattern=r'^\d{11}$')
@@ -34,9 +34,13 @@ class Checkout(BaseModel):
         if any(i.quantity<1 for i in self.items):raise ValueError('Carrinho inválido.')
         return self
 
+class SimulationCustomer(Customer):
+    cpf:str=Field(default='',max_length=20)
+    phone:str=Field(default='',max_length=25)
+
 class Simulation(BaseModel):
     model_config=ConfigDict(extra='forbid')
-    customer:Customer
+    customer:SimulationCustomer
     items:list[Item]=Field(min_length=1,max_length=100)
     method:Literal['pix','cartao','boleto']
 

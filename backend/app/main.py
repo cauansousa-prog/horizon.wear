@@ -45,7 +45,14 @@ def create_app(settings=None, transport=None):
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request, exc):
         # Não devolver senhas, tokens ou CPF nas mensagens de validação.
-        return JSONResponse(status_code=422, content={'detail': 'Confira os campos preenchidos e tente novamente.'})
+        labels={'name':'Nome completo','nome_completo':'Nome','email':'E-mail','cpf':'CPF',
+                'phone':'Telefone','telefone':'Telefone','cep':'CEP','estado':'Estado (UF)',
+                'rua':'Rua','numero':'Número','bairro':'Bairro','cidade':'Cidade',
+                'destinatario':'Destinatário','complemento':'Complemento','password':'Senha'}
+        fields=[labels.get(str(e['loc'][-1])) for e in exc.errors() if e.get('loc')]
+        fields=list(dict.fromkeys(f for f in fields if f))
+        detail='Corrija: '+', '.join(fields)+'.' if fields else 'Não foi possível validar o pedido. Atualize a página e tente novamente.'
+        return JSONResponse(status_code=422, content={'detail':detail,'fields':fields})
 
     if settings.cors_origins:
         app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins,
