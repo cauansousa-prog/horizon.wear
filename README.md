@@ -2,6 +2,8 @@
 
 Loja existente em HTML, CSS e JavaScript puro, API Python/FastAPI, Supabase PostgreSQL e Mercado Pago Checkout Transparente. Nenhum token privado é enviado ao navegador.
 
+A central das três lojas está em **/central/**. Para colocar os sites de academia e construção, siga [lojas/LEIA-ME.md](lojas/LEIA-ME.md). O site atual da Horizon continua no mesmo lugar.
+
 ## Execução local
 
 Instale Python 3.13 ou superior e, na raiz do projeto:

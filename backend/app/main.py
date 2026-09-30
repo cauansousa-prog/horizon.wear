@@ -14,9 +14,20 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pathlib import PurePosixPath
 from .config import ROOT, get_settings
 from .database import Database, get_database
 from .modules.users.router import router as users_router
+from .modules.hub.router import router as hub_router
+
+class StoreFiles(StaticFiles):
+    async def get_response(self,path,scope):
+        item=PurePosixPath(path)
+        allowed={'.html','.css','.js','.json','.png','.jpg','.jpeg','.webp','.gif','.svg','.ico',
+                 '.woff','.woff2','.ttf','.otf','.mp4','.webm','.mp3','.wav','.pdf'}
+        if any(p.startswith('.') for p in item.parts) or (item.suffix and item.suffix.lower() not in allowed):
+            raise HTTPException(404,'Arquivo não encontrado.')
+        return await super().get_response(path,scope)
 
 
 def create_app(settings=None, transport=None):
@@ -35,7 +46,11 @@ def create_app(settings=None, transport=None):
     async def security_headers(request, call_next):
         response = await call_next(request)
         response.headers.setdefault('X-Content-Type-Options', 'nosniff')
-        response.headers.setdefault('X-Frame-Options', 'DENY')
+        # Somente páginas das lojas podem ser incorporadas pela central no mesmo domínio.
+        path=request.url.path
+        embeddable=path in ('/','/Index.html','/index.html','/admin.html','/central/admin.html') or path.startswith(('/lojas/','/produto/'))
+        response.headers.setdefault('X-Frame-Options','SAMEORIGIN' if embeddable else 'DENY')
+        response.headers.setdefault('Content-Security-Policy',"frame-ancestors 'self'" if embeddable else "frame-ancestors 'none'")
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
         response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
         if request.url.scheme == 'https':
@@ -76,6 +91,7 @@ def create_app(settings=None, transport=None):
     app.include_router(payments_router, prefix='/api')
     app.include_router(webhooks_router, prefix='/api')
     app.include_router(users_router, prefix='/api')
+    app.include_router(hub_router,prefix='/api')
 
     # Mantém endpoints futuros fora do servidor de arquivos estáticos.
     @app.api_route('/api/{path:path}', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
@@ -90,6 +106,8 @@ def create_app(settings=None, transport=None):
     async def product_page(slug: str):
         return FileResponse(ROOT / 'frontend' / 'index.html')
 
+    for store in ('academia','construcao'):
+        app.mount('/lojas/'+store,StoreFiles(directory=ROOT/'lojas'/store,html=True),name='loja-'+store)
     app.mount('/', StaticFiles(directory=ROOT / 'frontend', html=True), name='frontend')
     return app
 
