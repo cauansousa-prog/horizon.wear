@@ -21,7 +21,31 @@ class MercadoPago:
         if key:headers['X-Idempotency-Key']=str(key)
         try:r=await self.client.request('POST' if body is not None else 'GET','https://api.mercadopago.com'+path,headers=headers,json=body,timeout=25)
         except httpx.RequestError:raise HTTPException(503,'Não foi possível confirmar o pagamento. Tente novamente com a mesma solicitação.') from None
-        if r.is_error:raise HTTPException(502,'O provedor não concluiu o pagamento. Confira os dados e tente novamente com a mesma solicitação.')
+        if r.is_error:
+            detail='O Mercado Pago não concluiu o pagamento.'
+            try:
+                payload=r.json()
+            except ValueError:
+                payload={}
+            message=str(payload.get('message') or '').lower()
+            causes=payload.get('cause') if isinstance(payload,dict) else []
+            if not isinstance(causes,list):causes=[]
+            cause_codes={str(c.get('code')) for c in causes if isinstance(c,dict)}
+            cause_text=' '.join(str(c.get('description') or c.get('data') or '') for c in causes if isinstance(c,dict)).lower()
+            combined=(message+' '+cause_text).strip()
+            if r.status_code==401:
+                detail='As credenciais do Mercado Pago não foram aceitas. Revise o Access Token configurado no servidor.'
+            elif 'collector' in combined or 'payer' in combined and 'same' in combined or '145' in cause_codes:
+                detail='O Mercado Pago recusou a operação entre as contas usadas. Em testes, use uma conta Comprador diferente da conta Vendedor.'
+            elif 'regulation' in combined or 'compliance' in combined or '160' in cause_codes:
+                detail='A conta vendedora do Mercado Pago ainda não está habilitada para processar este pagamento.'
+            elif 'identification' in combined or 'cpf' in combined:
+                detail='O Mercado Pago recusou os dados de identificação do comprador. Confira o CPF e tente novamente.'
+            elif 'payment_method' in combined or '204' in cause_codes:
+                detail='Esse meio de pagamento não está disponível para esta conta no Mercado Pago.'
+            elif r.status_code==429:
+                detail='O Mercado Pago recebeu muitas tentativas em pouco tempo. Aguarde um pouco e tente novamente.'
+            raise HTTPException(502,detail)
         try:return r.json()
         except ValueError:raise HTTPException(502,'Resposta inválida do provedor de pagamento.') from None
 
