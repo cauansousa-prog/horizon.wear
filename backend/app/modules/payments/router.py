@@ -58,13 +58,17 @@ async def simulate(body:Simulation,idempotency_key:UUID=Header(),db:Database=Dep
                       'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]}
 
 def ready(settings):
-    return bool(settings.supabase_service_role_key.get_secret_value() and settings.mercadopago_access_token.get_secret_value() and settings.mercadopago_webhook_secret.get_secret_value() and settings.public_base_url.startswith('https://'))
+    # O webhook melhora a atualização em tempo real, mas não deve bloquear a venda.
+    # Sem ele, o checkout e o admin reconciliam o pagamento consultando o Mercado Pago.
+    return bool(settings.supabase_service_role_key.get_secret_value() and settings.mercadopago_access_token.get_secret_value())
 
 @router.get('/config')
 async def config(db:Database=Depends(get_database)):
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
+    webhook_ready=bool(db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'))
     return {'available':bool(methods),'simulation_available':db.settings.database_configured,
-            'methods':methods,'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl)}
+            'methods':methods,'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
+            'webhook_ready':webhook_ready}
 
 @router.post('')
 async def checkout(body:Checkout,idempotency_key:UUID=Header(),checkout_token:str=Header(min_length=32,max_length=128),credentials:HTTPAuthorizationCredentials|None=Depends(bearer),db:Database=Depends(get_database)):
@@ -85,7 +89,9 @@ async def checkout(body:Checkout,idempotency_key:UUID=Header(),checkout_token:st
     names=customer['name'].split(maxsplit=1)
     payer={'email':customer['email'],'first_name':names[0],'last_name':names[1] if len(names)>1 else names[0],'identification':{'type':'CPF','number':customer['cpf']}}
     method={'pix':'pix','boleto':'bolbradesco'}.get(body.method,body.payment_method_id)
-    payment={'transaction_amount':float(Decimal(str(order['total']))),'description':'Horizon Wear '+str(order['codigo']),'payment_method_id':method,'payer':payer,'external_reference':order['id'],'notification_url':db.settings.public_base_url.rstrip('/')+'/api/webhooks/mercadopago'}
+    payment={'transaction_amount':float(Decimal(str(order['total']))),'description':'Horizon Wear '+str(order['codigo']),'payment_method_id':method,'payer':payer,'external_reference':order['id']}
+    if db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'):
+        payment['notification_url']=db.settings.public_base_url.rstrip('/')+'/api/webhooks/mercadopago'
     if body.method=='cartao':
         payment.update(token=body.token,installments=body.installments)
         if body.issuer_id:payment['issuer_id']=body.issuer_id
