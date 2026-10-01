@@ -36,7 +36,8 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-order
 });
 const paymentLabels={pix:'Pix',cartao:'Cartão',boleto:'Boleto',confirmado:'Confirmado'};
 const dateTime=value=>value?new Date(value).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
-let selectedRevenueYear=new Date().getFullYear(),dashboardBusy=false,dashboardTimer=null;
+const revenuePeriodLabels={day:'Dia',week:'Semana',month:'Mês',year:'Ano'};
+let selectedRevenuePeriod='month',dashboardBusy=false,dashboardTimer=null;
 
 function purchaseItems(items){
  const safe=Array.isArray(items)?items:[];
@@ -48,32 +49,34 @@ function dashboardHTML(d){
  const recent=Array.isArray(d.recent_purchases)?d.recent_purchases:[];
  return `
  <article><span class="metric-icon">▱</span><p>Total de pedidos</p><strong>${d.orders}</strong><small>Desde o início da loja</small></article>
- <article><span class="metric-icon green">✓</span><p>Compras pagas</p><strong>${d.paid_orders}</strong><small>Confirmadas pelo pagamento</small></article>
- <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento confirmado</p><strong>${currency(d.revenue)}</strong><small>Atualiza após a confirmação do pagamento</small></article>
+ <article><span class="metric-icon green">✓</span><p>Compras pagas</p><strong>${d.paid_orders}</strong><small>Confirmadas pelo Mercado Pago</small></article>
+ <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento confirmado</p><strong>${currency(d.revenue)}</strong><small>Somente pagamentos aprovados</small></article>
  <article class="orders-card"><p>Andamento dos pedidos</p>${Object.entries(d.statuses||{}).length?Object.entries(d.statuses).map(([status,count])=>`<div class="admin-status"><span>${escapeHTML(statusLabels[status]||status)}</span><meter min="0" max="${Math.max(d.orders,1)}" value="${count}">${count}</meter><b>${count}</b></div>`).join(''):'<div class="empty-metric">Sua próxima venda começa na vitrine.</div>'}</article>
  <article class="revenue-chart-card">
-   <div class="dashboard-card-head"><div><p>Faturamento anual</p><small>Dados reais de pagamentos aprovados</small></div><label>Ano<select id="revenueYear"></select></label></div>
-   <div id="annualRevenueChart" class="annual-revenue-chart" role="img" aria-label="Gráfico anual de faturamento"><p class="loading-state">Carregando gráfico…</p></div>
-   <p id="annualRevenueTotal" class="chart-total"></p>
+   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Pagamentos aprovados e reconciliados com o Mercado Pago</small></div><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div></div>
+   <div id="revenueChart" class="annual-revenue-chart" role="img" aria-label="Gráfico de faturamento"><p class="loading-state">Carregando gráfico…</p></div>
+   <div class="chart-summary"><p id="revenuePeriodTotal"></p><p id="revenuePeriodOrders"></p></div>
  </article>
  <article class="recent-purchases-card">
    <div class="dashboard-card-head"><div><p>Compras recentes</p><small>Últimas compras com pagamento confirmado</small></div><button class="row-action" id="viewAllOrders">Ver todos os pedidos ↗</button></div>
    <div class="recent-purchases">${recent.length?recent.map(order=>`<div class="purchase-row"><div><strong>${escapeHTML(order.codigo||'Pedido')}</strong><span>${escapeHTML(order.nome_cliente||'Cliente')}</span></div><div class="purchase-items">${purchaseItems(order.items)}</div><div><span class="payment-method">${escapeHTML(paymentLabels[order.metodo]||order.metodo||'Pagamento')}</span><small>${escapeHTML(dateTime(order.approved_at))}</small></div><strong class="purchase-total">${currency(order.total)}</strong></div>`).join(''):'<div class="empty-metric">As compras pagas aparecerão aqui automaticamente.</div>'}</div>
  </article>`;
 }
-async function loadRevenueChart(year=selectedRevenueYear){
+async function loadRevenueChart(period=selectedRevenuePeriod){
  try{
-  const data=await call('revenue/annual?year='+encodeURIComponent(year));
-  selectedRevenueYear=data.year;
-  const select=document.getElementById('revenueYear');
-  if(!select)return;
-  select.innerHTML=(data.available_years||[data.year]).map(y=>`<option value="${y}" ${Number(y)===Number(data.year)?'selected':''}>${y}</option>`).join('');
-  select.onchange=()=>loadRevenueChart(Number(select.value));
-  const total=document.getElementById('annualRevenueTotal');if(total)total.textContent='Total no ano: '+currency(data.total);
-  const chart=document.getElementById('annualRevenueChart');
+  selectedRevenuePeriod=period;
+  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.classList.toggle('active',button.dataset.revenuePeriod===period));
+  const chart=document.getElementById('revenueChart');
+  if(chart)chart.innerHTML='<p class="loading-state">Atualizando faturamento…</p>';
+  const data=await call('revenue/chart?period='+encodeURIComponent(period));
+  const total=document.getElementById('revenuePeriodTotal');
+  const count=document.getElementById('revenuePeriodOrders');
+  if(total)total.innerHTML=`<span>${escapeHTML(data.label)}</span><strong>${currency(data.total)}</strong>`;
+  if(count)count.textContent=`${Number(data.orders)||0} compra(s) paga(s) no período`;
+  if(!chart)return;
   if(!window.Plotly){chart.innerHTML='<p class="empty-metric">O gráfico não carregou. Atualize a página para tentar novamente.</p>';return;}
   await Plotly.react(chart,data.figure.data,data.figure.layout,{displayModeBar:false,responsive:true,locale:'pt-BR'});
- }catch(error){const chart=document.getElementById('annualRevenueChart');if(chart)chart.innerHTML=`<p class="empty-metric">${escapeHTML(error.message)}</p>`;}
+ }catch(error){const chart=document.getElementById('revenueChart');if(chart)chart.innerHTML=`<p class="empty-metric">${escapeHTML(error.message)}</p>`;}
 }
 async function loadDashboard(quiet=false){
  if(dashboardBusy)return;dashboardBusy=true;
@@ -81,7 +84,8 @@ async function loadDashboard(quiet=false){
   const d=await call('dashboard');
   document.getElementById('dashboard').innerHTML=dashboardHTML(d);
   document.getElementById('viewAllOrders')?.addEventListener('click',()=>listing('orders'));
-  await loadRevenueChart(selectedRevenueYear);
+  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod)));
+  await loadRevenueChart(selectedRevenuePeriod);
   if(!quiet)message('');
  }catch(error){if(!quiet)message(error.message);}
  finally{dashboardBusy=false;}
@@ -92,6 +96,6 @@ async function loadDashboard(quiet=false){
  document.getElementById('adminNav').onclick=e=>{const b=e.target.closest('[data-resource]');if(b)listing(b.dataset.resource);};
  await loadDashboard();
  await listing('products');
- dashboardTimer=setInterval(()=>loadDashboard(true),15000);
+ dashboardTimer=setInterval(()=>loadDashboard(true),30000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadDashboard(true);});
 }catch(e){message(e.message);document.getElementById('adminContent').innerHTML='<div class="empty-table"><h2>Acesse sua conta de administrador</h2><p>Entre na sua conta para gerenciar a loja.</p><a class="btn-gold" href="/#conta">Ir para o login</a></div>';}})();

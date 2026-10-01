@@ -77,8 +77,11 @@ def test_admin_reconciles_pending_payment_with_provider(monkeypatch):
         settings=SimpleNamespace(mercadopago_access_token=Token())
         client=None
         async def request(self,path,**kwargs):
-            assert path=='/rest/v1/payments'
-            return [{'mercadopago_payment_id':'987654321','status':'pending'}]
+            if path=='/rest/v1/payments':
+                return [{'mercadopago_payment_id':'987654321','status':'pending'}]
+            if path=='/rest/v1/orders':
+                return []
+            raise AssertionError(path)
     applied=[]
     async def fake_request(self,path,**kwargs):
         assert path=='/v1/payments/987654321'
@@ -90,3 +93,38 @@ def test_admin_reconciles_pending_payment_with_provider(monkeypatch):
     updated=asyncio.run(admin_router._reconcile_open_payments(FakeDB(),SimpleNamespace(token='admin')))
     assert updated==1
     assert applied[0]['status']=='approved'
+
+def test_admin_recovers_payment_missing_from_supabase_using_order_reference(monkeypatch):
+    class Token:
+        def get_secret_value(self):return 'mp-token'
+    class FakeDB:
+        settings=SimpleNamespace(mercadopago_access_token=Token())
+        client=None
+        async def request(self,path,**kwargs):
+            if path=='/rest/v1/payments':
+                return []
+            if path=='/rest/v1/orders':
+                return [{'id':ORDER1,'status':'recebido','created_at':'2026-10-01T10:00:00Z','payments':[]}]
+            raise AssertionError(path)
+    applied=[]
+    async def fake_request(self,path,**kwargs):
+        assert path.startswith('/v1/payments/search?external_reference=')
+        return {'results':[{'id':123456789,'status':'approved','external_reference':ORDER1,'date_last_updated':'2026-10-01T10:05:00Z'}]}
+    async def fake_apply(db,payment):
+        applied.append(payment)
+    monkeypatch.setattr(admin_router.MercadoPago,'request',fake_request)
+    monkeypatch.setattr(admin_router,'apply_payment',fake_apply)
+    updated=asyncio.run(admin_router._reconcile_open_payments(FakeDB(),SimpleNamespace(token='admin')))
+    assert updated==1
+    assert applied==[{'id':123456789,'status':'approved','external_reference':ORDER1,'date_last_updated':'2026-10-01T10:05:00Z'}]
+
+def test_revenue_chart_supports_day_week_month_and_year():
+    with client() as c:
+        headers={'Authorization':'Bearer admin-session'}
+        for period in ('day','week','month','year'):
+            response=c.get('/api/admin/revenue/chart?period='+period,headers=headers)
+            assert response.status_code==200
+            data=response.json()
+            assert data['period']==period
+            assert data['figure']['data'][0]['type']=='bar'
+            assert isinstance(data['points'],list) and data['points']
