@@ -3,3 +3,25 @@
 @media(max-width:1100px){.admin-sidebar{width:190px;padding-inline:12px}.admin-workspace{margin-left:190px}.admin-main{padding:25px}.admin-brand{font-size:11px;gap:6px}.dashboard{gap:12px}.dashboard article{padding:18px}.dashboard strong{font-size:27px}.admin-heading h1{font-size:25px}.admin-heading>a{display:none}}
 @media(max-width:700px){.admin-sidebar{position:static;width:auto;padding:18px 20px}.admin-brand{margin:0 0 18px}.admin-sidebar .nav-caption,.back-store{display:none}.admin-nav{flex-direction:row;overflow:auto;gap:8px;padding-bottom:3px}.admin-nav button{white-space:nowrap;padding:9px 12px;font-size:11px}.admin-nav button span{display:none}.admin-workspace{margin:0}.admin-topbar{height:58px;padding:0 20px}.admin-main{padding:26px 16px}.admin-heading h1{font-size:27px}.admin-heading p:last-child{font-size:12px}.dashboard{grid-template-columns:1fr 1fr;gap:10px;margin:24px 0}.dashboard strong{font-size:28px}.dashboard .revenue-card{grid-column:1/-1}.dashboard .orders-card{display:block}.orders-card>p{margin-bottom:8px}.admin-status{margin:8px 0}.panel-heading{padding:20px 16px;gap:10px}.panel-heading h2{font-size:20px}.panel-heading .btn-gold{padding:10px;font-size:10px}.panel-heading .nav-caption{font-size:8px}.table-tools{padding:15px 16px}.table-tools label{width:100%}.table-tools input{width:100%}.table-tools>span{display:none}.admin-table th,.admin-table td{padding:16px}.table-footer{padding:16px}.admin-form{grid-template-columns:1fr;padding:18px;margin:0 12px 20px}.admin-topbar>span{font-size:11px}}
 .admin-nav{scrollbar-width:thin;scrollbar-color:#7e896c #242e25}.dashboard .orders-card{flex-wrap:wrap}.admin-table th{color:#626d59;font-size:11px}.dashboard p{color:#616b59}.revenue-card p{color:#c5d3bf}.table-tools label{color:#606d55;font-size:12px}.table-tools>span,.table-footer{color:#67745b}.dashboard small{color:#6d7861}.revenue-card small{color:#c5d3bf}.admin-table table{font-size:13px}
+
+.revenue-chart-card,.recent-purchases-card{grid-column:1/-1}
+.revenue-chart-card{padding:22px 24px 16px!important;min-height:430px}
+.recent-purchases-card{padding:22px 24px!important}
+.dashboard-card-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px}
+.dashboard-card-head>div>p{font-size:13px;font-weight:700;color:#374334;margin:0 0 4px}
+.dashboard-card-head small{color:#8a9183;font-size:10px}
+.dashboard-card-head label{display:flex;align-items:center;gap:8px;font-size:10px;color:#737d6d}
+.dashboard-card-head select{min-height:34px;padding:6px 28px 6px 10px;background:#fbfcf8}
+.annual-revenue-chart{width:100%;min-height:360px}
+.annual-revenue-chart .loading-state{padding:130px 20px}
+.chart-total{text-align:right;margin:4px 4px 0!important;font-size:11px!important;color:#6e7769!important;font-weight:600}
+.recent-purchases{display:flex;flex-direction:column;border-top:1px solid #ecefe7}
+.purchase-row{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(220px,1.5fr) minmax(150px,.8fr) minmax(100px,.55fr);gap:18px;align-items:center;padding:16px 2px;border-bottom:1px solid #ecefe7}
+.purchase-row>div{display:flex;flex-direction:column;gap:4px}
+.purchase-row strong{color:#31402e;font-size:12px}
+.purchase-row span,.purchase-row small{color:#7b8476;font-size:10px}
+.purchase-items{line-height:1.55}
+.payment-method{display:inline-flex!important;width:max-content;background:#edf3e9;color:#4f6a49!important;padding:4px 8px;border-radius:4px;font-weight:700}
+.purchase-total{text-align:right;font-size:14px!important;color:#2b4b32!important}
+@media(max-width:900px){.purchase-row{grid-template-columns:1fr 1fr}.purchase-total{text-align:left}.dashboard-card-head{align-items:flex-start}.annual-revenue-chart{min-height:320px}}
+@media(max-width:560px){.purchase-row{grid-template-columns:1fr;gap:8px}.dashboard-card-head{flex-direction:column}.dashboard-card-head label{width:100%;justify-content:space-between}.dashboard-card-head select{width:auto}.annual-revenue-chart{min-height:300px}.revenue-chart-card,.recent-purchases-card{padding:18px!important}}
