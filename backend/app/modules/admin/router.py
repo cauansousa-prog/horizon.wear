@@ -8,7 +8,7 @@ from fastapi import APIRouter,Depends,HTTPException,Query
 import plotly.graph_objects as go
 from ...auth import User,current_user
 from ...database import Database,get_database
-from ..payments.gateway import privileged_rpc
+from ..payments.gateway import MercadoPago,apply_payment,privileged_rpc
 
 router=APIRouter(prefix='/admin',tags=['administração'])
 PAID_ORDER_STATUSES={'pagamento_aprovado','preparando','enviado','entregue'}
@@ -79,6 +79,35 @@ def _confirmed_payment(order):
                 'valor':order.get('total') or 0,'aprovado_em':order.get('created_at')}
     return None
 
+async def _reconcile_open_payments(db,user):
+    """Confere pagamentos ainda abertos diretamente no Mercado Pago.
+    Isso recupera confirmações mesmo se uma notificação de webhook atrasar ou falhar."""
+    if not db.settings.mercadopago_access_token.get_secret_value():
+        return 0
+    try:
+        rows=await db.request('/rest/v1/payments',token=user.token,params={
+            'select':'mercadopago_payment_id,status',
+            'status':'in.(pending,in_process,authorized)',
+            'mercadopago_payment_id':'not.is.null',
+            'order':'created_at.desc','limit':'50'
+        })
+    except HTTPException:
+        return 0
+    updated=0
+    gateway=MercadoPago(db.client,db.settings)
+    for row in rows or []:
+        payment_id=str(row.get('mercadopago_payment_id') or '')
+        if not payment_id.isdigit():
+            continue
+        try:
+            payment=await gateway.request('/v1/payments/'+payment_id)
+            await apply_payment(db,payment)
+            if payment.get('status')!=row.get('status'):
+                updated+=1
+        except HTTPException:
+            continue
+    return updated
+
 async def _orders_with_sales(db,user):
     orders=[];offset=0
     select='id,codigo,nome_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade),payments(order_id,metodo,status,valor,aprovado_em)'
@@ -92,6 +121,7 @@ async def _orders_with_sales(db,user):
 
 @router.get('/dashboard')
 async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
+    reconciled=await _reconcile_open_payments(db,user)
     orders=await _orders_with_sales(db,user)
     statuses={}
     for order in orders:statuses[order['status']]=statuses.get(order['status'],0)+1
@@ -109,11 +139,12 @@ async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
             'items':order.get('order_items') or []
         })
     return {'orders':len(orders),'paid_orders':len(purchases),'revenue':str(revenue.quantize(Decimal('.01'))),
-            'statuses':statuses,'recent_purchases':purchases[:8]}
+            'statuses':statuses,'recent_purchases':purchases[:8],'payments_reconciled':reconciled}
 
 @router.get('/revenue/annual')
 async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
                          user:User=Depends(admin),db:Database=Depends(get_database)):
+    await _reconcile_open_payments(db,user)
     orders=await _orders_with_sales(db,user)
     paid=[]
     years=set()
