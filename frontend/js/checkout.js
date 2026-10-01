@@ -7,7 +7,8 @@ async function openCheckout(fromRoute=false){
  try{
  if(!cart.length){el.innerHTML='<div class="checkout-empty"><span aria-hidden="true">↗</span><h2>Sua próxima escolha está na coleção.</h2><p>Adicione uma peça ao carrinho para continuar.</p><button class="btn-gold" onclick="showPage(\'produtos\')">Explorar a coleção</button></div>';return;}
  const [quote,config]=await Promise.all([api('/api/cart/quote',{method:'POST',body:JSON.stringify({items:cart})}),api('/api/checkout/config')]);
- const localDemo=['localhost','127.0.0.1','::1'].includes(location.hostname);\r\n const simulation=localDemo&&!config.available&&config.simulation_available;
+ const localDemo=['localhost','127.0.0.1','::1'].includes(location.hostname);
+ const simulation=localDemo&&!config.available&&config.simulation_available;
  if(simulation){config.available=true;config.methods=['pix','cartao','boleto'];}
  if(!config.available){el.innerHTML='<div class="checkout-empty"><h2>Pagamento real ainda não está disponível.</h2><p>Seu carrinho continua salvo. A loja não vai registrar uma compra como concluída até o Mercado Pago estar configurado e responder normalmente.</p><button class="btn-outline" onclick="showPage(\'produtos\')">Continuar comprando</button></div>';return;}
  let step=0,busy=false;
@@ -68,3 +69,6 @@ async function clearPurchasedCart(items){
  cart=next;if(!session)localStorage.setItem('hw-cart',JSON.stringify(cart));
  await renderCart();sessionStorage.removeItem('hw-checkout-attempt');
 }
+
+// Inicializa a loja somente depois que as funções de checkout existem.
+startStore();
