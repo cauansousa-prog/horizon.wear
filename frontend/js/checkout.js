@@ -68,3 +68,6 @@ async function clearPurchasedCart(items){
  cart=next;if(!session)localStorage.setItem('hw-cart',JSON.stringify(cart));
  await renderCart();sessionStorage.removeItem('hw-checkout-attempt');
 }
+
+// Inicializa a loja somente depois que as funções de checkout existem.
+startStore();
