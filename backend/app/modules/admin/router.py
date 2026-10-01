@@ -1,13 +1,20 @@
+import json
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel,Field,ConfigDict,model_validator
 from typing import Literal
 from fastapi import APIRouter,Depends,HTTPException,Query
+import plotly.graph_objects as go
 from ...auth import User,current_user
 from ...database import Database,get_database
 from ..payments.gateway import privileged_rpc
 
 router=APIRouter(prefix='/admin',tags=['administração'])
+PAID_ORDER_STATUSES={'pagamento_aprovado','preparando','enviado','entregue'}
+MONTHS_PT=('Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez')
+FORTALEZA_TZ=timezone(timedelta(hours=-3))
+
 async def admin(user:User=Depends(current_user),db:Database=Depends(get_database)):
     rows=await db.request('/rest/v1/profiles',token=user.token,params={'select':'role','id':'eq.'+user.id,'limit':'1'})
     if not rows or rows[0]['role']!='admin':raise HTTPException(403,'Acesso exclusivo da administração.')
@@ -53,23 +60,107 @@ class Fulfillment(BaseModel):
     status:Literal['preparando','enviado','entregue']
     rastreio:str=Field(default='',max_length=120)
 
-@router.get('/dashboard')
-async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
+def _as_datetime(value):
+    if not value:return None
+    try:
+        parsed=datetime.fromisoformat(str(value).replace('Z','+00:00'))
+        if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(FORTALEZA_TZ)
+    except (TypeError,ValueError):
+        return None
+
+def _confirmed_payment(order):
+    approved=[p for p in (order.get('payments') or []) if p.get('status')=='approved']
+    if approved:
+        approved.sort(key=lambda p:p.get('aprovado_em') or '',reverse=True)
+        return approved[0]
+    if order.get('status') in PAID_ORDER_STATUSES and not order.get('review_required'):
+        return {'order_id':order.get('id'),'metodo':'confirmado','status':'approved',
+                'valor':order.get('total') or 0,'aprovado_em':order.get('created_at')}
+    return None
+
+async def _orders_with_sales(db,user):
     orders=[];offset=0
+    select='id,codigo,nome_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade),payments(order_id,metodo,status,valor,aprovado_em)'
     while True:
-        page=await db.request('/rest/v1/orders',token=user.token,params={'select':'id,status,total,created_at','order':'id','offset':str(offset),'limit':'1000'})
+        page=await db.request('/rest/v1/orders',token=user.token,params={
+            'select':select,'order':'created_at.desc','offset':str(offset),'limit':'1000'})
         orders.extend(page)
         if len(page)<1000:break
         offset+=1000
+    return orders
+
+@router.get('/dashboard')
+async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
+    orders=await _orders_with_sales(db,user)
     statuses={}
-    for o in orders:statuses[o['status']]=statuses.get(o['status'],0)+1
-    paid=[o for o in orders if o['status'] in ('pagamento_aprovado','preparando','enviado','entregue')]
-    return {'orders':len(orders),'paid_orders':len(paid),'revenue':str(sum((Decimal(str(o['total'])) for o in paid),Decimal(0))),'statuses':statuses}
+    for order in orders:statuses[order['status']]=statuses.get(order['status'],0)+1
+    purchases=[]
+    revenue=Decimal('0')
+    for order in orders:
+        payment=_confirmed_payment(order)
+        if not payment:continue
+        amount=Decimal(str(payment.get('valor') if payment.get('valor') is not None else order.get('total') or 0))
+        revenue+=amount
+        purchases.append({
+            'id':order['id'],'codigo':order.get('codigo'),'nome_cliente':order.get('nome_cliente') or 'Cliente',
+            'status':order.get('status'),'total':str(amount),'metodo':payment.get('metodo') or '—',
+            'payment_status':payment.get('status'),'approved_at':payment.get('aprovado_em') or order.get('created_at'),
+            'items':order.get('order_items') or []
+        })
+    return {'orders':len(orders),'paid_orders':len(purchases),'revenue':str(revenue.quantize(Decimal('.01'))),
+            'statuses':statuses,'recent_purchases':purchases[:8]}
+
+@router.get('/revenue/annual')
+async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
+                         user:User=Depends(admin),db:Database=Depends(get_database)):
+    orders=await _orders_with_sales(db,user)
+    paid=[]
+    years=set()
+    for order in orders:
+        payment=_confirmed_payment(order)
+        if not payment:continue
+        paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
+        if not paid_at:continue
+        years.add(paid_at.year)
+        paid.append((order,payment,paid_at))
+    current_year=datetime.now(FORTALEZA_TZ).year
+    selected=year or current_year
+    years.add(selected)
+    totals=[Decimal('0') for _ in range(12)]
+    counts=[0 for _ in range(12)]
+    for order,payment,paid_at in paid:
+        if paid_at.year!=selected:continue
+        index=paid_at.month-1
+        totals[index]+=Decimal(str(payment.get('valor') if payment.get('valor') is not None else order.get('total') or 0))
+        counts[index]+=1
+    total=sum(totals,Decimal('0')).quantize(Decimal('.01'))
+    values=[float(v.quantize(Decimal('.01'))) for v in totals]
+    fig=go.Figure(go.Bar(
+        x=list(MONTHS_PT),y=values,customdata=counts,name='Faturamento',
+        marker={'color':'#344e39','line':{'color':'#c9a55c','width':1}},
+        hovertemplate='<b>%{x}</b><br>Faturamento: R$ %{y:,.2f}<br>Compras pagas: %{customdata}<extra></extra>'
+    ))
+    fig.update_layout(
+        title={'text':f'Faturamento mensal de {selected}','x':0,'xanchor':'left'},
+        paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',
+        font={'family':'Inter, Arial, sans-serif','color':'#394236','size':12},
+        margin={'l':58,'r':24,'t':58,'b':48},height=360,showlegend=False,
+        bargap=.28,hoverlabel={'bgcolor':'#253d2b','font':{'color':'#ffffff'}},
+        xaxis={'fixedrange':True,'showgrid':False,'linecolor':'#dfe3d8','tickfont':{'color':'#6f786b'}},
+        yaxis={'fixedrange':True,'rangemode':'tozero','gridcolor':'#e6e9e1','zeroline':False,
+               'tickprefix':'R$ ','tickformat':',.0f','title':'Faturamento'}
+    )
+    figure=json.loads(fig.to_json())
+    months=[{'month':MONTHS_PT[i],'revenue':f'{totals[i]:.2f}','orders':counts[i]} for i in range(12)]
+    return {'year':selected,'available_years':sorted(years,reverse=True),'total':str(total),
+            'months':months,'figure':figure}
 
 @router.get('/{resource}')
 async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
     if resource not in {'products','categories','product_sizes','product_images','orders','profiles','payments','coupons','reviews'}:raise HTTPException(404)
-    return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':'id','limit':'100','offset':str(offset)})
+    order='created_at.desc' if resource in {'orders','payments','reviews'} else 'id'
+    return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':order,'limit':'100','offset':str(offset)})
 
 @router.post('/products',status_code=201)
 async def create_product(body:Product,user:User=Depends(admin),db:Database=Depends(get_database)):
