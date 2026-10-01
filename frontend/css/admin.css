@@ -25,3 +25,15 @@
 .purchase-total{text-align:right;font-size:14px!important;color:#2b4b32!important}
 @media(max-width:900px){.purchase-row{grid-template-columns:1fr 1fr}.purchase-total{text-align:left}.dashboard-card-head{align-items:flex-start}.annual-revenue-chart{min-height:320px}}
 @media(max-width:560px){.purchase-row{grid-template-columns:1fr;gap:8px}.dashboard-card-head{flex-direction:column}.dashboard-card-head label{width:100%;justify-content:space-between}.dashboard-card-head select{width:auto}.annual-revenue-chart{min-height:300px}.revenue-chart-card,.recent-purchases-card{padding:18px!important}}
+.revenue-head{align-items:flex-start}
+.revenue-periods{display:flex;gap:6px;padding:4px;background:#f1f3ed;border:1px solid #e1e5dc;border-radius:7px;flex-wrap:wrap}
+.revenue-periods button{border:0;background:transparent;color:#687363;border-radius:5px;padding:8px 13px;font-size:10px;font-weight:700;cursor:pointer}
+.revenue-periods button:hover{background:#fff;color:#344e39}
+.revenue-periods button.active{background:#344e39;color:#fff;box-shadow:0 1px 4px #243d291f}
+.chart-summary{display:flex;justify-content:space-between;align-items:end;gap:16px;padding:0 6px 8px;border-top:1px solid #edf0e8}
+.chart-summary p{margin:10px 0 0!important}
+.chart-summary #revenuePeriodTotal{display:flex;align-items:baseline;gap:10px}
+.chart-summary #revenuePeriodTotal span{font-size:10px;color:#808879;text-transform:uppercase;letter-spacing:.08em}
+.chart-summary #revenuePeriodTotal strong{display:inline;font-size:18px;margin:0;color:#2d4932}
+.chart-summary #revenuePeriodOrders{font-size:10px;color:#7e8778}
+@media(max-width:700px){.revenue-head{flex-direction:column}.revenue-periods{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}.revenue-periods button{padding:9px 5px}.chart-summary{align-items:flex-start;flex-direction:column;gap:0}}
