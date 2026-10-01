@@ -74,7 +74,14 @@ async function renderProduct(slug){
  document.getElementById('addProduct').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button[type=submit],button.btn-gold');if(button.disabled)return;button.disabled=true;button.textContent='Adicionando…';try{const f=new FormData(e.target),id=f.get('size'),qty=Number(f.get('quantity')),old=cart.find(i=>i.size_id===id)?.quantity||0;await changeItem(id,old+qty);}finally{button.disabled=false;button.textContent='Adicionar ao carrinho';}};
  }catch(e){el.textContent=e.message;}
 }
-function toggleCart(open){const panel=document.getElementById('cartSidebar');panel.classList.toggle('open',open);panel.inert=!open;document.getElementById('overlay').classList.toggle('open',open);document.body.classList.toggle('cart-open',open);if(open){toggleNavigation(false);renderCart();panel.querySelector('button').focus();}}
+function toggleCart(open){
+ const panel=document.getElementById('cartSidebar'),overlay=document.getElementById('overlay');if(!panel||!overlay)return;
+ const shouldOpen=Boolean(open);
+ if(shouldOpen)panel.inert=false;
+ panel.classList.toggle('open',shouldOpen);overlay.classList.toggle('open',shouldOpen);document.body.classList.toggle('cart-open',shouldOpen);
+ if(shouldOpen){toggleNavigation(false);renderCart().catch(e=>showToast(e.message));requestAnimationFrame(()=>panel.querySelector('.cart-header button')?.focus());}
+ else{if(panel.contains(document.activeElement))document.querySelector('[aria-label="Carrinho"]')?.focus();panel.inert=true;}
+}
 function changeItem(id,quantity){mutation=mutation.catch(()=>{}).then(async()=>{
  try{const next=cart.filter(i=>i.size_id!==id);if(quantity>0)next.push({size_id:id,quantity});
  if(quantity>0)await api('/api/cart/quote',{method:'POST',body:JSON.stringify({items:next})});
@@ -89,7 +96,9 @@ async function renderCart(){
  }catch(e){el.innerHTML=`<p>${esc(e.message)}</p><p>Remova o item indisponível para continuar.</p>`+cart.map(i=>`<button class="btn-outline" data-size="${esc(i.size_id)}" data-qty="0">Remover item (${i.quantity} un.)</button>`).join('');document.getElementById('cartFooter').style.display='none';}
 }
 async function loadCart(){
- cart=session?await api('/api/cart'):storageCart();await renderCart();
+ if(session){try{cart=await api('/api/cart');}catch(e){if(session)throw e;cart=storageCart();}}
+ else cart=storageCart();
+ await renderCart();
 }
 async function mergeCart(){
  const guest=storageCart();const remote=await api('/api/cart');
@@ -106,7 +115,7 @@ async function renderAccount(){
  el.textContent='Carregando sua conta…';try{const [profile,addresses,orders]=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders')]);
  el.innerHTML=`<div class="account-heading"><h2>Olá, ${esc(profile.full_name)}</h2><button id="logout" class="text-button">Sair da conta</button></div><div class="account-grid"><form id="profileForm"><h3>Seus dados</h3><label>Nome<input name="nome_completo" value="${esc(profile.full_name)}" minlength="2" maxlength="120" autocomplete="name" required></label><label>Telefone<input name="telefone" value="${esc(profile.phone)}" type="tel" maxlength="25" autocomplete="tel"></label><button class="btn-outline">Salvar dados</button></form><section><h3>Seus endereços</h3>${addresses.length?addresses.map(a=>`<article class="address-row"><strong>${esc(a.destinatario)}</strong><p>${esc(a.rua)}, ${esc(a.numero)} · ${esc(a.cidade)}/${esc(a.estado)}</p><button class="text-button" data-delete-address="${esc(a.id)}">Remover</button></article>`).join(''):'<p>Adicione um endereço para facilitar suas próximas compras.</p>'}<details><summary>Adicionar endereço</summary><form id="addressForm">${[['Destinatário','destinatario'],['CEP (somente números)','cep'],['Rua','rua'],['Número','numero'],['Bairro','bairro'],['Cidade','cidade'],['Estado (UF)','estado'],['Telefone','telefone']].map(([a,b])=>input(a,b)).join('')}${input('Complemento','complemento','text',false)}<button class="btn-gold">Salvar endereço</button></form></details></section></div><section class="orders-list"><h2>Seus pedidos</h2>${orders.length?orders.map(o=>`<article class="order-row"><strong>${esc(o.codigo)}</strong><p>${esc(o.review_required?'Pagamento em revisão de estoque':(({recebido:'Pedido recebido',pagamento_aprovado:'Pagamento aprovado',preparando:'Preparando pedido',enviado:'Pedido enviado',entregue:'Pedido entregue',cancelado:'Pedido cancelado'})[o.status]||o.status))} · ${money(o.total)}</p><p>${new Date(o.created_at).toLocaleDateString('pt-BR')}</p>${o.order_items.map(i=>`<p>${esc(i.nome_produto)} · ${esc(i.tamanho)} · ${i.quantidade} un.</p>`).join('')}${o.rastreio?`<p>Rastreio: ${esc(o.rastreio)}</p>`:''}</article>`).join(''):'<p>Seus pedidos aparecerão aqui depois da primeira compra.</p>'}</section>${profile.role==='admin'?'<a class="btn-outline" href="/admin.html">Abrir administração</a>':''}`;
  el.insertAdjacentHTML('beforeend',demoOrdersHTML());
- document.getElementById('logout').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'});}catch{}saveSession(null);cart=storageCart();renderCart();renderAccount();};
+ document.getElementById('logout').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'});}catch{}localStorage.setItem('hw-cart',JSON.stringify(cart));saveSession(null);cart=storageCart();renderCart();renderAccount();};
  document.getElementById('profileForm').onsubmit=async e=>{e.preventDefault();const form=e.target,button=form.querySelector('button');form.querySelectorAll('input').forEach(i=>i.value=i.value.trim());if(!form.reportValidity())return;button.disabled=true;button.textContent='Salvando…';try{await api('/api/users/me',{method:'PATCH',body:JSON.stringify(Object.fromEntries(new FormData(form)))});await renderAccount();const saved=document.getElementById('profileForm');if(saved)saved.insertAdjacentHTML('beforeend','<p role="status" class="quiet">Nome e telefone salvos.</p>');showToast('Nome e telefone salvos.');}catch(err){showToast(err.message);}finally{button.disabled=false;button.textContent='Salvar dados';}};
  document.getElementById('addressForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/addresses',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});renderAccount();}catch(err){showToast(err.message);}};
  }catch(e){el.textContent=e.message;}
@@ -130,6 +139,7 @@ function toggleNavigation(open){
 document.addEventListener('click',e=>{if(!e.target.closest('header.main'))toggleNavigation(false);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.body.classList.contains('cart-open')){toggleCart(false);document.querySelector('[aria-label="Carrinho"]').focus();}else if(document.body.classList.contains('nav-open')){toggleNavigation(false);document.querySelector('.nav-toggle').focus();}}});
 window.addEventListener('hashchange',()=>{const page=location.hash.slice(1);if(document.getElementById('page-'+page))showPage(page);});
+window.addEventListener('storage',e=>{if(e.key==='hw-cart'&&!session){cart=storageCart();renderCart();}});
 function authLayout(signup){return `<div class="auth-layout"><aside class="auth-visual"><div><p class="eyebrow">HORIZON WEAR</p><h2>Seu estilo.<br>Sua essência.</h2><p>Peças que acompanham o seu jeito de viver.</p></div></aside><div class="auth-panel"><a class="auth-back" href="/#home" onclick="showPage('home');return false;">← Voltar à loja</a><p class="eyebrow">${signup?'FAÇA PARTE':'BEM-VINDO DE VOLTA'}</p><h1>${signup?'Crie sua conta.':'Seu próximo horizonte começa aqui.'}</h1><p class="auth-intro">${signup?'Salve seus dados e acompanhe cada pedido em um só lugar.':'Entre para acompanhar seus pedidos e suas peças favoritas.'}</p><form id="${signup?'signupForm':'loginForm'}">${signup?input('Nome completo','nome_completo'):''}${input('E-mail','email','email')}${input('Senha','password','password')}${signup?'<p class="quiet">Use pelo menos 8 caracteres.</p>':'<button type="button" class="text-button" id="recoverPassword">Esqueci minha senha</button>'}<button type="submit" class="btn-gold auth-submit">${signup?'Criar minha conta':'Entrar'} <span aria-hidden="true">→</span></button></form><p class="auth-switch">${signup?'Já tem uma conta?':'Ainda não tem uma conta?'} <a href="#${signup?'conta':'cadastro'}" onclick="showPage('${signup?'conta':'cadastro'}');return false;">${signup?'Entrar':'Criar conta'}</a></p></div></div>`;}
 function renderSignup(){
  if(session){showPage('conta');return;}
