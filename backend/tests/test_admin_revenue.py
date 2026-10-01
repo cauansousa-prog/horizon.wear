@@ -1,7 +1,10 @@
+import asyncio
+from types import SimpleNamespace
 import httpx
 from fastapi.testclient import TestClient
 from backend.app.config import Settings
 from backend.app.main import create_app
+from backend.app.modules.admin import router as admin_router
 
 UID='aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
 ORDER1='11111111-1111-4111-8111-111111111111'
@@ -65,3 +68,25 @@ def test_annual_revenue_plotly_groups_sales_by_month():
         assert data['months'][2]=={'month':'Mar','revenue':'0.00','orders':0}
         assert data['figure']['data'][0]['type']=='bar'
         assert data['figure']['data'][0]['y'][:3]==[100.0,200.0,0.0]
+
+
+def test_admin_reconciles_pending_payment_with_provider(monkeypatch):
+    class Token:
+        def get_secret_value(self):return 'mp-token'
+    class FakeDB:
+        settings=SimpleNamespace(mercadopago_access_token=Token())
+        client=None
+        async def request(self,path,**kwargs):
+            assert path=='/rest/v1/payments'
+            return [{'mercadopago_payment_id':'987654321','status':'pending'}]
+    applied=[]
+    async def fake_request(self,path,**kwargs):
+        assert path=='/v1/payments/987654321'
+        return {'id':987654321,'status':'approved'}
+    async def fake_apply(db,payment):
+        applied.append(payment)
+    monkeypatch.setattr(admin_router.MercadoPago,'request',fake_request)
+    monkeypatch.setattr(admin_router,'apply_payment',fake_apply)
+    updated=asyncio.run(admin_router._reconcile_open_payments(FakeDB(),SimpleNamespace(token='admin')))
+    assert updated==1
+    assert applied[0]['status']=='approved'
