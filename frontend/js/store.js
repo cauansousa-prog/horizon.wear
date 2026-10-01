@@ -147,7 +147,7 @@ function renderSignup(){
  const form=document.getElementById('signupForm');form.elements.password.autocomplete='new-password';form.elements.nome_completo.autocomplete='name';
  form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;try{const data=await api('/api/auth/signup',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(form)))});if(data.access_token){saveSession(data);try{await mergeCart();}catch{}showPage('conta');showToast('Conta criada. Você já entrou.');}else{showToast('Não foi possível iniciar sua sessão. Tente entrar com seus dados.');}}catch(err){showToast(err.message);}finally{button.disabled=false;}};
 }
-startStore();
+
 
 function demoOrdersHTML(){
  let orders;try{orders=JSON.parse(localStorage.getItem('hw-demo-orders')||'[]');}catch{return '';}
