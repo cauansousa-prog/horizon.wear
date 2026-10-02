@@ -37,7 +37,7 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-order
 const paymentLabels={pix:'Pix',cartao:'Cartão',boleto:'Boleto',confirmado:'Confirmado'};
 const dateTime=value=>value?new Date(value).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
 const revenuePeriodLabels={day:'Dia',week:'Semana',month:'Mês',year:'Ano'};
-let selectedRevenuePeriod='month',selectedRevenueMode='all',dashboardBusy=false,dashboardTimer=null;
+let selectedRevenuePeriod='month',dashboardBusy=false,dashboardTimer=null;
 
 function purchaseItems(items){
  const safe=Array.isArray(items)?items:[];
@@ -76,13 +76,13 @@ async function downloadRevenue(format){
  }finally{if(button)button.disabled=false;}
 }
 
-async function loadRevenueChart(period=selectedRevenuePeriod,mode='all'){
+async function loadRevenueChart(period=selectedRevenuePeriod){
  try{
-  selectedRevenuePeriod=period;selectedRevenueMode='all';
+  selectedRevenuePeriod=period;
   document.querySelectorAll('[data-revenue-period]').forEach(button=>button.classList.toggle('active',button.dataset.revenuePeriod===period));
   const chart=document.getElementById('revenueChart');
   if(chart)chart.innerHTML='<p class="loading-state">Atualizando faturamento…</p>';
-  const data=await call('revenue/chart?period='+encodeURIComponent(period)+'&mode='+encodeURIComponent(mode));
+  const data=await call('revenue/chart?period='+encodeURIComponent(period));
   const total=document.getElementById('revenuePeriodTotal');
   const count=document.getElementById('revenuePeriodOrders');
   if(total)total.innerHTML=`<span>Faturamento · ${escapeHTML(data.label)}</span><strong>${currency(data.total)}</strong>`;
@@ -98,9 +98,9 @@ async function loadDashboard(quiet=false){
   const d=await call('dashboard');
   document.getElementById('dashboard').innerHTML=dashboardHTML(d);
   document.getElementById('viewAllOrders')?.addEventListener('click',()=>listing('orders'));
-  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod,selectedRevenueMode)));
+  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod)));
   document.querySelectorAll('[data-export-revenue]').forEach(button=>button.addEventListener('click',()=>downloadRevenue(button.dataset.exportRevenue).catch(error=>message(error.message))));
-  await loadRevenueChart(selectedRevenuePeriod,'all');
+  await loadRevenueChart(selectedRevenuePeriod);
   if(!quiet)message('');
  }catch(error){if(!quiet)message(error.message);}
  finally{dashboardBusy=false;}
