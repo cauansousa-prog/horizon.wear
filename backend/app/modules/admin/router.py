@@ -29,12 +29,22 @@ RESOURCE_PERMISSIONS={
 }
 
 async def admin(user:User=Depends(current_user),db:Database=Depends(get_database)):
-    rows=await db.admin_request('/rest/v1/profiles',params={'select':'role','id':'eq.'+user.id,'limit':'1'})
-    if not rows or rows[0].get('role')!='admin':raise HTTPException(403,'Acesso exclusivo da administração.')
+    # Mantém compatibilidade com as contas que já eram administradoras antes
+    # da camada de permissões. O acesso ao painel não deve depender da service role.
+    rows=await db.request('/rest/v1/profiles',token=user.token,
+                          params={'select':'role','id':'eq.'+user.id,'limit':'1'})
+    if not rows or rows[0].get('role')!='admin':
+        raise HTTPException(403,'Acesso exclusivo da administração.')
     return user
 
 async def _permissions(user:User,db:Database):
-    auth_user=await db.admin_request('/auth/v1/admin/users/'+user.id)
+    # Administradores existentes recebem acesso total quando ainda não possuem
+    # admin_permissions ou quando a consulta ao Auth Admin estiver indisponível.
+    # Isso evita bloquear a conta principal por falha de configuração.
+    try:
+        auth_user=await db.admin_request('/auth/v1/admin/users/'+user.id)
+    except HTTPException:
+        return set(ADMIN_PERMISSIONS),True
     app_meta=(auth_user or {}).get('app_metadata') or {}
     configured=app_meta.get('admin_permissions')
     if configured is None:

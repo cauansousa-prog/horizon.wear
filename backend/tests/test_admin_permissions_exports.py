@@ -59,3 +59,25 @@ def test_xlsx_writer_creates_valid_openxml_package():
         assert 'xl/worksheets/sheet1.xml' in names
         sheet=book.read('xl/worksheets/sheet1.xml').decode('utf-8')
         assert 'Produto' in sheet and '10.00' in sheet
+
+
+def test_existing_admin_keeps_full_access_if_auth_admin_lookup_fails():
+    def handle(request):
+        path=request.url.path
+        if path=='/auth/v1/user':
+            return httpx.Response(200,json={'id':USER})
+        if path=='/rest/v1/profiles':
+            return httpx.Response(200,json=[{'role':'admin'}])
+        if path=='/auth/v1/admin/users/'+USER:
+            return httpx.Response(503,json={'message':'temporarily unavailable'})
+        if path=='/rest/v1/products':
+            return httpx.Response(200,json=[])
+        return httpx.Response(404,json={'message':'not found'})
+    cfg=Settings(_env_file=None,supabase_url='https://example.supabase.co',
+                 supabase_anon_key='public-key',supabase_service_role_key='server-only-key')
+    with TestClient(create_app(cfg,httpx.MockTransport(handle))) as client:
+        headers={'Authorization':'Bearer session'}
+        me=client.get('/api/admin/me',headers=headers)
+        assert me.status_code==200
+        assert me.json()['owner'] is True
+        assert 'dashboard' in me.json()['permissions']
