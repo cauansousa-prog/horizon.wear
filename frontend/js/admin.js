@@ -37,7 +37,7 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-order
 const paymentLabels={pix:'Pix',cartao:'Cartão',boleto:'Boleto',confirmado:'Confirmado'};
 const dateTime=value=>value?new Date(value).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
 const revenuePeriodLabels={day:'Dia',week:'Semana',month:'Mês',year:'Ano'};
-let selectedRevenuePeriod='month',dashboardBusy=false,dashboardTimer=null;
+let selectedRevenuePeriod='month',selectedRevenueMode='demo',dashboardBusy=false,dashboardTimer=null;
 
 function purchaseItems(items){
  const safe=Array.isArray(items)?items:[];
@@ -49,29 +49,31 @@ function dashboardHTML(d){
  const recent=Array.isArray(d.recent_purchases)?d.recent_purchases:[];
  return `
  <article><span class="metric-icon">▱</span><p>Total de pedidos</p><strong>${d.orders}</strong><small>Desde o início da loja</small></article>
- <article><span class="metric-icon green">✓</span><p>Compras pagas</p><strong>${d.paid_orders}</strong><small>Confirmadas pelo Mercado Pago</small></article>
- <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento confirmado</p><strong>${currency(d.revenue)}</strong><small>Somente pagamentos aprovados</small></article>
+ <article><span class="metric-icon green">✓</span><p>Compras reais pagas</p><strong>${d.paid_orders}</strong><small>Dinheiro realmente confirmado</small></article>
+ <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento real</p><strong>${currency(d.revenue)}</strong><small>Não inclui simulações</small></article>
+ <article class="demo-revenue-card"><span class="metric-icon">◇</span><p>Faturamento de teste</p><strong>${currency(d.demo_revenue||0)}</strong><small>${Number(d.demo_paid_orders)||0} compra(s) simulada(s)</small></article>
  <article class="orders-card"><p>Andamento dos pedidos</p>${Object.entries(d.statuses||{}).length?Object.entries(d.statuses).map(([status,count])=>`<div class="admin-status"><span>${escapeHTML(statusLabels[status]||status)}</span><meter min="0" max="${Math.max(d.orders,1)}" value="${count}">${count}</meter><b>${count}</b></div>`).join(''):'<div class="empty-metric">Sua próxima venda começa na vitrine.</div>'}</article>
  <article class="revenue-chart-card">
-   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Pagamentos aprovados e reconciliados com o Mercado Pago</small></div><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div></div>
+   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Alterne entre valores reais e simulações</small></div><div class="revenue-controls"><div class="revenue-modes" role="group" aria-label="Tipo de faturamento"><button type="button" data-revenue-mode="real" class="${selectedRevenueMode==='real'?'active':''}">Real</button><button type="button" data-revenue-mode="demo" class="${selectedRevenueMode==='demo'?'active':''}">Teste</button></div><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div></div></div>
    <div id="revenueChart" class="annual-revenue-chart" role="img" aria-label="Gráfico de faturamento"><p class="loading-state">Carregando gráfico…</p></div>
    <div class="chart-summary"><p id="revenuePeriodTotal"></p><p id="revenuePeriodOrders"></p></div>
  </article>
  <article class="recent-purchases-card">
    <div class="dashboard-card-head"><div><p>Compras recentes</p><small>Últimas compras com pagamento confirmado</small></div><button class="row-action" id="viewAllOrders">Ver todos os pedidos ↗</button></div>
-   <div class="recent-purchases">${recent.length?recent.map(order=>`<div class="purchase-row"><div><strong>${escapeHTML(order.codigo||'Pedido')}</strong><span>${escapeHTML(order.nome_cliente||'Cliente')}</span></div><div class="purchase-items">${purchaseItems(order.items)}</div><div><span class="payment-method">${escapeHTML(paymentLabels[order.metodo]||order.metodo||'Pagamento')}</span><small>${escapeHTML(dateTime(order.approved_at))}</small></div><strong class="purchase-total">${currency(order.total)}</strong></div>`).join(''):'<div class="empty-metric">As compras pagas aparecerão aqui automaticamente.</div>'}</div>
+   <div class="recent-purchases">${recent.length?recent.map(order=>`<div class="purchase-row"><div><strong>${escapeHTML(order.codigo||'Pedido')}</strong><span>${escapeHTML(order.nome_cliente||'Cliente')}</span></div><div class="purchase-items">${purchaseItems(order.items)}</div><div><span class="payment-method">${escapeHTML(paymentLabels[order.metodo]||order.metodo||'Pagamento')}${order.demo?' · TESTE':''}</span><small>${escapeHTML(dateTime(order.approved_at))}</small></div><strong class="purchase-total">${currency(order.total)}</strong></div>`).join(''):'<div class="empty-metric">As compras pagas aparecerão aqui automaticamente.</div>'}</div>
  </article>`;
 }
-async function loadRevenueChart(period=selectedRevenuePeriod){
+async function loadRevenueChart(period=selectedRevenuePeriod,mode=selectedRevenueMode){
  try{
-  selectedRevenuePeriod=period;
+  selectedRevenuePeriod=period;selectedRevenueMode=mode;
   document.querySelectorAll('[data-revenue-period]').forEach(button=>button.classList.toggle('active',button.dataset.revenuePeriod===period));
+  document.querySelectorAll('[data-revenue-mode]').forEach(button=>button.classList.toggle('active',button.dataset.revenueMode===mode));
   const chart=document.getElementById('revenueChart');
   if(chart)chart.innerHTML='<p class="loading-state">Atualizando faturamento…</p>';
-  const data=await call('revenue/chart?period='+encodeURIComponent(period));
+  const data=await call('revenue/chart?period='+encodeURIComponent(period)+'&mode='+encodeURIComponent(mode));
   const total=document.getElementById('revenuePeriodTotal');
   const count=document.getElementById('revenuePeriodOrders');
-  if(total)total.innerHTML=`<span>${escapeHTML(data.label)}</span><strong>${currency(data.total)}</strong>`;
+  if(total)total.innerHTML=`<span>${mode==='demo'?'Faturamento de teste':'Faturamento real'} · ${escapeHTML(data.label)}</span><strong>${currency(data.total)}</strong>`;
   if(count)count.textContent=`${Number(data.orders)||0} compra(s) paga(s) no período`;
   if(!chart)return;
   if(!window.Plotly){chart.innerHTML='<p class="empty-metric">O gráfico não carregou. Atualize a página para tentar novamente.</p>';return;}
@@ -84,8 +86,9 @@ async function loadDashboard(quiet=false){
   const d=await call('dashboard');
   document.getElementById('dashboard').innerHTML=dashboardHTML(d);
   document.getElementById('viewAllOrders')?.addEventListener('click',()=>listing('orders'));
-  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod)));
-  await loadRevenueChart(selectedRevenuePeriod);
+  document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod,selectedRevenueMode)));
+  document.querySelectorAll('[data-revenue-mode]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(selectedRevenuePeriod,button.dataset.revenueMode)));
+  await loadRevenueChart(selectedRevenuePeriod,selectedRevenueMode);
   if(!quiet)message('');
  }catch(error){if(!quiet)message(error.message);}
  finally{dashboardBusy=false;}
