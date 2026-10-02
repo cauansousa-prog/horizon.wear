@@ -273,7 +273,7 @@ async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
     years=set()
     for order in orders:
         payment=_confirmed_payment(order)
-        if not payment:continue
+        if not payment or _demo_payment(payment):continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:continue
         years.add(paid_at.year)
