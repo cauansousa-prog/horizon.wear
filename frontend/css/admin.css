@@ -38,14 +38,11 @@
 .chart-summary #revenuePeriodOrders{font-size:10px;color:#7e8778}
 @media(max-width:700px){.revenue-head{flex-direction:column}.revenue-periods{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}.revenue-periods button{padding:9px 5px}.chart-summary{align-items:flex-start;flex-direction:column;gap:0}}
 
-.dashboard .demo-revenue-card{background:#fff8e7;border-color:#ead39c}
-.demo-revenue-card .metric-icon{background:#f2e2b8;color:#8f6718}
-.demo-revenue-card strong{color:#7b5817}
 .revenue-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .revenue-modes{display:flex;gap:4px;padding:4px;background:#fff6de;border:1px solid #ead9aa;border-radius:7px}
 .revenue-modes button{border:0;background:transparent;color:#795f28;border-radius:5px;padding:8px 13px;font-size:10px;font-weight:700}
 .revenue-modes button.active{background:#b4872d;color:#fff}
-@media(max-width:700px){.dashboard .demo-revenue-card{grid-column:1/-1}.revenue-controls{width:100%;justify-content:flex-start}.revenue-modes{width:100%}.revenue-modes button{flex:1}}
+@media(max-width:700px){.revenue-controls{width:100%;justify-content:flex-start}.revenue-modes{width:100%}.revenue-modes button{flex:1}}
 
 .revenue-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .chart-export-actions{display:flex;gap:6px}
