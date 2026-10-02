@@ -83,7 +83,7 @@ async def demo_paid(body:Simulation,idempotency_key:UUID=Header(),
         'frete':str(shipping),
         'desconto':'0.00',
         'total':str(total),
-        'status':'pagamento_aprovado',
+        'status':'recebido',
         'review_required':False
     }
     rows=await db.admin_request('/rest/v1/orders',method='POST',json=order_payload)
