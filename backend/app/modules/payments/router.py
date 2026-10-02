@@ -1,5 +1,6 @@
 import hashlib,json
-from uuid import UUID
+from datetime import datetime,timezone
+from uuid import UUID,uuid4
 from decimal import Decimal
 from typing import Literal
 from pydantic import BaseModel,Field,ConfigDict,model_validator
@@ -57,6 +58,71 @@ async def simulate(body:Simulation,idempotency_key:UUID=Header(),db:Database=Dep
             'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
                       'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]}
 
+
+@router.post('/demo-paid')
+async def demo_paid(body:Simulation,idempotency_key:UUID=Header(),
+                    credentials:HTTPAuthorizationCredentials|None=Depends(bearer),
+                    db:Database=Depends(get_database)):
+    """Registra uma venda de demonstração aprovada sem cobrar dinheiro nem baixar estoque."""
+    if not db.settings.supabase_service_role_key.get_secret_value():
+        raise HTTPException(503,'Modo de demonstração indisponível no servidor.')
+    quote=await quote_items(body.items,db)
+    subtotal=Decimal(quote['subtotal']).quantize(Decimal('.01'))
+    shipping=Decimal(str(db.settings.shipping_flat_brl)).quantize(Decimal('.01'))
+    total=(subtotal+shipping).quantize(Decimal('.01'))
+    user=await current_user(credentials,db) if credentials else None
+    customer=body.customer.model_dump(mode='json')
+    order_payload={
+        'user_id':user.id if user else None,
+        'nome_cliente':customer['name'],
+        'email_cliente':customer['email'],
+        'cpf_cliente':customer.get('cpf') or None,
+        'telefone_cliente':customer.get('phone') or None,
+        'endereco':customer['address'],
+        'subtotal':str(subtotal),
+        'frete':str(shipping),
+        'desconto':'0.00',
+        'total':str(total),
+        'status':'recebido',
+        'review_required':False
+    }
+    rows=await db.admin_request('/rest/v1/orders',method='POST',json=order_payload)
+    order=(rows or [None])[0]
+    if not order or not order.get('id'):
+        raise HTTPException(503,'Não foi possível registrar a venda de demonstração.')
+    order_id=str(order['id'])
+    try:
+        items=[{
+            'order_id':order_id,
+            'product_id':item['product']['id'],
+            'product_size_id':item['size_id'],
+            'nome_produto':item['product']['nome'],
+            'tamanho':item['size'],
+            'preco_unitario':item['unit_price'],
+            'quantidade':item['quantity']
+        } for item in quote['items']]
+        if items:
+            await db.admin_request('/rest/v1/order_items',method='POST',json=items)
+        demo_payment_id='DEMO-'+uuid4().hex.upper()
+        await db.admin_request('/rest/v1/payments',method='POST',json={
+            'order_id':order_id,'metodo':body.method,'status':'approved','valor':str(total),
+            'mercadopago_payment_id':demo_payment_id,'parcelas':1,
+            'aprovado_em':datetime.now(timezone.utc).isoformat()
+        })
+    except HTTPException:
+        try:
+            await db.admin_request('/rest/v1/orders',method='DELETE',params={'id':'eq.'+order_id})
+        except HTTPException:
+            pass
+        raise
+    return {
+        'order_id':order_id,'code':order.get('codigo') or 'DEMO-'+order_id[:8].upper(),
+        'status':'approved','payment_status':'approved','simulation':True,'demo_paid':True,
+        'method':body.method,'total':str(total),
+        'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
+                  'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]
+    }
+
 def ready(settings):
     # O webhook melhora a atualização em tempo real, mas não deve bloquear a venda.
     # Sem ele, o checkout e o admin reconciliam o pagamento consultando o Mercado Pago.
@@ -67,7 +133,9 @@ async def config(db:Database=Depends(get_database)):
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
     webhook_ready=bool(db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'))
     return {'available':bool(methods),'simulation_available':db.settings.database_configured,
-            'methods':methods,'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
+            'demo_mode':bool(db.settings.supabase_service_role_key.get_secret_value()),
+            'methods':methods,'demo_methods':['pix','cartao','boleto'],
+            'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
             'webhook_ready':webhook_ready}
 
 @router.post('')

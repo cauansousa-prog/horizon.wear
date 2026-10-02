@@ -81,6 +81,9 @@ def _confirmed_payment(order):
                 'valor':order.get('total') or 0,'aprovado_em':order.get('created_at')}
     return None
 
+def _demo_payment(payment):
+    return str((payment or {}).get('mercadopago_payment_id') or '').startswith('DEMO-')
+
 async def _reconcile_open_payments(db,user):
     """Reconcilia cobranças abertas com o Mercado Pago.
 
@@ -150,7 +153,7 @@ async def _reconcile_open_payments(db,user):
 
 async def _orders_with_sales(db,user):
     orders=[];offset=0
-    select='id,codigo,nome_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade),payments(order_id,metodo,status,valor,aprovado_em)'
+    select='id,codigo,nome_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade),payments(order_id,metodo,status,valor,aprovado_em,mercadopago_payment_id)'
     while True:
         page=await db.request('/rest/v1/orders',token=user.token,params={
             'select':select,'order':'created_at.desc','offset':str(offset),'limit':'1000'})
@@ -166,26 +169,35 @@ async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
     statuses={}
     for order in orders:statuses[order['status']]=statuses.get(order['status'],0)+1
     purchases=[]
-    revenue=Decimal('0')
+    real_revenue=Decimal('0');demo_revenue=Decimal('0');real_paid=0;demo_paid=0
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:continue
         amount=Decimal(str(payment.get('valor') if payment.get('valor') is not None else order.get('total') or 0))
-        revenue+=amount
+        is_demo=_demo_payment(payment)
+        if is_demo:
+            demo_revenue+=amount;demo_paid+=1
+        else:
+            real_revenue+=amount;real_paid+=1
         purchases.append({
             'id':order['id'],'codigo':order.get('codigo'),'nome_cliente':order.get('nome_cliente') or 'Cliente',
             'status':order.get('status'),'total':str(amount),'metodo':payment.get('metodo') or '—',
             'payment_status':payment.get('status'),'approved_at':payment.get('aprovado_em') or order.get('created_at'),
-            'items':order.get('order_items') or []
+            'demo':is_demo,'items':order.get('order_items') or []
         })
-    return {'orders':len(orders),'paid_orders':len(purchases),'revenue':str(revenue.quantize(Decimal('.01'))),
+    return {'orders':len(orders),'paid_orders':real_paid,'demo_paid_orders':demo_paid,
+            'revenue':str(real_revenue.quantize(Decimal('.01'))),
+            'demo_revenue':str(demo_revenue.quantize(Decimal('.01'))),
             'statuses':statuses,'recent_purchases':purchases[:8],'payments_reconciled':reconciled}
 
-def _sales_rows(orders):
+def _sales_rows(orders,mode='real'):
     result=[]
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:
+            continue
+        is_demo=_demo_payment(payment)
+        if (mode=='demo' and not is_demo) or (mode=='real' and is_demo):
             continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:
@@ -215,6 +227,7 @@ def _revenue_period(period,now):
 
 @router.get('/revenue/chart')
 async def revenue_chart(period:Literal['day','week','month','year']='month',
+                        mode:Literal['real','demo']='real',
                         user:User=Depends(admin),db:Database=Depends(get_database)):
     reconciled=await _reconcile_open_payments(db,user)
     orders=await _orders_with_sales(db,user)
@@ -222,7 +235,7 @@ async def revenue_chart(period:Literal['day','week','month','year']='month',
     start,end,labels,bucket,title=_revenue_period(period,now)
     totals=[Decimal('0') for _ in labels]
     counts=[0 for _ in labels]
-    for order,payment,paid_at,amount in _sales_rows(orders):
+    for order,payment,paid_at,amount in _sales_rows(orders,mode):
         if not start<=paid_at<end:
             continue
         index=bucket(paid_at)
@@ -247,7 +260,7 @@ async def revenue_chart(period:Literal['day','week','month','year']='month',
                'tickprefix':'R$ ','tickformat':',.0f','title':'Faturamento'}
     )
     points=[{'label':labels[i],'revenue':f'{totals[i]:.2f}','orders':counts[i]} for i in range(len(labels))]
-    return {'period':period,'label':title,'start':start.isoformat(),'end':end.isoformat(),
+    return {'period':period,'mode':mode,'label':title,'start':start.isoformat(),'end':end.isoformat(),
             'total':str(total),'orders':sum(counts),'points':points,
             'payments_reconciled':reconciled,'figure':json.loads(fig.to_json())}
 
@@ -260,7 +273,7 @@ async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
     years=set()
     for order in orders:
         payment=_confirmed_payment(order)
-        if not payment:continue
+        if not payment or _demo_payment(payment):continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:continue
         years.add(paid_at.year)
