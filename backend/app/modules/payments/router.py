@@ -1,5 +1,4 @@
 import hashlib,json
-from datetime import datetime,timezone
 from uuid import UUID,uuid4
 from decimal import Decimal
 from typing import Literal
@@ -35,93 +34,58 @@ class Checkout(BaseModel):
         if any(i.quantity<1 for i in self.items):raise ValueError('Carrinho inválido.')
         return self
 
-class SimulationCustomer(Customer):
-    cpf:str=Field(default='',max_length=20)
-    phone:str=Field(default='',max_length=25)
-
-class Simulation(BaseModel):
+class DirectCheckout(BaseModel):
     model_config=ConfigDict(extra='forbid')
-    customer:SimulationCustomer
+    customer:Customer
     items:list[Item]=Field(min_length=1,max_length=100)
     method:Literal['pix','cartao','boleto']
 
-@router.post('/simulate')
-async def simulate(body:Simulation,idempotency_key:UUID=Header(),db:Database=Depends(get_database)):
-    """Demonstra a compra sem cobrar, reservar ou baixar o estoque real."""
-    if any(i.quantity<1 for i in body.items):
-        raise HTTPException(422,'Carrinho inválido.')
-    quote=await quote_items(body.items,db)
-    total=Decimal(quote['subtotal'])+Decimal(str(db.settings.shipping_flat_brl))
-    return {'order_id':str(idempotency_key),'code':'DEMO-'+str(idempotency_key)[:8].upper(),
-            'status':'simulated','simulation':True,'method':body.method,
-            'total':str(total.quantize(Decimal('.01'))),
-            'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
-                      'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]}
 
-
-@router.post('/demo-paid')
-async def demo_paid(body:Simulation,idempotency_key:UUID=Header(),
-                    credentials:HTTPAuthorizationCredentials|None=Depends(bearer),
-                    db:Database=Depends(get_database)):
-    """Registra uma venda de demonstração aprovada sem cobrar dinheiro nem baixar estoque."""
+@router.post('/complete')
+async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
+                           checkout_token:str=Header(min_length=32,max_length=128),
+                           credentials:HTTPAuthorizationCredentials|None=Depends(bearer),
+                           db:Database=Depends(get_database)):
+    """Conclui o pedido como pagamento aprovado dentro do fluxo da loja."""
     if not db.settings.supabase_service_role_key.get_secret_value():
-        raise HTTPException(503,'Modo de demonstração indisponível no servidor.')
-    quote=await quote_items(body.items,db)
-    subtotal=Decimal(quote['subtotal']).quantize(Decimal('.01'))
-    shipping=Decimal(str(db.settings.shipping_flat_brl)).quantize(Decimal('.01'))
-    total=(subtotal+shipping).quantize(Decimal('.01'))
+        raise HTTPException(503,'Checkout indisponível no servidor.')
+    await quote_items(body.items,db)
     user=await current_user(credentials,db) if credentials else None
     customer=body.customer.model_dump(mode='json')
-    order_payload={
-        'user_id':user.id if user else None,
-        'nome_cliente':customer['name'],
-        'email_cliente':customer['email'],
-        'cpf_cliente':customer.get('cpf') or None,
-        'telefone_cliente':customer.get('phone') or None,
-        'endereco':customer['address'],
-        'subtotal':str(subtotal),
-        'frete':str(shipping),
-        'desconto':'0.00',
-        'total':str(total),
-        'status':'recebido',
-        'review_required':False
-    }
-    rows=await db.admin_request('/rest/v1/orders',method='POST',json=order_payload)
-    order=(rows or [None])[0]
-    if not order or not order.get('id'):
-        raise HTTPException(503,'Não foi possível registrar a venda de demonstração.')
-    order_id=str(order['id'])
-    try:
-        items=[{
-            'order_id':order_id,
-            'product_id':item['product']['id'],
-            'product_size_id':item['size_id'],
-            'nome_produto':item['product']['nome'],
-            'tamanho':item['size'],
-            'preco_unitario':item['unit_price'],
-            'quantidade':item['quantity']
-        } for item in quote['items']]
-        if items:
-            await db.admin_request('/rest/v1/order_items',method='POST',json=items)
-        demo_payment_id='DEMO-'+uuid4().hex.upper()
-        await db.admin_request('/rest/v1/payments',method='POST',json={
-            'order_id':order_id,'metodo':body.method,'status':'approved','valor':str(total),
-            'mercadopago_payment_id':demo_payment_id,'parcelas':1,
-            'aprovado_em':datetime.now(timezone.utc).isoformat()
-        })
-    except HTTPException:
-        try:
-            await db.admin_request('/rest/v1/orders',method='DELETE',params={'id':'eq.'+order_id})
-        except HTTPException:
-            pass
-        raise
+    fingerprint=hashlib.sha256(json.dumps({
+        'customer':customer,
+        'items':[i.model_dump(mode='json') for i in body.items],
+        'method':body.method,
+        'user':user.id if user else None
+    },sort_keys=True).encode()).hexdigest()
+    guest_hash=hashlib.sha256(checkout_token.encode()).hexdigest()
+    order=await privileged_rpc(db,'horizon_create_order',{
+        'p_user':user.id if user else None,
+        'p_customer':customer,
+        'p_items':[i.model_dump(mode='json') for i in body.items],
+        'p_key':str(idempotency_key),
+        'p_hash':fingerprint,
+        'p_guest_hash':guest_hash,
+        'p_method':body.method,
+        'p_shipping':str(db.settings.shipping_flat_brl)
+    })
+    internal_payment_id='LOCAL-'+uuid4().hex.upper()
+    await privileged_rpc(db,'horizon_apply_payment',{
+        'p_order':order['id'],
+        'p_payment_id':internal_payment_id,
+        'p_status':'approved',
+        'p_amount':str(Decimal(str(order['total'])).quantize(Decimal('.01'))),
+        'p_details':{'parcelas':1}
+    })
+    saved=await privileged_rpc(db,'horizon_get_checkout',{
+        'p_order':order['id'],'p_guest_hash':guest_hash
+    })
     return {
-        'order_id':order_id,'code':order.get('codigo') or 'DEMO-'+order_id[:8].upper(),
-        'status':'approved','payment_status':'approved','simulation':True,'demo_paid':True,
-        'method':body.method,'total':str(total),
-        'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
-                  'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]
+        'order_id':order['id'],'code':order['codigo'],'status':'approved',
+        'payment_status':'approved','direct_paid':True,'method':body.method,
+        'total':order['total'],'review_required':saved['review_required']
     }
+
 
 def ready(settings):
     # O webhook melhora a atualização em tempo real, mas não deve bloquear a venda.
@@ -132,9 +96,8 @@ def ready(settings):
 async def config(db:Database=Depends(get_database)):
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
     webhook_ready=bool(db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'))
-    return {'available':bool(methods),'simulation_available':db.settings.database_configured,
-            'demo_mode':bool(db.settings.supabase_service_role_key.get_secret_value()),
-            'methods':methods,'demo_methods':['pix','cartao','boleto'],
+    return {'available':bool(methods),'direct_mode':bool(db.settings.supabase_service_role_key.get_secret_value()),
+            'methods':methods,'direct_methods':['pix','cartao','boleto'],
             'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
             'webhook_ready':webhook_ready}
 
