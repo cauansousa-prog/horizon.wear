@@ -3,21 +3,27 @@ import httpx
 from fastapi.testclient import TestClient
 from backend.app.config import Settings
 from backend.app.main import create_app
-from backend.tests.test_checkout_flow import body,KEY,SIZE,ORDER
+from backend.tests.test_checkout_flow import body,KEY,ORDER
 
-def test_demo_accepts_optional_cpf_phone_and_names_bad_address():
-    def handle(request):
-        assert request.method=='GET' and request.url.path=='/rest/v1/product_sizes'
-        return httpx.Response(200,json=[{'id':SIZE,'tamanho':'M','estoque':12,
-            'products':{'id':ORDER,'nome':'Camisa','preco':100,'preco_promocional':None}}])
-    cfg=Settings(_env_file=None,supabase_url='https://example.supabase.co',supabase_anon_key='public-key')
-    payload=body('pix');payload['customer'].update(cpf='',phone='')
-    with TestClient(create_app(cfg,httpx.MockTransport(handle))) as client:
-        assert client.post('/api/checkout/simulate',json=payload,headers={'Idempotency-Key':KEY}).status_code==200
+def test_checkout_requires_customer_identity_and_valid_address():
+    cfg=Settings(_env_file=None,supabase_url='https://example.supabase.co',
+                 supabase_anon_key='public-key',supabase_service_role_key='server-only-key')
+    payload=body('pix')
+    payload.pop('token',None);payload.pop('payment_method_id',None)
+    with TestClient(create_app(cfg,httpx.MockTransport(lambda request:httpx.Response(500))) as client:
+        missing=dict(payload)
+        missing['customer']=dict(payload['customer'])
+        missing['customer']['cpf']=''
+        missing['customer']['phone']=''
+        result=client.post('/api/checkout/complete',json=missing,
+                           headers={'Idempotency-Key':KEY,'Checkout-Token':'a'*64})
+        assert result.status_code==422
         payload['customer']['address']['cep']='123'
-        result=client.post('/api/checkout/simulate',json=payload,headers={'Idempotency-Key':KEY})
+        result=client.post('/api/checkout/complete',json=payload,
+                           headers={'Idempotency-Key':KEY,'Checkout-Token':'a'*64})
         assert result.status_code==422 and result.json()['fields']==['CEP']
         assert 'cliente@example.com' not in result.text
+
 
 def test_profile_save_trims_and_returns_persisted_values():
     profile={'id':ORDER,'full_name':'Nome anterior','phone':''}
