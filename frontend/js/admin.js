@@ -49,19 +49,33 @@ function dashboardHTML(d){
  const recent=Array.isArray(d.recent_purchases)?d.recent_purchases:[];
  return `
  <article><span class="metric-icon">▱</span><p>Total de pedidos</p><strong>${d.orders}</strong><small>Desde o início da loja</small></article>
- <article><span class="metric-icon green">✓</span><p>Compras pagas</p><strong>${d.paid_orders}</strong><small>Inclui pagamentos em modo demonstração</small></article>
- <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento</p><strong>${currency(d.revenue)}</strong><small>Total usado pelo painel, incluindo demonstrações</small></article>
+ <article><span class="metric-icon green">✓</span><p>Compras pagas</p><strong>${d.paid_orders}</strong><small>Pagamentos aprovados no sistema</small></article>
+ <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento</p><strong>${currency(d.revenue)}</strong><small>Total de pagamentos aprovados</small></article>
  <article class="orders-card"><p>Andamento dos pedidos</p>${Object.entries(d.statuses||{}).length?Object.entries(d.statuses).map(([status,count])=>`<div class="admin-status"><span>${escapeHTML(statusLabels[status]||status)}</span><meter min="0" max="${Math.max(d.orders,1)}" value="${count}">${count}</meter><b>${count}</b></div>`).join(''):'<div class="empty-metric">Sua próxima venda começa na vitrine.</div>'}</article>
  <article class="revenue-chart-card">
-   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Compras aprovadas no sistema</small></div><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div></div>
+   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Compras aprovadas no sistema</small></div><div class="revenue-head-actions"><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div><div class="chart-export-actions"><button type="button" data-export-revenue="csv">Baixar CSV</button><button type="button" data-export-revenue="xlsx">Baixar XLSX</button></div></div></div>
    <div id="revenueChart" class="annual-revenue-chart" role="img" aria-label="Gráfico de faturamento"><p class="loading-state">Carregando gráfico…</p></div>
    <div class="chart-summary"><p id="revenuePeriodTotal"></p><p id="revenuePeriodOrders"></p></div>
  </article>
  <article class="recent-purchases-card">
    <div class="dashboard-card-head"><div><p>Compras recentes</p><small>Últimas compras com pagamento confirmado</small></div><button class="row-action" id="viewAllOrders">Ver todos os pedidos ↗</button></div>
-   <div class="recent-purchases">${recent.length?recent.map(order=>`<div class="purchase-row"><div><strong>${escapeHTML(order.codigo||'Pedido')}</strong><span>${escapeHTML(order.nome_cliente||'Cliente')}</span></div><div class="purchase-items">${purchaseItems(order.items)}</div><div><span class="payment-method">${escapeHTML(paymentLabels[order.metodo]||order.metodo||'Pagamento')}${order.demo?' · TESTE':''}</span><small>${escapeHTML(dateTime(order.approved_at))}</small></div><strong class="purchase-total">${currency(order.total)}</strong></div>`).join(''):'<div class="empty-metric">As compras pagas aparecerão aqui automaticamente.</div>'}</div>
+   <div class="recent-purchases">${recent.length?recent.map(order=>`<div class="purchase-row"><div><strong>${escapeHTML(order.codigo||'Pedido')}</strong><span>${escapeHTML(order.nome_cliente||'Cliente')}</span></div><div class="purchase-items">${purchaseItems(order.items)}</div><div><span class="payment-method">${escapeHTML(paymentLabels[order.metodo]||order.metodo||'Pagamento')}</span><small>${escapeHTML(dateTime(order.approved_at))}</small></div><strong class="purchase-total">${currency(order.total)}</strong></div>`).join(''):'<div class="empty-metric">As compras pagas aparecerão aqui automaticamente.</div>'}</div>
  </article>`;
 }
+async function downloadRevenue(format){
+ if(!adminSession)throw Error('Entre na sua conta para acessar a administração.');
+ const button=document.querySelector('[data-export-revenue="'+format+'"]');
+ if(button)button.disabled=true;
+ try{
+  const response=await fetch('/api/admin/revenue/export?period='+encodeURIComponent(selectedRevenuePeriod)+'&format='+encodeURIComponent(format),{headers:{Authorization:'Bearer '+adminSession.access_token}});
+  if(!response.ok){let data={};try{data=await response.json();}catch{}throw Error(data.detail||'Não foi possível baixar o arquivo.');}
+  const blob=await response.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='faturamento-'+selectedRevenuePeriod+'.'+format;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  message('Arquivo baixado com sucesso.');
+ }finally{if(button)button.disabled=false;}
+}
+
 async function loadRevenueChart(period=selectedRevenuePeriod,mode='all'){
  try{
   selectedRevenuePeriod=period;selectedRevenueMode='all';
@@ -85,6 +99,7 @@ async function loadDashboard(quiet=false){
   document.getElementById('dashboard').innerHTML=dashboardHTML(d);
   document.getElementById('viewAllOrders')?.addEventListener('click',()=>listing('orders'));
   document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod,selectedRevenueMode)));
+  document.querySelectorAll('[data-export-revenue]').forEach(button=>button.addEventListener('click',()=>downloadRevenue(button.dataset.exportRevenue).catch(error=>message(error.message))));
   await loadRevenueChart(selectedRevenuePeriod,'all');
   if(!quiet)message('');
  }catch(error){if(!quiet)message(error.message);}
