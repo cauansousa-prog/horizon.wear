@@ -16,15 +16,47 @@ async def quote_items(items,db):
     ids=[str(i.size_id) for i in items if i.quantity]
     if len(ids)!=len(set(ids)): raise HTTPException(422,'Tamanho repetido no carrinho.')
     if not ids: return {'items':[],'subtotal':'0.00'}
-    rows=await db.request('/rest/v1/product_sizes',params={'select':'id,tamanho,estoque,products!inner(id,nome,slug,preco,preco_promocional,ativo,product_images(url,ordem))','id':'in.('+','.join(ids)+')','products.ativo':'eq.true'})
-    sizes={r['id']:r for r in rows}; result=[]; total=Decimal('0')
+
+    # Consultas simples evitam falhas do PostgREST em relações aninhadas e deixam
+    # o checkout independente do cache de relacionamentos do Supabase.
+    size_rows=await db.request('/rest/v1/product_sizes',params={
+        'select':'id,product_id,tamanho,estoque',
+        'id':'in.('+','.join(ids)+')'
+    })
+    sizes={str(row['id']):row for row in (size_rows or [])}
+    product_ids=list(dict.fromkeys(str(row.get('product_id')) for row in sizes.values() if row.get('product_id')))
+    if not product_ids:
+        raise HTTPException(409,'Um item está indisponível ou a quantidade excede o estoque.')
+
+    product_rows=await db.request('/rest/v1/products',params={
+        'select':'id,nome,slug,preco,preco_promocional,ativo',
+        'id':'in.('+','.join(product_ids)+')',
+        'ativo':'eq.true'
+    })
+    products={str(row['id']):row for row in (product_rows or [])}
+    image_rows=await db.request('/rest/v1/product_images',params={
+        'select':'product_id,url,ordem',
+        'product_id':'in.('+','.join(product_ids)+')',
+        'order':'ordem.asc'
+    })
+    images={}
+    for image in image_rows or []:
+        images.setdefault(str(image.get('product_id')),[]).append({'url':image.get('url'),'ordem':image.get('ordem')})
+
+    result=[];total=Decimal('0')
     for item in items:
         if not item.quantity: continue
         size=sizes.get(str(item.size_id))
-        if not size or item.quantity>size['estoque']: raise HTTPException(409,'Um item está indisponível ou a quantidade excede o estoque.')
-        product=size['products']; price=Decimal(str(product['preco_promocional'] if product['preco_promocional'] is not None else product['preco']))
-        subtotal=price*item.quantity; total+=subtotal
-        result.append({'size_id':size['id'],'quantity':item.quantity,'size':size['tamanho'],'stock':size['estoque'],'product':product,'unit_price':str(price),'subtotal':str(subtotal)})
+        if not size or item.quantity>int(size.get('estoque') or 0):
+            raise HTTPException(409,'Um item está indisponível ou a quantidade excede o estoque.')
+        product=products.get(str(size.get('product_id')))
+        if not product:
+            raise HTTPException(409,'Um produto do carrinho não está mais disponível.')
+        product={**product,'product_images':images.get(str(product['id']),[])}
+        price=Decimal(str(product['preco_promocional'] if product.get('preco_promocional') is not None else product['preco']))
+        subtotal=price*item.quantity;total+=subtotal
+        result.append({'size_id':size['id'],'quantity':item.quantity,'size':size['tamanho'],'stock':size['estoque'],
+                       'product':product,'unit_price':str(price),'subtotal':str(subtotal)})
     return {'items':result,'subtotal':str(total.quantize(Decimal('.01')))}
 
 @router.post('/quote')
