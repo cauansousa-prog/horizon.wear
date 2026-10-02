@@ -169,35 +169,36 @@ async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
     statuses={}
     for order in orders:statuses[order['status']]=statuses.get(order['status'],0)+1
     purchases=[]
-    real_revenue=Decimal('0');demo_revenue=Decimal('0');real_paid=0;demo_paid=0
+    revenue=Decimal('0');paid_orders=0;demo_revenue=Decimal('0');demo_paid=0
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:continue
         amount=Decimal(str(payment.get('valor') if payment.get('valor') is not None else order.get('total') or 0))
         is_demo=_demo_payment(payment)
+        revenue+=amount;paid_orders+=1
         if is_demo:
             demo_revenue+=amount;demo_paid+=1
-        else:
-            real_revenue+=amount;real_paid+=1
         purchases.append({
             'id':order['id'],'codigo':order.get('codigo'),'nome_cliente':order.get('nome_cliente') or 'Cliente',
             'status':order.get('status'),'total':str(amount),'metodo':payment.get('metodo') or '—',
             'payment_status':payment.get('status'),'approved_at':payment.get('aprovado_em') or order.get('created_at'),
             'demo':is_demo,'items':order.get('order_items') or []
         })
-    return {'orders':len(orders),'paid_orders':real_paid,'demo_paid_orders':demo_paid,
-            'revenue':str(real_revenue.quantize(Decimal('.01'))),
+    return {'orders':len(orders),'paid_orders':paid_orders,'demo_paid_orders':demo_paid,
+            'revenue':str(revenue.quantize(Decimal('.01'))),
             'demo_revenue':str(demo_revenue.quantize(Decimal('.01'))),
             'statuses':statuses,'recent_purchases':purchases[:8],'payments_reconciled':reconciled}
 
-def _sales_rows(orders,mode='real'):
+def _sales_rows(orders,mode='all'):
     result=[]
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:
             continue
         is_demo=_demo_payment(payment)
-        if (mode=='demo' and not is_demo) or (mode=='real' and is_demo):
+        if mode=='demo' and not is_demo:
+            continue
+        if mode=='real' and is_demo:
             continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:
@@ -227,7 +228,7 @@ def _revenue_period(period,now):
 
 @router.get('/revenue/chart')
 async def revenue_chart(period:Literal['day','week','month','year']='month',
-                        mode:Literal['real','demo']='real',
+                        mode:Literal['all','real','demo']='all',
                         user:User=Depends(admin),db:Database=Depends(get_database)):
     reconciled=await _reconcile_open_payments(db,user)
     orders=await _orders_with_sales(db,user)
@@ -273,7 +274,7 @@ async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
     years=set()
     for order in orders:
         payment=_confirmed_payment(order)
-        if not payment or _demo_payment(payment):continue
+        if not payment:continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:continue
         years.add(paid_at.year)
