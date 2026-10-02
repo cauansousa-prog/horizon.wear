@@ -22,6 +22,8 @@ class Database:
             response = await self.client.request(method, self.settings.supabase_url + path, headers=headers, params=params, json=json)
         except httpx.RequestError:
             raise HTTPException(503, 'Supabase indisponível.') from None
+        if path=='/auth/v1/user' and response.status_code in (400, 401, 403):
+            raise HTTPException(401, 'Sua sessão expirou. Entre novamente.')
         if response.status_code in (401, 403):
             raise HTTPException(response.status_code, 'Acesso não autorizado.')
         if response.status_code in (400, 409, 422, 429):
