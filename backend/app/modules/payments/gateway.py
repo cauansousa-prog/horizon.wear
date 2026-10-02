@@ -36,7 +36,7 @@ class MercadoPago:
             if r.status_code==401:
                 detail='As credenciais do Mercado Pago não foram aceitas. Revise o Access Token configurado no servidor.'
             elif 'collector' in combined or 'payer' in combined and 'same' in combined or '145' in cause_codes:
-                detail='O Mercado Pago recusou a operação entre as contas usadas. Em testes, use uma conta Comprador diferente da conta Vendedor.'
+                detail='O Mercado Pago recusou a operação entre as contas usadas. Use uma conta Comprador diferente da conta Vendedor.'
             elif 'regulation' in combined or 'compliance' in combined or '160' in cause_codes:
                 detail='A conta vendedora do Mercado Pago ainda não está habilitada para processar este pagamento.'
             elif 'identification' in combined or 'cpf' in combined:
