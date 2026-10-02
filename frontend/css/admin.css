@@ -46,3 +46,10 @@
 .revenue-modes button{border:0;background:transparent;color:#795f28;border-radius:5px;padding:8px 13px;font-size:10px;font-weight:700}
 .revenue-modes button.active{background:#b4872d;color:#fff}
 @media(max-width:700px){.dashboard .demo-revenue-card{grid-column:1/-1}.revenue-controls{width:100%;justify-content:flex-start}.revenue-modes{width:100%}.revenue-modes button{flex:1}}
+
+.revenue-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.chart-export-actions{display:flex;gap:6px}
+.chart-export-actions button{border:1px solid #cfd6c8;background:#fff;color:#344e39;border-radius:6px;padding:8px 12px;font-size:10px;font-weight:700;cursor:pointer}
+.chart-export-actions button:hover{background:#f4f7f1}
+.chart-export-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.revenue-head-actions{width:100%;align-items:stretch;flex-direction:column}.chart-export-actions{width:100%}.chart-export-actions button{flex:1}}
