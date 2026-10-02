@@ -128,3 +128,17 @@ def test_revenue_chart_supports_day_week_month_and_year():
             assert data['period']==period
             assert data['figure']['data'][0]['type']=='bar'
             assert isinstance(data['points'],list) and data['points']
+
+
+def test_revenue_chart_exports_csv_and_xlsx():
+    with client() as c:
+        headers={'Authorization':'Bearer admin-session'}
+        csv_response=c.get('/api/admin/revenue/export?period=year&format=csv',headers=headers)
+        assert csv_response.status_code==200
+        assert csv_response.headers['content-type'].startswith('text/csv')
+        assert 'Período' in csv_response.text
+        assert 'Faturamento (R$)' in csv_response.text
+        xlsx_response=c.get('/api/admin/revenue/export?period=year&format=xlsx',headers=headers)
+        assert xlsx_response.status_code==200
+        assert xlsx_response.content.startswith(b'PK')
+        assert xlsx_response.headers['content-type'].startswith('application/vnd.openxmlformats')
