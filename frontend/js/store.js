@@ -150,7 +150,7 @@ function renderSignup(){
 
 
 function deviceOrdersHTML(){
- let orders;try{orders=JSON.parse(localStorage.getItem('hw-orders-history')||localStorage.getItem('hw-demo-orders')||'[]');if(!localStorage.getItem('hw-orders-history')&&orders.length)localStorage.setItem('hw-orders-history',JSON.stringify(orders));}catch{return '';}
+ let orders;try{orders=JSON.parse(localStorage.getItem('hw-orders-history')||'[]');if(!localStorage.getItem('hw-orders-history')&&orders.length)localStorage.setItem('hw-orders-history',JSON.stringify(orders));}catch{return '';}
  if(!Array.isArray(orders)||!orders.length)return '';
  return `<section class="orders-list device-orders"><h2>Compras deste dispositivo</h2><p class="quiet">Pagamentos aprovados.</p>${orders.slice(0,20).map(o=>`<article class="order-row"><strong>${esc(o.code)}</strong><p>Pagamento aprovado · ${money(o.total)}</p><p>${new Date(o.created_at).toLocaleDateString('pt-BR')}</p>${(o.items||[]).map(i=>`<p>${esc(i.nome_produto)} · ${esc(i.tamanho)} · ${Number(i.quantidade)} un.</p>`).join('')}</article>`).join('')}</section>`;
 }
