@@ -1,5 +1,5 @@
 import hashlib,json
-from uuid import UUID,uuid4
+from uuid import UUID
 from decimal import Decimal
 from typing import Literal
 from pydantic import BaseModel,Field,ConfigDict,model_validator
@@ -69,7 +69,13 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
         'p_method':body.method,
         'p_shipping':str(db.settings.shipping_flat_brl)
     })
-    internal_payment_id='LOCAL-'+uuid4().hex.upper()
+    saved=await privileged_rpc(db,'horizon_get_checkout',{
+        'p_order':order['id'],'p_guest_hash':guest_hash
+    })
+    existing_payment_id=str((saved or {}).get('payment_id') or '')
+    if existing_payment_id and not existing_payment_id.startswith('LOCAL-'):
+        raise HTTPException(409,'Este pedido já possui outro pagamento vinculado. Atualize o checkout e tente novamente.')
+    internal_payment_id=existing_payment_id or ('LOCAL-'+idempotency_key.hex.upper())
     await privileged_rpc(db,'horizon_apply_payment',{
         'p_order':order['id'],
         'p_payment_id':internal_payment_id,
