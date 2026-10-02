@@ -93,9 +93,15 @@ def ready(settings):
 
 @router.get('/config')
 async def config(db:Database=Depends(get_database)):
+    direct_mode=bool(db.settings.supabase_service_role_key.get_secret_value())
+    if direct_mode:
+        return {'available':True,'direct_mode':True,
+                'methods':['pix','cartao','boleto'],'direct_methods':['pix','cartao','boleto'],
+                'public_key':'','shipping':str(db.settings.shipping_flat_brl),
+                'webhook_ready':False}
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
     webhook_ready=bool(db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'))
-    return {'available':bool(methods),'direct_mode':bool(db.settings.supabase_service_role_key.get_secret_value()),
+    return {'available':bool(methods),'direct_mode':False,
             'methods':methods,'direct_methods':['pix','cartao','boleto'],
             'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
             'webhook_ready':webhook_ready}
