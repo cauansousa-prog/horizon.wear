@@ -49,7 +49,6 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
     """Conclui o pedido como pagamento aprovado dentro do fluxo da loja."""
     if not db.settings.supabase_service_role_key.get_secret_value():
         raise HTTPException(503,'Checkout indisponível no servidor.')
-    await quote_items(body.items,db)
     user=await current_user(credentials,db) if credentials else None
     customer=body.customer.model_dump(mode='json')
     fingerprint=hashlib.sha256(json.dumps({
@@ -69,7 +68,7 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
         'p_method':body.method,
         'p_shipping':str(db.settings.shipping_flat_brl)
     })
-    internal_payment_id='LOCAL-'+uuid4().hex.upper()
+    internal_payment_id='LOCAL-'+str(idempotency_key).replace('-','').upper()
     await privileged_rpc(db,'horizon_apply_payment',{
         'p_order':order['id'],
         'p_payment_id':internal_payment_id,
