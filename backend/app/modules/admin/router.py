@@ -1,4 +1,7 @@
+import csv
+import io
 import json
+import zipfile
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -6,7 +9,9 @@ from uuid import UUID
 from pydantic import BaseModel,Field,ConfigDict,model_validator
 from typing import Literal
 from urllib.parse import quote
+from xml.sax.saxutils import escape
 from fastapi import APIRouter,Depends,HTTPException,Query
+from fastapi.responses import Response
 import plotly.graph_objects as go
 from ...auth import User,current_user
 from ...database import Database,get_database
@@ -225,6 +230,93 @@ def _revenue_period(period,now):
     start=start.replace(month=1,day=1)
     labels=list(MONTHS_PT)
     return start,start.replace(year=start.year+1),labels,lambda value:value.month-1,str(start.year)
+
+def _export_safe(value):
+    if value is None:return ''
+    text=str(value)
+    return "'"+text if text.startswith(('=','+','-','@')) else text
+
+def _excel_col(index):
+    name=''
+    while index:
+        index,rem=divmod(index-1,26)
+        name=chr(65+rem)+name
+    return name
+
+def _xlsx_bytes(headers,rows,sheet_name='Faturamento'):
+    xml_rows=[]
+    for row_no,row in enumerate([headers]+rows,1):
+        cells=[]
+        for col_no,value in enumerate(row,1):
+            ref=f'{_excel_col(col_no)}{row_no}'
+            style=' s="1"' if row_no==1 else ''
+            cells.append(f'<c r="{ref}" t="inlineStr"{style}><is><t xml:space="preserve">{escape(_export_safe(value))}</t></is></c>')
+        xml_rows.append(f'<row r="{row_no}">{"".join(cells)}</row>')
+    sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+          '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+"".join(xml_rows)+'</sheetData></worksheet>'
+    workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+             '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' \
+             f'<sheets><sheet name="{escape(sheet_name[:31])}" sheetId="1" r:id="rId1"/></sheets></workbook>'
+    styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+           '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font/><font><b/></font></fonts>' \
+           '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' \
+           '<borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' \
+           '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' \
+           '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'
+    types='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' \
+          '<Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' \
+          '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' \
+          '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'
+    root_rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' \
+              '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'
+    workbook_rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' \
+                  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' \
+                  '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'
+    output=io.BytesIO()
+    with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as book:
+        book.writestr('[Content_Types].xml',types)
+        book.writestr('_rels/.rels',root_rels)
+        book.writestr('xl/workbook.xml',workbook)
+        book.writestr('xl/_rels/workbook.xml.rels',workbook_rels)
+        book.writestr('xl/worksheets/sheet1.xml',sheet)
+        book.writestr('xl/styles.xml',styles)
+    return output.getvalue()
+
+def _revenue_buckets(orders,period,now):
+    start,end,labels,bucket,title=_revenue_period(period,now)
+    totals=[Decimal('0') for _ in labels]
+    counts=[0 for _ in labels]
+    for order,payment,paid_at,amount in _sales_rows(orders,'all'):
+        if not start<=paid_at<end:continue
+        index=bucket(paid_at)
+        if 0<=index<len(labels):
+            totals[index]+=amount
+            counts[index]+=1
+    rows=[[labels[i],f'{totals[i]:.2f}',counts[i]] for i in range(len(labels))]
+    return title,rows
+
+@router.get('/revenue/export')
+async def revenue_export(period:Literal['day','week','month','year']='month',
+                         format:Literal['csv','xlsx']='csv',
+                         user:User=Depends(admin),db:Database=Depends(get_database)):
+    await _reconcile_open_payments(db,user)
+    orders=await _orders_with_sales(db,user)
+    title,rows=_revenue_buckets(orders,period,datetime.now(FORTALEZA_TZ))
+    headers=['Período','Faturamento (R$)','Compras pagas']
+    filename='faturamento-'+period
+    if format=='csv':
+        output=io.StringIO(newline='')
+        writer=csv.writer(output)
+        writer.writerow(headers)
+        writer.writerows(rows)
+        return Response(content=('\ufeff'+output.getvalue()).encode('utf-8'),
+                        media_type='text/csv; charset=utf-8',
+                        headers={'Content-Disposition':f'attachment; filename="{filename}.csv"'})
+    return Response(content=_xlsx_bytes(headers,rows,title),
+                    media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    headers={'Content-Disposition':f'attachment; filename="{filename}.xlsx"'})
+
 
 @router.get('/revenue/chart')
 async def revenue_chart(period:Literal['day','week','month','year']='month',
