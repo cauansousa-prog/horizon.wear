@@ -46,3 +46,21 @@
 .revenue-modes button{border:0;background:transparent;color:#795f28;border-radius:5px;padding:8px 13px;font-size:10px;font-weight:700}
 .revenue-modes button.active{background:#b4872d;color:#fff}
 @media(max-width:700px){.dashboard .demo-revenue-card{grid-column:1/-1}.revenue-controls{width:100%;justify-content:flex-start}.revenue-modes{width:100%}.revenue-modes button{flex:1}}
+
+.panel-actions,.export-actions,.revenue-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.export-actions .btn-outline{min-height:36px;padding:7px 11px;font-size:10px}
+.permission-help{margin:0 0 18px;color:#727b6d;font-size:12px;max-width:760px}
+.staff-list{display:grid;gap:14px}
+.staff-card{border:1px solid #e3e7de;background:#fff;padding:18px;border-radius:10px;display:grid;gap:14px}
+.staff-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.staff-head>div{display:flex;flex-direction:column;gap:4px}
+.staff-head strong{font-size:13px;color:#344232}
+.staff-head span{font-size:10px;color:#858d80}
+.staff-admin-toggle{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#465340}
+.permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 16px;padding:14px;background:#f7f8f4;border-radius:8px}
+.permission-grid label{display:flex;align-items:flex-start;gap:8px;font-size:10px;color:#566151;line-height:1.35}
+.permission-grid input{margin-top:1px}
+.staff-card>.btn-gold{justify-self:start}
+.revenue-head-actions{justify-content:flex-end}
+@media(max-width:850px){.permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel-actions,.revenue-head-actions{width:100%;justify-content:flex-start}}
+@media(max-width:560px){.permission-grid{grid-template-columns:1fr}.staff-head{flex-direction:column}.panel-actions{flex-direction:column;align-items:stretch}.export-actions{width:100%}.export-actions .btn-outline{flex:1}.revenue-head-actions{align-items:stretch;flex-direction:column}}

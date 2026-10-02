@@ -4,6 +4,9 @@ let adminSession;try{adminSession=JSON.parse(localStorage.getItem('hw-session')|
 const message=m=>document.getElementById('adminMessage').textContent=m;
 async function call(path,method='GET',body){if(!adminSession)throw Error('Entre na sua conta para acessar a administração.');const r=await fetch('/api/admin/'+path,{method,headers:{Authorization:'Bearer '+adminSession.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'Confira os campos e tente novamente.');return data;}
 const names={products:'Produtos',product_sizes:'Estoque',categories:'Categorias',product_images:'Imagens',orders:'Pedidos',profiles:'Clientes',payments:'Pagamentos',coupons:'Cupons',reviews:'Avaliações'};
+const resourcePermission={products:'catalog',product_sizes:'catalog',categories:'catalog',product_images:'catalog',orders:'orders',profiles:'customers',payments:'finance',coupons:'marketing',reviews:'reviews'};
+const permissionLabels={dashboard:'Dashboard e faturamento',catalog:'Catálogo e estoque',orders:'Pedidos e logística',finance:'Pagamentos',customers:'Clientes',marketing:'Cupons',reviews:'Avaliações',exports:'Exportações CSV/XLSX',manage_admins:'Equipe e permissões'};
+const exportableResources=new Set(['products','orders','profiles','payments']);
 const fields={products:['nome','slug','preco','preco_promocional','ativo'],product_sizes:['product_id','tamanho','estoque'],categories:['nome','slug','grupo'],product_images:['product_id','url','ordem'],orders:['codigo','nome_cliente','status','review_required','total','rastreio'],profiles:['nome_completo','telefone','role'],payments:['order_id','metodo','status','valor'],coupons:['codigo','tipo','valor','ativo'],reviews:['product_id','nota','comentario']};
 let currentRows=[],page=0,current='products';
 const labels={nome:'Produto',slug:'Endereço da peça',preco:'Preço',preco_promocional:'Preço promocional',ativo:'Visibilidade',product_id:'Produto',tamanho:'Tamanho',estoque:'Unidades',grupo:'Grupo',url:'Imagem',ordem:'Ordem',codigo:'Pedido',nome_cliente:'Cliente',status:'Situação',review_required:'Conferência',total:'Total',rastreio:'Rastreamento',nome_completo:'Nome',telefone:'Telefone',role:'Perfil',order_id:'Pedido',metodo:'Método',valor:'Valor',tipo:'Tipo',nota:'Nota',comentario:'Comentário',tecido:'Tecido',caimento:'Caimento',destaque:'Em destaque',lancamento:'Lançamento'};
@@ -14,7 +17,7 @@ function cellValue(key,value){if(value===null||value===undefined||value==='')ret
 async function listing(resource,offset=0){try{
  current=resource;page=offset;document.querySelectorAll('[data-resource]').forEach(b=>{const active=b.dataset.resource===resource;b.classList.toggle('active',active);active?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current');});
  currentRows=await call(resource+'?offset='+offset);if(resource==='products')currentRows.forEach(p=>productNames[p.id]=p.nome);
- const cols=fields[resource];document.getElementById('adminContent').innerHTML=`<div class="panel-heading"><div><p class="nav-caption">GERENCIAR COLEÇÃO E VENDAS</p><h2>${names[resource]} <span class="count-badge">${currentRows.length}</span></h2></div>${resource==='products'?'<button class="btn-gold" id="newProduct">+ Adicionar produto</button>':''}</div><div class="table-tools"><label>Buscar nesta página<input type="search" id="adminSearch" placeholder="Digite para filtrar…"></label><span>Mostrando ${currentRows.length} registros</span></div><div id="editor"></div><div class="admin-table"><table><thead><tr>${cols.map(c=>`<th scope="col">${labels[c]||escapeHTML(c)}</th>`).join('')}${['products','product_sizes'].includes(resource)?'<th scope="col">Ações</th>':''}</tr></thead><tbody>${currentRows.map((r,i)=>`<tr data-search="${escapeHTML(cols.map(c=>c==='product_id'?(productNames[r[c]]||r[c]):r[c]).join(' ').toLocaleLowerCase('pt-BR'))}">${cols.map(c=>`<td>${cellValue(c,r[c])}</td>`).join('')}${resource==='products'?`<td><button class="row-action" data-edit="${i}">Editar ↗</button></td>`:resource==='product_sizes'?`<td><button class="row-action" data-stock="${i}">Ajustar estoque</button></td>`:''}</tr>`).join('')}</tbody></table></div><p id="emptyTable" class="empty-table" ${currentRows.length?'hidden':''}>${currentRows.length?'Nenhum resultado para esta busca.':'Ainda não há registros por aqui.'}</p><div class="table-footer"><span>Página ${Math.floor(offset/100)+1}</span><div><button class="btn-outline" id="previous" ${offset===0?'disabled':''}>← Anterior</button><button class="btn-outline" id="next" ${currentRows.length<100?'disabled':''}>Próxima →</button></div></div>`;
+ const cols=fields[resource];const exportTools=can('exports')&&exportableResources.has(resource)?`<div class="export-actions"><button class="btn-outline" data-export="${resource}" data-format="csv">CSV</button><button class="btn-outline" data-export="${resource}" data-format="xlsx">XLSX</button></div>`:'';document.getElementById('adminContent').innerHTML=`<div class="panel-heading"><div><p class="nav-caption">GERENCIAR COLEÇÃO E VENDAS</p><h2>${names[resource]} <span class="count-badge">${currentRows.length}</span></h2></div><div class="panel-actions">${exportTools}${resource==='products'?'<button class="btn-gold" id="newProduct">+ Adicionar produto</button>':''}</div></div><div class="table-tools"><label>Buscar nesta página<input type="search" id="adminSearch" placeholder="Digite para filtrar…"></label><span>Mostrando ${currentRows.length} registros</span></div><div id="editor"></div><div class="admin-table"><table><thead><tr>${cols.map(c=>`<th scope="col">${labels[c]||escapeHTML(c)}</th>`).join('')}${['products','product_sizes'].includes(resource)?'<th scope="col">Ações</th>':''}</tr></thead><tbody>${currentRows.map((r,i)=>`<tr data-search="${escapeHTML(cols.map(c=>c==='product_id'?(productNames[r[c]]||r[c]):r[c]).join(' ').toLocaleLowerCase('pt-BR'))}">${cols.map(c=>`<td>${cellValue(c,r[c])}</td>`).join('')}${resource==='products'?`<td><button class="row-action" data-edit="${i}">Editar ↗</button></td>`:resource==='product_sizes'?`<td><button class="row-action" data-stock="${i}">Ajustar estoque</button></td>`:''}</tr>`).join('')}</tbody></table></div><p id="emptyTable" class="empty-table" ${currentRows.length?'hidden':''}>${currentRows.length?'Nenhum resultado para esta busca.':'Ainda não há registros por aqui.'}</p><div class="table-footer"><span>Página ${Math.floor(offset/100)+1}</span><div><button class="btn-outline" id="previous" ${offset===0?'disabled':''}>← Anterior</button><button class="btn-outline" id="next" ${currentRows.length<100?'disabled':''}>Próxima →</button></div></div>`;
  if(resource==='orders'){
   const head=document.querySelector('#adminContent thead tr');head.insertAdjacentHTML('beforeend','<th scope="col">Ações</th>');
   document.querySelectorAll('#adminContent tbody tr').forEach((tr,i)=>{
@@ -34,6 +37,40 @@ document.addEventListener('click',e=>{const button=e.target.closest('[data-order
  editor.innerHTML=`<form id="fulfillmentForm" class="admin-form"><h3>Pedido ${escapeHTML(order.codigo)}</h3><p>Próxima etapa: ${escapeHTML(statusLabels[next])}</p><label>Rastreio${next==='enviado'?' (obrigatório)':''}<input name="rastreio" value="${escapeHTML(order.rastreio||'')}" ${next==='enviado'?'required':''}></label><button class="btn-gold">Confirmar etapa</button></form>`;
  document.getElementById('fulfillmentForm').onsubmit=async event=>{event.preventDefault();try{await call('orders/'+order.id+'/fulfillment','PATCH',{status:next,rastreio:new FormData(event.target).get('rastreio')});await listing('orders',page);message('Pedido atualizado.');}catch(err){message(err.message);}};
 });
+
+async function downloadAdmin(path,filename){
+ if(!adminSession)throw Error('Entre na sua conta para acessar a administração.');
+ const r=await fetch('/api/admin/'+path,{headers:{Authorization:'Bearer '+adminSession.access_token}});
+ if(!r.ok){let data={};try{data=await r.json();}catch{}throw Error(data.detail||'Não foi possível exportar o arquivo.');}
+ const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+document.addEventListener('click',e=>{
+ const button=e.target.closest('[data-export]');if(!button)return;
+ const resource=button.dataset.export,format=button.dataset.format;
+ button.disabled=true;downloadAdmin('export/'+encodeURIComponent(resource)+'?format='+format,resource+'.'+format)
+   .then(()=>message('Arquivo exportado.')).catch(err=>message(err.message)).finally(()=>button.disabled=false);
+});
+
+async function renderPermissions(){
+ try{
+  const staff=await call('staff');
+  const perms=Object.keys(permissionLabels);
+  document.querySelectorAll('[data-resource]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-admin-section="permissions"]')?.classList.add('active');
+  document.getElementById('adminContent').innerHTML=`<div class="panel-heading"><div><p class="nav-caption">SEGREGAÇÃO DE FUNÇÕES</p><h2>Equipe e permissões</h2></div></div><p class="permission-help">Cada administrador pode receber somente os módulos necessários. As regras também são verificadas pelo backend.</p><div class="staff-list">${staff.map(member=>`<form class="staff-card" data-staff="${escapeHTML(member.id)}"><div class="staff-head"><div><strong>${escapeHTML(member.name)}</strong><span>${escapeHTML(member.email||'Sem e-mail disponível')}</span></div>${member.self?'<span class="status-pill positive">Sua conta</span>':''}</div><label class="staff-admin-toggle"><input type="checkbox" name="is_admin" ${member.is_admin?'checked':''} ${member.self?'disabled':''}> Acesso administrativo</label><div class="permission-grid">${perms.map(permission=>`<label><input type="checkbox" name="permissions" value="${permission}" ${member.permissions.includes(permission)?'checked':''} ${member.self||!member.is_admin?'disabled':''}> <span>${escapeHTML(permissionLabels[permission])}</span></label>`).join('')}</div>${member.self?'<p class="quiet">A conta atual mantém acesso total para evitar bloqueio acidental.</p>':'<button class="btn-gold">Salvar permissões</button>'}</form>`).join('')}</div>`;
+  document.querySelectorAll('[data-staff] input[name="is_admin"]').forEach(toggle=>toggle.addEventListener('change',()=>{
+    toggle.closest('form').querySelectorAll('input[name="permissions"]').forEach(input=>input.disabled=!toggle.checked);
+  }));
+  document.querySelectorAll('[data-staff]').forEach(form=>form.onsubmit=async e=>{
+    e.preventDefault();const button=form.querySelector('button');button.disabled=true;
+    const is_admin=form.elements.is_admin.checked;
+    const permissions=[...form.querySelectorAll('input[name="permissions"]:checked')].map(i=>i.value);
+    try{await call('staff/'+form.dataset.staff,'PATCH',{is_admin,permissions});message('Permissões atualizadas.');await renderPermissions();}
+    catch(err){message(err.message);}finally{if(button)button.disabled=false;}
+  });
+ }catch(e){message(e.message);}
+}
 const paymentLabels={pix:'Pix',cartao:'Cartão',boleto:'Boleto',confirmado:'Confirmado'};
 const dateTime=value=>value?new Date(value).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—';
 const revenuePeriodLabels={day:'Dia',week:'Semana',month:'Mês',year:'Ano'};
@@ -53,7 +90,7 @@ function dashboardHTML(d){
  <article class="revenue-card"><span class="metric-icon">↗</span><p>Faturamento</p><strong>${currency(d.revenue)}</strong><small>Total usado pelo painel, incluindo demonstrações</small></article>
  <article class="orders-card"><p>Andamento dos pedidos</p>${Object.entries(d.statuses||{}).length?Object.entries(d.statuses).map(([status,count])=>`<div class="admin-status"><span>${escapeHTML(statusLabels[status]||status)}</span><meter min="0" max="${Math.max(d.orders,1)}" value="${count}">${count}</meter><b>${count}</b></div>`).join(''):'<div class="empty-metric">Sua próxima venda começa na vitrine.</div>'}</article>
  <article class="revenue-chart-card">
-   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Compras aprovadas no sistema</small></div><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div></div>
+   <div class="dashboard-card-head revenue-head"><div><p>Faturamento</p><small>Compras aprovadas no sistema</small></div><div class="revenue-head-actions"><div class="revenue-periods" role="group" aria-label="Período do gráfico">${Object.entries(revenuePeriodLabels).map(([key,label])=>`<button type="button" data-revenue-period="${key}" class="${key===selectedRevenuePeriod?'active':''}">${label}</button>`).join('')}</div>${can('exports')?'<div class="export-actions"><button type="button" class="btn-outline" data-export-sales="csv">CSV</button><button type="button" class="btn-outline" data-export-sales="xlsx">XLSX</button></div>':''}</div></div>
    <div id="revenueChart" class="annual-revenue-chart" role="img" aria-label="Gráfico de faturamento"><p class="loading-state">Carregando gráfico…</p></div>
    <div class="chart-summary"><p id="revenuePeriodTotal"></p><p id="revenuePeriodOrders"></p></div>
  </article>
@@ -85,6 +122,7 @@ async function loadDashboard(quiet=false){
   document.getElementById('dashboard').innerHTML=dashboardHTML(d);
   document.getElementById('viewAllOrders')?.addEventListener('click',()=>listing('orders'));
   document.querySelectorAll('[data-revenue-period]').forEach(button=>button.addEventListener('click',()=>loadRevenueChart(button.dataset.revenuePeriod,selectedRevenueMode)));
+  document.querySelectorAll('[data-export-sales]').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;const format=button.dataset.exportSales;try{await downloadAdmin('export-sales?period='+encodeURIComponent(selectedRevenuePeriod)+'&format='+format,'faturamento-'+selectedRevenuePeriod+'.'+format);message('Faturamento exportado.');}catch(err){message(err.message);}finally{button.disabled=false;}}));
   await loadRevenueChart(selectedRevenuePeriod,'all');
   if(!quiet)message('');
  }catch(error){if(!quiet)message(error.message);}
@@ -92,10 +130,13 @@ async function loadDashboard(quiet=false){
 }
 
 (async()=>{try{
- document.getElementById('adminNav').innerHTML=Object.entries(names).map(([k,n])=>`<button data-resource="${k}"><span aria-hidden="true">${icons[k]}</span>${n}</button>`).join('');
- document.getElementById('adminNav').onclick=e=>{const b=e.target.closest('[data-resource]');if(b)listing(b.dataset.resource);};
- await loadDashboard();
- await listing('products');
- dashboardTimer=setInterval(()=>loadDashboard(true),30000);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadDashboard(true);});
-}catch(e){message(e.message);document.getElementById('adminContent').innerHTML='<div class="empty-table"><h2>Acesse sua conta de administrador</h2><p>Entre na sua conta para gerenciar a loja.</p><a class="btn-gold" href="/#conta">Ir para o login</a></div>';}})();
+ adminAccess=await call('me');
+ const visible=Object.entries(names).filter(([resource])=>can(resourcePermission[resource]));
+ document.getElementById('adminNav').innerHTML=visible.map(([k,n])=>`<button data-resource="${k}"><span aria-hidden="true">${icons[k]}</span>${n}</button>`).join('')+(can('manage_admins')?'<button data-admin-section="permissions"><span aria-hidden="true">⚙</span>Equipe e permissões</button>':'');
+ document.getElementById('adminNav').onclick=e=>{const b=e.target.closest('[data-resource]');if(b)listing(b.dataset.resource);const p=e.target.closest('[data-admin-section="permissions"]');if(p)renderPermissions();};
+ document.getElementById('dashboard').hidden=!can('dashboard');
+ if(can('dashboard'))await loadDashboard();
+ const first=visible[0]?.[0];if(first)await listing(first);else if(can('manage_admins'))await renderPermissions();
+ if(can('dashboard'))dashboardTimer=setInterval(()=>loadDashboard(true),30000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&can('dashboard'))loadDashboard(true);});
+}catch(e){message(e.message);document.getElementById('adminContent').innerHTML='<div class="empty-table"><h2>Acesso administrativo indisponível</h2><p>'+escapeHTML(e.message)+'</p><a class="btn-gold" href="/#conta">Voltar para a conta</a></div>';}})();
