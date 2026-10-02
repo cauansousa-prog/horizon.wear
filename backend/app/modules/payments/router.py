@@ -1,5 +1,4 @@
 import hashlib,json
-from datetime import datetime,timezone
 from uuid import UUID,uuid4
 from decimal import Decimal
 from typing import Literal
@@ -35,32 +34,15 @@ class Checkout(BaseModel):
         if any(i.quantity<1 for i in self.items):raise ValueError('Carrinho inválido.')
         return self
 
-class SimulationCustomer(Customer):
-    cpf:str=Field(default='',max_length=20)
-    phone:str=Field(default='',max_length=25)
-
-class Simulation(BaseModel):
+class DirectCheckout(BaseModel):
     model_config=ConfigDict(extra='forbid')
-    customer:SimulationCustomer
+    customer:Customer
     items:list[Item]=Field(min_length=1,max_length=100)
     method:Literal['pix','cartao','boleto']
 
-@router.post('/simulate')
-async def simulate(body:Simulation,idempotency_key:UUID=Header(),db:Database=Depends(get_database)):
-    """Demonstra a compra sem cobrar, reservar ou baixar o estoque real."""
-    if any(i.quantity<1 for i in body.items):
-        raise HTTPException(422,'Carrinho inválido.')
-    quote=await quote_items(body.items,db)
-    total=Decimal(quote['subtotal'])+Decimal(str(db.settings.shipping_flat_brl))
-    return {'order_id':str(idempotency_key),'code':'DEMO-'+str(idempotency_key)[:8].upper(),
-            'status':'simulated','simulation':True,'method':body.method,
-            'total':str(total.quantize(Decimal('.01'))),
-            'items':[{'nome_produto':i['product']['nome'],'tamanho':i['size'],
-                      'quantidade':i['quantity'],'subtotal':i['subtotal']} for i in quote['items']]}
-
 
 @router.post('/complete')
-async def complete_payment(body:Simulation,idempotency_key:UUID=Header(),
+async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
                            checkout_token:str=Header(min_length=32,max_length=128),
                            credentials:HTTPAuthorizationCredentials|None=Depends(bearer),
                            db:Database=Depends(get_database)):
