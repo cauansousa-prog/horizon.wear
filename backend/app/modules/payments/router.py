@@ -50,7 +50,16 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
     if not db.settings.supabase_service_role_key.get_secret_value():
         raise HTTPException(503,'Checkout indisponível no servidor.')
     await quote_items(body.items,db)
-    user=await current_user(credentials,db) if credentials else None
+    user=None
+    if credentials:
+        try:
+            user=await current_user(credentials,db)
+        except HTTPException as exc:
+            if exc.status_code not in (400,401,403):
+                raise
+            # O checkout também aceita visitante; uma sessão expirada não deve impedir
+            # a conclusão do pedido nem conceder qualquer privilégio adicional.
+            user=None
     customer=body.customer.model_dump(mode='json')
     fingerprint=hashlib.sha256(json.dumps({
         'customer':customer,
