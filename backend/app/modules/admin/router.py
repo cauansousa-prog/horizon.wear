@@ -86,8 +86,6 @@ def _confirmed_payment(order):
                 'valor':order.get('total') or 0,'aprovado_em':order.get('created_at')}
     return None
 
-def _demo_payment(payment):
-    return str((payment or {}).get('mercadopago_payment_id') or '').startswith('DEMO-')
 
 async def _reconcile_open_payments(db,user):
     """Reconcilia cobranças abertas com o Mercado Pago.
@@ -174,36 +172,27 @@ async def dashboard(user:User=Depends(admin),db:Database=Depends(get_database)):
     statuses={}
     for order in orders:statuses[order['status']]=statuses.get(order['status'],0)+1
     purchases=[]
-    revenue=Decimal('0');paid_orders=0;demo_revenue=Decimal('0');demo_paid=0
+    revenue=Decimal('0');paid_orders=0
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:continue
         amount=Decimal(str(payment.get('valor') if payment.get('valor') is not None else order.get('total') or 0))
-        is_demo=_demo_payment(payment)
         revenue+=amount;paid_orders+=1
-        if is_demo:
-            demo_revenue+=amount;demo_paid+=1
         purchases.append({
             'id':order['id'],'codigo':order.get('codigo'),'nome_cliente':order.get('nome_cliente') or 'Cliente',
             'status':order.get('status'),'total':str(amount),'metodo':payment.get('metodo') or '—',
             'payment_status':payment.get('status'),'approved_at':payment.get('aprovado_em') or order.get('created_at'),
-            'demo':is_demo,'items':order.get('order_items') or []
+            'items':order.get('order_items') or []
         })
-    return {'orders':len(orders),'paid_orders':paid_orders,'demo_paid_orders':demo_paid,
+    return {'orders':len(orders),'paid_orders':paid_orders,
             'revenue':str(revenue.quantize(Decimal('.01'))),
-            'demo_revenue':str(demo_revenue.quantize(Decimal('.01'))),
             'statuses':statuses,'recent_purchases':purchases[:8],'payments_reconciled':reconciled}
 
-def _sales_rows(orders,mode='all'):
+def _sales_rows(orders):
     result=[]
     for order in orders:
         payment=_confirmed_payment(order)
         if not payment:
-            continue
-        is_demo=_demo_payment(payment)
-        if mode=='demo' and not is_demo:
-            continue
-        if mode=='real' and is_demo:
             continue
         paid_at=_as_datetime(payment.get('aprovado_em') or order.get('created_at'))
         if not paid_at:
@@ -287,7 +276,7 @@ def _revenue_buckets(orders,period,now):
     start,end,labels,bucket,title=_revenue_period(period,now)
     totals=[Decimal('0') for _ in labels]
     counts=[0 for _ in labels]
-    for order,payment,paid_at,amount in _sales_rows(orders,'all'):
+    for order,payment,paid_at,amount in _sales_rows(orders):
         if not start<=paid_at<end:continue
         index=bucket(paid_at)
         if 0<=index<len(labels):
@@ -320,7 +309,6 @@ async def revenue_export(period:Literal['day','week','month','year']='month',
 
 @router.get('/revenue/chart')
 async def revenue_chart(period:Literal['day','week','month','year']='month',
-                        mode:Literal['all','real','demo']='all',
                         user:User=Depends(admin),db:Database=Depends(get_database)):
     reconciled=await _reconcile_open_payments(db,user)
     orders=await _orders_with_sales(db,user)
@@ -328,7 +316,7 @@ async def revenue_chart(period:Literal['day','week','month','year']='month',
     start,end,labels,bucket,title=_revenue_period(period,now)
     totals=[Decimal('0') for _ in labels]
     counts=[0 for _ in labels]
-    for order,payment,paid_at,amount in _sales_rows(orders,mode):
+    for order,payment,paid_at,amount in _sales_rows(orders):
         if not start<=paid_at<end:
             continue
         index=bucket(paid_at)
@@ -353,7 +341,7 @@ async def revenue_chart(period:Literal['day','week','month','year']='month',
                'tickprefix':'R$ ','tickformat':',.0f','title':'Faturamento'}
     )
     points=[{'label':labels[i],'revenue':f'{totals[i]:.2f}','orders':counts[i]} for i in range(len(labels))]
-    return {'period':period,'mode':mode,'label':title,'start':start.isoformat(),'end':end.isoformat(),
+    return {'period':period,'label':title,'start':start.isoformat(),'end':end.isoformat(),
             'total':str(total),'orders':sum(counts),'points':points,
             'payments_reconciled':reconciled,'figure':json.loads(fig.to_json())}
 
