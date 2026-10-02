@@ -49,7 +49,14 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
     """Conclui o pedido como pagamento aprovado dentro do fluxo da loja."""
     if not db.settings.supabase_service_role_key.get_secret_value():
         raise HTTPException(503,'Checkout indisponível no servidor.')
-    user=await current_user(credentials,db) if credentials else None
+    user=None
+    if credentials:
+        try:
+            user=await current_user(credentials,db)
+        except HTTPException as exc:
+            if exc.status_code not in (400,401,403):
+                raise
+            user=None
     customer=body.customer.model_dump(mode='json')
     fingerprint=hashlib.sha256(json.dumps({
         'customer':customer,
@@ -68,7 +75,13 @@ async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
         'p_method':body.method,
         'p_shipping':str(db.settings.shipping_flat_brl)
     })
-    internal_payment_id='LOCAL-'+str(idempotency_key).replace('-','').upper()
+    saved=await privileged_rpc(db,'horizon_get_checkout',{
+        'p_order':order['id'],'p_guest_hash':guest_hash
+    })
+    existing_payment_id=str((saved or {}).get('payment_id') or '')
+    if existing_payment_id and not existing_payment_id.startswith('LOCAL-'):
+        raise HTTPException(409,'Este pedido já possui outro pagamento vinculado. Atualize o checkout e tente novamente.')
+    internal_payment_id=existing_payment_id or ('LOCAL-'+str(idempotency_key).replace('-','').upper())
     await privileged_rpc(db,'horizon_apply_payment',{
         'p_order':order['id'],
         'p_payment_id':internal_payment_id,
