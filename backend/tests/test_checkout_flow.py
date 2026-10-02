@@ -48,9 +48,12 @@ def test_checkout_and_signed_webhook(method, provider_method):
                                              {'id': 'visa', 'payment_type_id': 'credit_card'}])
         if path == '/rest/v1/product_sizes':
             assert request.headers['authorization'] == 'Bearer public-key'
-            return httpx.Response(200, json=[{'id': SIZE, 'tamanho': 'M', 'estoque': 2,
-                'products': {'id': ORDER, 'nome': 'Peça', 'slug': 'peca', 'preco': 100,
-                             'preco_promocional': 90, 'ativo': True, 'product_images': []}}])
+            return httpx.Response(200, json=[{'id': SIZE, 'product_id': ORDER, 'tamanho': 'M', 'estoque': 2}])
+        if path == '/rest/v1/products':
+            return httpx.Response(200, json=[{'id': ORDER, 'nome': 'Peça', 'slug': 'peca',
+                                              'preco': 100, 'preco_promocional': 90, 'ativo': True}])
+        if path == '/rest/v1/product_images':
+            return httpx.Response(200, json=[])
         if path == '/rest/v1/rpc/horizon_create_order':
             assert request.headers['authorization'] == 'Bearer server-only-key'
             payload = json.loads(request.content)
@@ -150,9 +153,12 @@ def test_direct_payment_is_approved_and_uses_order_stock_flow(method):
     def handle(request):
         path=request.url.path
         if path=='/rest/v1/product_sizes':
-            return httpx.Response(200,json=[{'id':SIZE,'tamanho':'M','estoque':12,
-                'products':{'id':ORDER,'nome':'Camiseta preta','slug':'camiseta-preta',
-                            'preco':100,'preco_promocional':90,'ativo':True,'product_images':[]}}])
+            return httpx.Response(200,json=[{'id':SIZE,'product_id':ORDER,'tamanho':'M','estoque':12}])
+        if path=='/rest/v1/products':
+            return httpx.Response(200,json=[{'id':ORDER,'nome':'Camiseta preta','slug':'camiseta-preta',
+                                             'preco':100,'preco_promocional':90,'ativo':True}])
+        if path=='/rest/v1/product_images':
+            return httpx.Response(200,json=[])
         if path=='/rest/v1/rpc/horizon_create_order':
             payload=json.loads(request.content)
             assert payload['p_method']==method
@@ -192,9 +198,12 @@ def test_provider_error_explains_invalid_buyer_seller_accounts():
         if request.url.path == '/v1/payment_methods':
             return httpx.Response(200, json=[{'id':'pix','payment_type_id':'bank_transfer'}])
         if request.url.path == '/rest/v1/product_sizes':
-            return httpx.Response(200, json=[{'id': SIZE, 'tamanho':'M', 'estoque':2,
-                'products': {'id':ORDER,'nome':'Peça','slug':'peca','preco':100,
-                             'preco_promocional':90,'ativo':True,'product_images':[]}}])
+            return httpx.Response(200, json=[{'id': SIZE, 'product_id':ORDER, 'tamanho':'M', 'estoque':2}])
+        if request.url.path == '/rest/v1/products':
+            return httpx.Response(200, json=[{'id':ORDER,'nome':'Peça','slug':'peca','preco':100,
+                                              'preco_promocional':90,'ativo':True}])
+        if request.url.path == '/rest/v1/product_images':
+            return httpx.Response(200, json=[])
         if request.url.path == '/rest/v1/rpc/horizon_create_order':
             return httpx.Response(200, json={'id':ORDER,'codigo':101,'total':90})
         if request.url.path == '/v1/payments' and request.method == 'POST':
