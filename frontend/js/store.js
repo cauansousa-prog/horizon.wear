@@ -4,7 +4,7 @@ const safeImage = value => {if(!value)return '/img/logo-icone.png';try {const u=
 let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve(), catalogState='loading';
 try {session=JSON.parse(localStorage.getItem('hw-session')||'null');} catch {localStorage.removeItem('hw-session');}
 const storageCart=()=>{try {const v=JSON.parse(localStorage.getItem('hw-cart')||'[]');return Array.isArray(v)?v.filter(i=>typeof i.size_id==='string'&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=99).slice(0,100):[];}catch{return [];}};
-function saveSession(value){session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
+function saveSession(value){const oldIdentity=session?.user?.id||session?.user?.email||null,newIdentity=value?.user?.id||value?.user?.email||null;if(oldIdentity!==newIdentity)sessionStorage.removeItem('hw-checkout-attempt');session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
 async function api(path,options={},retry=true){
   const publicRead=(!options.method||options.method==='GET')&&/^\/api\/(products(?:[/?]|$)|categories(?:[/?]|$)|reviews\/)/.test(path);
   if(!publicRead && session?.refresh_token && session.expires_at*1000<Date.now()+30000 && !path.startsWith('/api/auth/')) {
