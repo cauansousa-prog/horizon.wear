@@ -219,3 +219,37 @@ def test_provider_error_explains_invalid_buyer_seller_accounts():
         assert response.status_code==502
         assert 'Comprador diferente da conta Vendedor' in response.json()['detail']
         assert 'private-payment-token' not in response.text
+
+
+def test_direct_payment_retry_reuses_existing_local_payment_id():
+    state={'applied_ids':[]}
+    def handle(request):
+        path=request.url.path
+        if path=='/rest/v1/product_sizes':
+            return httpx.Response(200,json=[{'id':SIZE,'product_id':ORDER,'tamanho':'M','estoque':12}])
+        if path=='/rest/v1/products':
+            return httpx.Response(200,json=[{'id':ORDER,'nome':'Camiseta preta','slug':'camiseta-preta',
+                                             'preco':100,'preco_promocional':90,'ativo':True}])
+        if path=='/rest/v1/product_images':
+            return httpx.Response(200,json=[])
+        if path=='/rest/v1/rpc/horizon_create_order':
+            return httpx.Response(200,json={'id':ORDER,'codigo':101,'total':'90.00'})
+        if path=='/rest/v1/rpc/horizon_get_checkout':
+            return httpx.Response(200,json={'id':ORDER,'codigo':101,'total':'90.00',
+                                            'payment_id':'LOCAL-EXISTING','review_required':False})
+        if path=='/rest/v1/rpc/horizon_apply_payment':
+            payload=json.loads(request.content)
+            state['applied_ids'].append(payload['p_payment_id'])
+            return httpx.Response(200,json=None)
+        return httpx.Response(404)
+    cfg=Settings(_env_file=None,supabase_url='https://example.supabase.co',
+                 supabase_anon_key='public-key',supabase_service_role_key='server-only-key')
+    payload=body('pix')
+    payload.pop('token',None);payload.pop('payment_method_id',None)
+    with TestClient(create_app(cfg,httpx.MockTransport(handle))) as client:
+        for _ in range(2):
+            response=client.post('/api/checkout/complete',json=payload,
+                headers={'Idempotency-Key':KEY,'Checkout-Token':TOKEN})
+            assert response.status_code==200,response.text
+            assert response.json()['payment_status']=='approved'
+    assert state['applied_ids']==['LOCAL-EXISTING','LOCAL-EXISTING']
