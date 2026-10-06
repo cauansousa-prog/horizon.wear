@@ -50,3 +50,368 @@
 .chart-export-actions button:hover{background:#f4f7f1}
 .chart-export-actions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:700px){.revenue-head-actions{width:100%;align-items:stretch;flex-direction:column}.chart-export-actions{width:100%}.chart-export-actions button{flex:1}}
+
+/* ===== Horizon Wear Admin — visual refresh 2026-10-06 =====
+   Camada apenas visual: não altera comportamento, permissões, APIs ou dados. */
+:root{
+  --admin-bg:#eceeea;
+  --admin-surface:#ffffff;
+  --admin-surface-soft:#f6f7f3;
+  --admin-text:#2f342f;
+  --admin-muted:#747b72;
+  --admin-border:#d8ddd5;
+  --admin-yellow:#e2b84d;
+  --admin-yellow-soft:#fff4cf;
+  --admin-yellow-deep:#a97913;
+  --admin-shadow:0 14px 34px rgba(49,55,49,.07);
+  --admin-shadow-soft:0 7px 20px rgba(49,55,49,.055);
+}
+
+.admin-body{
+  background:
+    radial-gradient(circle at 88% 7%,rgba(226,184,77,.12),transparent 26rem),
+    linear-gradient(180deg,#f1f2ef 0%,var(--admin-bg) 42%,#e8ebe7 100%);
+  color:var(--admin-text);
+}
+
+.admin-sidebar{
+  background:linear-gradient(180deg,#373c38 0%,#303531 100%);
+  border-right:1px solid rgba(255,255,255,.06);
+  box-shadow:14px 0 34px rgba(37,42,38,.07);
+}
+.admin-brand{
+  color:#fff7de;
+}
+.admin-brand small,
+.admin-sidebar .nav-caption{
+  color:#aeb6ac;
+}
+.admin-nav{
+  gap:8px;
+}
+.admin-nav button{
+  border:1px solid transparent;
+  border-radius:11px;
+  padding:12px 14px;
+  color:#d0d5ce;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.admin-nav button:hover{
+  background:#414842;
+  border-color:#4b534d;
+  color:#fff;
+  transform:translateX(2px);
+}
+.admin-nav button.active{
+  background:linear-gradient(135deg,#edc966,#d9a936);
+  border-color:#f1d67f;
+  color:#2f332e;
+  box-shadow:0 8px 20px rgba(226,184,77,.18);
+}
+.back-store{
+  color:#e7c971;
+}
+
+.admin-topbar{
+  background:rgba(247,248,245,.94);
+  border-bottom:1px solid var(--admin-border);
+  box-shadow:0 5px 18px rgba(48,54,49,.035);
+  backdrop-filter:blur(10px);
+}
+.admin-topbar>a{
+  color:#424942;
+}
+.admin-avatar{
+  width:36px;
+  height:36px;
+  background:linear-gradient(145deg,#fff2c4,#e1b64b);
+  color:#4c401d;
+  border:1px solid #d4a83a;
+  box-shadow:0 5px 12px rgba(170,126,23,.12);
+}
+
+.admin-main{
+  padding-top:44px;
+}
+.admin-heading{
+  padding:4px 2px 2px;
+}
+.admin-heading .eyebrow{
+  color:var(--admin-yellow-deep);
+  font-weight:800;
+}
+.admin-heading h1{
+  color:#262c27;
+  font-weight:750;
+  letter-spacing:-.05em;
+}
+.admin-heading p:last-child{
+  color:#70766f;
+}
+
+.admin-body .btn-outline,
+.admin-body .btn-gold{
+  border-radius:10px;
+  min-height:42px;
+  padding:11px 18px;
+  font-weight:700;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease;
+}
+.admin-body .btn-outline{
+  background:#fff;
+  border:1px solid #ccd2ca;
+  color:#434b43;
+  box-shadow:0 3px 10px rgba(49,55,49,.04);
+}
+.admin-body .btn-outline:hover{
+  border-color:#d7ac3d;
+  background:#fffaf0;
+  color:#6d5419;
+  transform:translateY(-1px);
+  box-shadow:0 7px 16px rgba(78,65,29,.07);
+}
+.admin-body .btn-gold{
+  background:linear-gradient(135deg,#edc75f,#dbaa36);
+  border:1px solid #d4a333;
+  color:#322d20;
+  box-shadow:0 7px 16px rgba(182,137,29,.14);
+}
+.admin-body .btn-gold:hover{
+  background:linear-gradient(135deg,#f1ce6b,#d3a02c);
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(182,137,29,.18);
+}
+
+.dashboard{
+  gap:16px;
+  margin-top:32px;
+}
+.dashboard article{
+  border:1px solid var(--admin-border);
+  border-radius:14px;
+  background:rgba(255,255,255,.96);
+  box-shadow:var(--admin-shadow-soft);
+}
+.dashboard article:not(.orders-card):not(.revenue-chart-card):not(.recent-purchases-card)::after{
+  content:"";
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:0;
+  height:3px;
+  border-radius:99px 99px 0 0;
+  background:linear-gradient(90deg,var(--admin-yellow),rgba(226,184,77,0));
+}
+.dashboard p{
+  color:#697168;
+}
+.dashboard strong{
+  color:#2b312c;
+}
+.dashboard small{
+  color:#858c84;
+}
+.metric-icon,
+.metric-icon.green{
+  background:linear-gradient(145deg,#fff6d8,#f2d980);
+  color:#8d6811;
+  border:1px solid #edd17c;
+  border-radius:10px;
+}
+.dashboard .revenue-card{
+  background:linear-gradient(145deg,#fffaf0,#fff4d7);
+  border-color:#e5c66f;
+  color:#302b20;
+}
+.revenue-card p,
+.revenue-card small{
+  color:#756748;
+}
+.revenue-card .metric-icon{
+  background:#fff;
+  color:#9a7112;
+  border-color:#e4c66d;
+}
+.dashboard .orders-card{
+  background:#e4e7e2;
+  border-color:#d4d9d2;
+  border-radius:14px;
+}
+.admin-status meter{
+  accent-color:var(--admin-yellow);
+}
+
+.revenue-chart-card,
+.recent-purchases-card{
+  background:rgba(255,255,255,.98)!important;
+}
+.dashboard-card-head{
+  border-bottom:1px solid #edf0eb;
+  padding-bottom:13px;
+}
+.dashboard-card-head>div>p{
+  color:#333b34;
+  font-size:14px;
+}
+.revenue-periods{
+  background:#eef0ec;
+  border-color:#d9ddd6;
+  border-radius:10px;
+  padding:5px;
+}
+.revenue-periods button{
+  border-radius:8px;
+  padding:8px 14px;
+}
+.revenue-periods button:hover{
+  background:#fff8e4;
+  color:#7d5c11;
+}
+.revenue-periods button.active{
+  background:linear-gradient(135deg,#e8bf54,#d6a332);
+  color:#332d1e;
+  box-shadow:0 5px 12px rgba(178,133,28,.14);
+}
+.chart-export-actions button{
+  border-radius:9px;
+  border-color:#d5d9d2;
+  background:#fff;
+  color:#4b544a;
+  padding:8px 13px;
+}
+.chart-export-actions button:hover{
+  background:#fff8e7;
+  border-color:#ddb64c;
+  color:#785a16;
+}
+.chart-summary{
+  border-top:1px solid #ecefea;
+}
+
+.admin-panel{
+  background:rgba(255,255,255,.98);
+  border:1px solid var(--admin-border);
+  border-radius:14px;
+  box-shadow:var(--admin-shadow);
+}
+.panel-heading{
+  background:linear-gradient(180deg,#fff,#fbfcfa);
+}
+.panel-heading h2{
+  color:#2d342e;
+}
+.count-badge{
+  background:var(--admin-yellow-soft);
+  color:#7a5c16;
+  border:1px solid #eed58f;
+  border-radius:8px;
+}
+.table-tools{
+  background:#f5f6f3;
+  border-color:#e3e6e0;
+}
+.admin-body input,
+.admin-body select,
+.admin-body textarea{
+  background:#fff;
+  border:1px solid #cfd5cd;
+  border-radius:10px;
+  color:#303731;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.admin-body input:focus,
+.admin-body select:focus,
+.admin-body textarea:focus{
+  border-color:#d7ad3b;
+  box-shadow:0 0 0 3px rgba(226,184,77,.15);
+  background:#fffdf8;
+  outline:none;
+}
+.admin-table th{
+  background:#f0f2ee;
+  color:#646d62;
+}
+.admin-table th,
+.admin-table td{
+  border-bottom-color:#e7eae5;
+}
+.admin-table tbody tr{
+  transition:background .14s ease;
+}
+.admin-table tbody tr:hover{
+  background:#fff9e8;
+}
+.status-pill{
+  border-radius:999px;
+  padding:6px 10px;
+  border:1px solid #dde1da;
+  background:#f0f2ee;
+}
+.status-pill.positive{
+  background:#edf5e9;
+  border-color:#d7e8d0;
+}
+.status-pill.neutral{
+  background:#f3f1ed;
+  border-color:#e5e0d8;
+}
+.row-action{
+  color:#8a6716;
+  border-radius:7px;
+}
+.row-action:hover{
+  color:#5e4711;
+  background:#fff4d5;
+}
+
+.admin-form,
+#stockForm{
+  background:#f3f5f1;
+  border:1px solid #dce1d9;
+  border-radius:12px;
+}
+#adminMessage:not(:empty){
+  border:1px solid #ead393;
+  border-left:4px solid var(--admin-yellow);
+  background:#fff8e2;
+  color:#6f571d;
+  border-radius:10px;
+  box-shadow:0 5px 14px rgba(95,73,20,.05);
+}
+.payment-method{
+  background:#fff3cf!important;
+  color:#765711!important;
+  border:1px solid #ead184;
+  border-radius:999px;
+}
+.purchase-row{
+  border-bottom-color:#e8ebe6;
+}
+.purchase-row:hover{
+  background:#fffaf0;
+}
+.purchase-total{
+  color:#75580f!important;
+}
+
+@media(max-width:700px){
+  .admin-sidebar{
+    background:linear-gradient(180deg,#393f3a,#323733);
+    box-shadow:0 8px 20px rgba(37,42,38,.08);
+  }
+  .admin-nav button{
+    border-radius:9px;
+  }
+  .admin-main{
+    padding-top:28px;
+  }
+  .dashboard article,
+  .admin-panel{
+    border-radius:12px;
+  }
+  .admin-heading{
+    align-items:flex-start;
+  }
+}
+
