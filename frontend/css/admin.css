@@ -415,3 +415,406 @@
   }
 }
 
+/* ===== Horizon Wear Admin — Dark Yellow Edition =====
+   Camada exclusivamente visual. Não altera lógica, API ou comportamento. */
+:root{
+  --hw-dark-0:#070807;
+  --hw-dark-1:#0d0f0e;
+  --hw-dark-2:#131613;
+  --hw-dark-3:#1a1e1a;
+  --hw-dark-4:#232823;
+  --hw-line:#2c322d;
+  --hw-line-soft:#242925;
+  --hw-text:#f0f1ed;
+  --hw-text-soft:#b9c0b8;
+  --hw-muted:#858e85;
+  --hw-yellow:#f0c54d;
+  --hw-yellow-2:#d6a72c;
+  --hw-yellow-soft:#3a3015;
+  --hw-shadow:0 18px 46px rgba(0,0,0,.28);
+  --hw-shadow-soft:0 10px 26px rgba(0,0,0,.2);
+}
+
+.admin-body{
+  background:
+    radial-gradient(circle at 82% 4%,rgba(240,197,77,.075),transparent 24rem),
+    linear-gradient(180deg,#171a18 0%,#111411 48%,#0d100e 100%)!important;
+  color:var(--hw-text)!important;
+}
+
+.admin-sidebar{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.018),transparent 18%),
+    #050605!important;
+  border-right:1px solid #161916!important;
+  box-shadow:18px 0 42px rgba(0,0,0,.34)!important;
+}
+.admin-brand{
+  color:#fff5d0!important;
+}
+.admin-brand img{
+  filter:drop-shadow(0 4px 12px rgba(240,197,77,.18));
+}
+.admin-brand small,
+.admin-sidebar .nav-caption{
+  color:#6f776f!important;
+}
+.admin-sidebar .nav-caption{
+  letter-spacing:.19em;
+}
+.admin-nav{
+  gap:8px!important;
+}
+.admin-nav button{
+  color:#aeb5ae!important;
+  background:#0a0c0a!important;
+  border:1px solid #141714!important;
+  border-radius:12px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018);
+}
+.admin-nav button:hover{
+  background:#111411!important;
+  color:#fff!important;
+  border-color:#30352f!important;
+  transform:translateX(3px);
+}
+.admin-nav button.active{
+  background:linear-gradient(135deg,#f1c951 0%,#d9a72a 100%)!important;
+  color:#17140b!important;
+  border-color:#f4d36f!important;
+  box-shadow:0 10px 24px rgba(213,162,37,.19),inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+.back-store{
+  color:#d9bb5b!important;
+}
+
+.admin-workspace{
+  background:transparent!important;
+}
+.admin-topbar{
+  background:rgba(9,11,9,.94)!important;
+  border-bottom:1px solid #202420!important;
+  color:#8d958d!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.22)!important;
+  backdrop-filter:blur(12px);
+}
+.admin-topbar>a{
+  color:#d7dbd5!important;
+}
+.admin-avatar{
+  background:linear-gradient(145deg,#f3ce61,#c9951e)!important;
+  color:#1b170d!important;
+  border:1px solid #f0ca5c!important;
+  box-shadow:0 7px 18px rgba(220,171,39,.18)!important;
+}
+
+.admin-heading .eyebrow{
+  color:var(--hw-yellow)!important;
+}
+.admin-heading h1{
+  color:#f7f7f2!important;
+  text-shadow:0 2px 18px rgba(0,0,0,.15);
+}
+.admin-heading p:last-child{
+  color:#9aa29a!important;
+}
+
+.admin-body .btn-outline,
+.admin-body .btn-gold{
+  border-radius:11px!important;
+}
+.admin-body .btn-outline{
+  background:#181c18!important;
+  border-color:#343a34!important;
+  color:#d8ddd7!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.14)!important;
+}
+.admin-body .btn-outline:hover{
+  background:#211d10!important;
+  border-color:#d9aa30!important;
+  color:#f3cd5d!important;
+  box-shadow:0 9px 22px rgba(0,0,0,.19)!important;
+}
+.admin-body .btn-gold{
+  background:linear-gradient(135deg,#f2ca57,#d7a329)!important;
+  border-color:#e8bd4a!important;
+  color:#1f1a0c!important;
+  box-shadow:0 9px 22px rgba(215,163,41,.16)!important;
+}
+.admin-body .btn-gold:hover{
+  background:linear-gradient(135deg,#f6d36b,#d49e20)!important;
+  box-shadow:0 12px 27px rgba(215,163,41,.22)!important;
+}
+
+.dashboard article{
+  background:linear-gradient(180deg,#1a1e1a,#151815)!important;
+  border-color:#2c312c!important;
+  box-shadow:var(--hw-shadow-soft)!important;
+  border-radius:15px!important;
+}
+.dashboard article:not(.orders-card):not(.revenue-chart-card):not(.recent-purchases-card)::after{
+  background:linear-gradient(90deg,var(--hw-yellow),rgba(240,197,77,.05))!important;
+  height:2px!important;
+}
+.dashboard p{
+  color:#9ca49c!important;
+}
+.dashboard strong{
+  color:#f4f5f1!important;
+}
+.dashboard small{
+  color:#737d74!important;
+}
+.metric-icon,
+.metric-icon.green{
+  background:#2b2512!important;
+  color:#f0c54d!important;
+  border-color:#4b3d17!important;
+}
+.dashboard .revenue-card{
+  background:
+    radial-gradient(circle at 90% 0%,rgba(240,197,77,.13),transparent 11rem),
+    linear-gradient(145deg,#1f1c12,#171812)!important;
+  border-color:#57461c!important;
+}
+.revenue-card p,
+.revenue-card small{
+  color:#b4a879!important;
+}
+.revenue-card .metric-icon{
+  background:#332a12!important;
+  color:#f0c54d!important;
+  border-color:#5f4c1b!important;
+}
+.dashboard .orders-card{
+  background:#141714!important;
+  border-color:#292e29!important;
+}
+
+.dashboard-card-head{
+  border-bottom-color:#2a2f2a!important;
+}
+.dashboard-card-head>div>p{
+  color:#eceee9!important;
+}
+.dashboard-card-head small{
+  color:#7d867e!important;
+}
+.revenue-periods{
+  background:#0d100e!important;
+  border-color:#2c312c!important;
+}
+.revenue-periods button{
+  color:#899188!important;
+}
+.revenue-periods button:hover{
+  background:#1b1d16!important;
+  color:#f0c54d!important;
+}
+.revenue-periods button.active{
+  background:linear-gradient(135deg,#f0c54d,#d2a027)!important;
+  color:#18140b!important;
+  box-shadow:0 6px 16px rgba(211,160,35,.18)!important;
+}
+.chart-export-actions button{
+  background:#101310!important;
+  border-color:#303630!important;
+  color:#c5cbc5!important;
+}
+.chart-export-actions button:hover{
+  background:#27220f!important;
+  border-color:#c99d2d!important;
+  color:#f0c54d!important;
+}
+.chart-summary{
+  border-top-color:#282d28!important;
+}
+.chart-summary #revenuePeriodTotal span,
+.chart-summary #revenuePeriodOrders{
+  color:#808981!important;
+}
+.chart-summary #revenuePeriodTotal strong{
+  color:#f0c54d!important;
+}
+
+.admin-panel{
+  background:#151815!important;
+  border-color:#2c312c!important;
+  box-shadow:var(--hw-shadow)!important;
+  border-radius:15px!important;
+}
+.panel-heading{
+  background:linear-gradient(180deg,#181b18,#151815)!important;
+}
+.panel-heading h2{
+  color:#f0f2ed!important;
+}
+.count-badge{
+  background:#342b12!important;
+  color:#f0c54d!important;
+  border-color:#58461a!important;
+}
+
+.table-tools{
+  background:#101310!important;
+  border-color:#282d28!important;
+}
+.table-tools label,
+.table-tools>span,
+.table-footer{
+  color:#808980!important;
+}
+.admin-body input,
+.admin-body select,
+.admin-body textarea{
+  background:#0e110f!important;
+  border-color:#323832!important;
+  color:#ecf0ea!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018)!important;
+}
+.admin-body input::placeholder,
+.admin-body textarea::placeholder{
+  color:#626a63!important;
+}
+.admin-body input:focus,
+.admin-body select:focus,
+.admin-body textarea:focus{
+  background:#111411!important;
+  border-color:#d7aa31!important;
+  box-shadow:0 0 0 3px rgba(240,197,77,.11)!important;
+}
+.admin-table{
+  background:#151815!important;
+}
+.admin-table th{
+  background:#0f120f!important;
+  color:#8f978f!important;
+}
+.admin-table th,
+.admin-table td{
+  border-bottom-color:#272c27!important;
+}
+.admin-table td{
+  color:#cbd0ca!important;
+}
+.admin-table td:first-child{
+  color:#f1f2ee!important;
+}
+.admin-table tbody tr:hover{
+  background:#1d1c12!important;
+}
+
+.status-pill{
+  background:#202420!important;
+  color:#a9b1a9!important;
+  border-color:#343a34!important;
+}
+.status-pill.positive{
+  background:#18251b!important;
+  color:#91bd8d!important;
+  border-color:#2f4732!important;
+}
+.status-pill.neutral{
+  background:#27231b!important;
+  color:#c7b786!important;
+  border-color:#403828!important;
+}
+.row-action{
+  color:#e1b744!important;
+}
+.row-action:hover{
+  background:#29220e!important;
+  color:#f2ce63!important;
+}
+
+.admin-form,
+#stockForm{
+  background:#111411!important;
+  border-color:#2d332e!important;
+}
+.admin-form label,
+#stockForm label{
+  color:#abb2ab!important;
+}
+#adminMessage:not(:empty){
+  background:#2a2411!important;
+  border-color:#5b4819!important;
+  border-left-color:#f0c54d!important;
+  color:#e4c666!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.16)!important;
+}
+
+.empty-table,
+.loading-state,
+.empty-metric,
+.muted{
+  color:#7d867e!important;
+}
+.empty-table h2{
+  color:#eceee9!important;
+}
+
+.payment-method{
+  background:#2f2812!important;
+  color:#f0c54d!important;
+  border-color:#55441a!important;
+}
+.purchase-row{
+  border-bottom-color:#292e29!important;
+}
+.purchase-row:hover{
+  background:#1d1c12!important;
+}
+.purchase-row strong{
+  color:#edf0eb!important;
+}
+.purchase-row span,
+.purchase-row small{
+  color:#838c84!important;
+}
+.purchase-total{
+  color:#f0c54d!important;
+}
+
+/* Ajustes do Plotly para legibilidade no tema escuro */
+.annual-revenue-chart .js-plotly-plot,
+.annual-revenue-chart .plot-container,
+.annual-revenue-chart .svg-container{
+  background:transparent!important;
+}
+.annual-revenue-chart .plotly text{
+  fill:#aeb6ae!important;
+}
+.annual-revenue-chart .plotly .gtitle{
+  fill:#f0f2ed!important;
+}
+.annual-revenue-chart .plotly .gridlayer path{
+  stroke:#303530!important;
+}
+.annual-revenue-chart .plotly .zerolinelayer path,
+.annual-revenue-chart .plotly .xlines-above,
+.annual-revenue-chart .plotly .ylines-above{
+  stroke:#353a35!important;
+}
+
+.admin-body :focus-visible{
+  outline-color:#f0c54d!important;
+}
+
+@media(max-width:700px){
+  .admin-sidebar{
+    background:#050605!important;
+    border-bottom:1px solid #191c19!important;
+  }
+  .admin-nav button{
+    background:#0b0d0b!important;
+  }
+  .admin-topbar{
+    background:#090b09!important;
+  }
+  .dashboard article,
+  .admin-panel{
+    box-shadow:0 9px 24px rgba(0,0,0,.2)!important;
+  }
+}
+
