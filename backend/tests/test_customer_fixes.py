@@ -10,7 +10,7 @@ def test_checkout_requires_customer_identity_and_valid_address():
                  supabase_anon_key='public-key',supabase_service_role_key='server-only-key')
     payload=body('pix')
     payload.pop('token',None);payload.pop('payment_method_id',None)
-    with TestClient(create_app(cfg,httpx.MockTransport(lambda request:httpx.Response(500))) as client:
+    with TestClient(create_app(cfg,httpx.MockTransport(lambda request:httpx.Response(500)))) as client:
         missing=dict(payload)
         missing['customer']=dict(payload['customer'])
         missing['customer']['cpf']=''

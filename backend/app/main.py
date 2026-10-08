@@ -1,3 +1,4 @@
+from .storefront import router as storefront_router
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from .modules.webhooks.router import router as webhooks_router
@@ -102,9 +103,7 @@ def create_app(settings=None, transport=None):
     async def legacy_index():
         return FileResponse(ROOT / 'frontend' / 'index.html')
 
-    @app.get('/produto/{slug}', include_in_schema=False)
-    async def product_page(slug: str):
-        return FileResponse(ROOT / 'frontend' / 'index.html')
+    app.include_router(storefront_router)
 
     for store in ('academia','construcao'):
         app.mount('/lojas/'+store,StoreFiles(directory=ROOT/'lojas'/store,html=True),name='loja-'+store)

@@ -19,7 +19,7 @@ function initWhatsappLinks(){
   document.getElementById('waPolicyLink').href = waUrl;
 
   const paymentMsg = encodeURIComponent("Olá! Gostaria de saber quais são as formas de pagamento aceitas na Horizon Wear.");
-  document.getElementById('waFormasPagamentoLink').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${paymentMsg}`;
+  const paymentLink=document.getElementById('waFormasPagamentoLink');if(paymentLink)paymentLink.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${paymentMsg}`;
 }
 
 

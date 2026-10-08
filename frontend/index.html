@@ -5,8 +5,10 @@
 <meta name="description" content="Conheça a coleção Horizon Wear. Moda masculina, peças urbanas e detalhes que fazem parte do seu estilo.">
 <meta property="og:title" content="Horizon Wear | Coleção masculina">
 <meta property="og:description" content="Vista seu próximo horizonte.">
-<meta property="og:image" content="/img/hero.png">
+<meta property="og:image" content="https://horizonwear.vercel.app/img/hero.png">
 <meta charset="UTF-8">
+<meta name="theme-color" content="#090909">
+<link rel="canonical" href="https://horizonwear.vercel.app/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HORIZON WEAR — Moda Masculina Premium</title>
 <link rel="icon" type="image/png" href="img/logo-icone.png">
@@ -16,6 +18,7 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/refinement.css"><link rel="stylesheet" href="css/experience.css?v=20260924b">
 <link rel="stylesheet" href="css/horizon.css?v=20261001e">
+<link rel="stylesheet" href="css/atelier.css?v=20261008a">
 </head>
 <body>
 <a class="skip-link" href="#page-home">Pular para o conteúdo</a>
@@ -23,7 +26,7 @@
 
 <div class="topbar">
   <div class="container">
-    <span><i class="fa-solid fa-truck"></i> FRETE GRÁTIS PARA TODO O BRASIL</span>
+    <span><i class="fa-solid fa-truck"></i> <span data-shipping-label>CONSULTE A ENTREGA</span></span>
     <span>SEU ESTILO. SUA ESSÊNCIA. <strong>↗</strong></span>
     <span><i class="fa-solid fa-rotate"></i> TROCA FÁCIL EM ATÉ 7 DIAS</span>
   </div>
@@ -42,21 +45,12 @@
 
     <nav class="primary" id="primaryNav" aria-label="Navegação principal">
       <ul id="navList">
-        <li class="active" data-page="home"><a href="#" onclick="showPage('home');return false;">INÍCIO</a></li>
-        <li class="has-dropdown" data-page="produtos">
-          <button class="navbtn" onclick="showPage('produtos','todos');return false;">PRODUTOS <i class="fa-solid fa-chevron-down" style="font-size:9px;"></i></button>
-          <div class="dropdown">
-            <a href="#" onclick="showPage('produtos','roupas');return false;">Roupas</a>
-            <a href="#" onclick="showPage('produtos','calcados');return false;">Calçados</a>
-            <a href="#" onclick="showPage('produtos','relogios');return false;">Relógios</a>
-            <a href="#" onclick="showPage('produtos','acessorios');return false;">Acessórios</a>
-          </div>
-        </li>
-        <li data-page="lancamentos"><a href="#" onclick="showPage('home');setTimeout(()=>document.getElementById('lancamentos').scrollIntoView({behavior:'smooth'}),50);return false;">LANÇAMENTOS</a></li>
-        <li data-page="acessorios"><a href="#" onclick="showPage('produtos','acessorios');return false;">ACESSÓRIOS</a></li>
-        <li data-page="calcados"><a href="#" onclick="showPage('produtos','calcados');return false;">CALÇADOS</a></li>
-        <li data-page="sobre"><a href="#" onclick="showPage('sobre');return false;">SOBRE NÓS</a></li>
-        <li data-page="contato"><a href="#" onclick="showPage('contato');return false;">CONTATO</a></li>
+        <li data-page="produtos" data-nav-filter="novidades"><a href="/colecao/novidades" onclick="showPage('produtos','novidades');return false;">NOVIDADES</a></li>
+        <li data-page="produtos" data-nav-filter="roupas"><a href="/colecao/roupas" onclick="showPage('produtos','roupas');return false;">ROUPAS</a></li>
+        <li data-page="produtos" data-nav-filter="calcados"><a href="/colecao/calcados" onclick="showPage('produtos','calcados');return false;">CALÇADOS</a></li>
+        <li data-page="produtos" data-nav-filter="acessorios"><a href="/colecao/acessorios" onclick="showPage('produtos','acessorios');return false;">ACESSÓRIOS</a></li>
+        <li class="mobile-help"><a href="/sobre" onclick="showPage('sobre');return false;">Sobre a Horizon</a></li>
+        <li class="mobile-help"><a href="/ajuda" onclick="showPage('ajuda');return false;">Atendimento e ajuda</a></li>
       </ul>
     </nav>
 
@@ -82,50 +76,54 @@
       <div class="hero-copy">
         <div class="eyebrow">SEU ESTILO. SUA ESSÊNCIA.</div>
         <h1>VISTA SEU<span class="accent">MELHOR HORIZONTE.</span></h1>
-        <p class="lead">Moda masculina para homens que fazem a diferença.</p>
-        <a href="#" class="btn-gold" onclick="showPage('produtos','todos');return false;"><i class="fa-solid fa-bag-shopping"></i> COMPRAR AGORA</a>
+        <p class="lead">Camisetas, calças e acessórios para compor o seu estilo, dos essenciais aos detalhes.</p>
+        <a href="#" class="btn-gold" onclick="showPage('produtos','todos');return false;"><i class="fa-solid fa-bag-shopping"></i> EXPLORAR A COLEÇÃO</a>
       </div>
       <div class="hero-photo">
-        <img src="img/hero.png" alt="Modelo vestindo camiseta preta Horizon Wear" fetchpriority="high">
+        <img src="img/hero.png" alt="Modelo vestindo camiseta preta" fetchpriority="high" width="1774" height="1774">
       </div>
     </div>
   </section>
 
   <section class="features">
     <div class="container">
-      <div class="feature"><div class="icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>FRETE GRÁTIS</h4><p>Para todo o Brasil</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>ENTREGA</h4><p data-shipping-label>Condições no checkout</p></div></div>
       <div class="feature"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>COMPRA SEGURA</h4><p>Dados protegidos</p></div></div>
       <div class="feature"><div class="icon"><i class="fa-solid fa-bag-shopping"></i></div><div><h4>SEU ESTILO, SUA ESCOLHA</h4><p>Dos essenciais aos acessórios</p></div></div>
       <div class="feature"><div class="icon"><i class="fa-solid fa-arrows-rotate"></i></div><div><h4>TROCA FÁCIL</h4><p>Até 7 dias após o recebimento</p></div></div>
     </div>
   </section>
 
+  <section class="section categories-section" id="categorias"><div class="container"><p class="section-kicker">ENCONTRE SUA PEÇA</p><div class="section-head"><h2>Compre por categoria.</h2></div><div class="cat-grid" id="catGrid"></div></div></section>
   <section class="section" id="lancamentos">
     <div class="container">
       <div class="section-head-row">
-        <div><p class="section-kicker">A SUA PRÓXIMA ESCOLHA</p><div class="section-head" style="margin-bottom:0;"><h2>Explore novos favoritos.</h2></div></div>
+        <div><p class="section-kicker">A SUA PRÓXIMA ESCOLHA</p><div class="section-head" style="margin-bottom:0;"><h2>Seleção Horizon.</h2></div></div>
         <a class="collection-link" href="#produtos" onclick="showPage('produtos','todos');return false;">Ver toda a coleção <span aria-hidden="true">↗</span></a>
       </div>
       <div class="arrivals-track" id="arrivalsTrack" aria-live="polite"><p class="catalog-loading" role="status">Carregando sua próxima escolha…</p></div>
     </div>
   </section>
-  <section class="section categories-section" id="categorias"><div class="container"><p class="section-kicker">DO SEU JEITO</p><div class="section-head"><h2>Um estilo. Muitas possibilidades.</h2></div><div class="cat-grid" id="catGrid"></div></div></section>
+
   <section class="editorial-band container"><div><p class="section-kicker">OS DETALHES FAZEM O LOOK</p><h2>Uma peça pode<br>mudar tudo.</h2><p>Relógios, bonés, óculos e mochilas para completar o seu estilo.</p><a class="btn-gold" href="#produtos" onclick="showPage('produtos','acessorios');return false;">Explorar acessórios ↗</a></div><img src="img/catalog/sunglasses.jpg" alt="Óculos de sol pretos com lentes escuras" loading="lazy"></section>
+  <section class="section looks-section"><div class="container"><div class="section-head-row"><div><p class="section-kicker">COMBINAÇÕES DO SEU JEITO</p><h2>Do essencial ao look completo.</h2></div><p class="quiet">Escolha uma peça e descubra o que combina com ela.</p></div><div class="look-grid" id="looksGrid"></div></div></section>
+  <section class="section new-section"><div class="container"><div class="section-head-row"><div><p class="section-kicker">ACABARAM DE CHEGAR</p><h2>Novidades da coleção.</h2></div><a class="collection-link" href="/colecao/novidades" onclick="showPage('produtos','novidades');return false;">Ver novidades ↗</a></div><div class="product-grid" id="newProducts"></div></div></section>
+  <section class="store-note container"><div><p class="section-kicker">CONHEÇA A HORIZON</p><h2>Seu estilo começa com uma boa escolha.</h2><p>Explore a coleção e conte com nosso atendimento para tirar dúvidas sobre as peças.</p><a href="/sobre" onclick="showPage('sobre');return false;">Conheça a loja ↗</a></div><div><p class="section-kicker">ANTES DE COMPRAR</p><h3>Escolha com confiança.</h3><a href="/ajuda#medidas" onclick="showPage('ajuda');document.getElementById('help-medidas').open=true;return false;">Como escolher seu tamanho ↗</a><a href="/ajuda" onclick="showPage('ajuda');return false;">Entrega e formas de pagamento ↗</a><a href="/#trocas" onclick="showPage('trocas');return false;">Trocas e devoluções ↗</a></div></section>
 </main>
 
 
 <main id="page-produtos" style="display:none;">
   <div class="page-header-block">
     <div class="container">
-      <p class="section-kicker">ENCONTRE O SEU PRÓXIMO FAVORITO</p><h1>A coleção é sua.</h1>
-      <p>Explore roupas, calçados e acessórios. Escolha o que combina com você.</p>
+      <p class="section-kicker">ENCONTRE O SEU PRÓXIMO FAVORITO</p><h1 id="catalogTitle">Toda a coleção.</h1>
+      <p id="catalogDescription">Explore roupas, calçados e acessórios. Escolha o que combina com você.</p>
     </div>
   </div>
   <div class="section" style="padding-top:34px;">
     <div class="container">
       <div class="filters-row" id="filtersRow"></div>
       <label class="catalog-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input id="catalogSearch" type="search" placeholder="Busque por peça, cor ou estilo" aria-label="Buscar na coleção" oninput="handleCatalogSearch(this.value)"></label>
-      <div class="catalog-controls"><label>Ordenar<select id="sortProducts" onchange="renderProducts()"><option value="new">Mais recentes</option><option value="sales">Mais vendidos</option><option value="price">Menor preço</option><option value="price-desc">Maior preço</option></select></label><label>Tamanho<select id="sizeFilter" onchange="renderProducts()"></select></label><label>Preço até<input id="maxPrice" type="number" min="0" placeholder="R$" oninput="renderProducts()"></label><label><input id="availableFilter" type="checkbox" onchange="renderProducts()"> Em estoque</label></div><p class="results-count" id="resultsCount"></p>
+      <button class="filter-toggle btn-outline" type="button" aria-expanded="false" aria-controls="catalogControls" onclick="toggleCatalogControls(this)">Filtrar e ordenar</button><div class="catalog-controls" id="catalogControls"><label>Ordenar<select id="sortProducts" onchange="renderProducts()"><option value="new">Mais recentes</option><option value="sales">Mais vendidos</option><option value="price">Menor preço</option><option value="price-desc">Maior preço</option></select></label><label>Tamanho<select id="sizeFilter" onchange="renderProducts()"></select></label><label>Preço até<input id="maxPrice" type="number" min="0" placeholder="R$" oninput="renderProducts()"></label><label><input id="availableFilter" type="checkbox" onchange="renderProducts()"> Em estoque</label></div><div class="catalog-feedback"><p class="results-count" id="resultsCount" role="status"></p><div id="activeFilters" class="active-filters"></div></div>
       <div class="product-grid" id="productGrid"></div>
       <div class="empty-state" id="emptyState" style="display:none;" role="status">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -217,7 +215,7 @@
         <h3><i class="fa-solid fa-database"></i> Quais dados coletamos</h3>
         <p>Coletamos apenas as informações necessárias para oferecer uma boa experiência de compra e atendimento. Entre elas:</p>
         <ul>
-          <li><strong>Dados de identificação:</strong> nome completo, e-mail e número de telefone/WhatsApp.</li>
+          <li><strong>Dados de identificação:</strong> nome completo, e-mail, CPF solicitado no checkout e número de telefone/WhatsApp.</li>
           <li><strong>Dados de pedido:</strong> produtos escolhidos, endereço de entrega e forma de pagamento selecionada.</li>
           <li><strong>Dados de navegação:</strong> páginas visitadas, produtos pesquisados e itens adicionados ao carrinho durante a sessão.</li>
           <li><strong>Dados de contato voluntário:</strong> informações enviadas por você através do formulário de contato ou do WhatsApp.</li>
@@ -249,7 +247,8 @@
         <p>A Horizon Wear <strong>não vende, aluga ou comercializa</strong> seus dados pessoais com terceiros. As informações podem ser compartilhadas apenas nas seguintes situações:</p>
         <ul>
           <li>Com serviços de entrega/transportadora, exclusivamente para viabilizar o envio do seu pedido;</li>
-          <li>Com o WhatsApp, para atendimento e confirmação de pedidos, quando você opta por esse canal;</li>
+          <li>Com os serviços utilizados para processar pedidos e pagamentos, conforme a forma de pagamento escolhida;</li>
+            <li>Com o WhatsApp, para atendimento e confirmação de pedidos, quando você opta por esse canal;</li>
           <li>Quando exigido por lei, ordem judicial ou autoridade competente.</li>
         </ul>
       </div>
@@ -369,6 +368,13 @@
 </main>
 
 
+<main id="page-ajuda" style="display:none"><section class="section container help-page"><p class="section-kicker">HORIZON / ATENDIMENTO</p><h1>Compre com confiança.</h1><p class="help-intro">Tamanho, entrega e pagamento: as informações para sua próxima escolha.</p><div class="help-grid"><div>
+<details id="help-medidas"><summary>Como escolher meu tamanho?</summary><p>Compare as medidas da peça com uma roupa sua que veste bem. Para camisetas, meça a largura de axila a axila e o comprimento do ombro à barra, com a peça estendida. Nas calças, compare cintura, quadril e comprimento.</p><p>As medidas variam entre modelos. Consulte a tabela específica na página do produto quando disponível; P, M e G não representam medidas universais.</p><a id="sizeHelpContact" target="_blank" rel="noopener">Pedir medidas à equipe ↗</a></details>
+<details><summary>Qual é o frete e o prazo de entrega?</summary><p data-shipping-description>As condições de frete são exibidas no resumo do checkout antes da confirmação.</p><p>O prazo depende do destino e da disponibilidade da peça. Confirme com nosso atendimento antes de pagar se precisar receber até uma data específica.</p></details>
+<details><summary>Quais formas de pagamento estão disponíveis?</summary><div id="paymentMethodsHelp" role="status">Consultando opções de pagamento…</div><p>As opções disponíveis são apresentadas no checkout. Verifique o valor total antes de confirmar.</p></details>
+<details><summary>Como acompanho meu pedido?</summary><p>Acesse Minha conta para consultar os pedidos vinculados à sua conta. Compras deste dispositivo também podem aparecer nessa área. Quando houver rastreamento registrado, ele será exibido no pedido.</p><a href="/#conta" onclick="showPage('conta');return false;">Ver meus pedidos ↗</a></details>
+<details><summary>Como solicito uma troca?</summary><p>Consulte nossa política e entre em contato informando o número do pedido e a peça.</p><a href="/#trocas" onclick="showPage('trocas');return false;">Trocas e devoluções ↗</a></details>
+</div><aside class="help-contact"><p class="section-kicker">FALE COM A HORIZON</p><h2>Precisa de ajuda?</h2><p>Envie sua dúvida sobre a peça ou seu pedido.</p><a id="helpWhatsapp" class="btn-gold" target="_blank" rel="noopener">Conversar no WhatsApp ↗</a><a href="mailto:cauan.sousa2527@gmail.com">cauan.sousa2527@gmail.com</a></aside></div></section></main>
 <main id="page-produto" style="display:none"><div class="container"><div id="productDetail" class="detail-layout"></div></div></main>
 <main id="page-conta" style="display:none"><section class="section container"><h1 id="accountTitle">Minha conta</h1><div id="accountContent"></div></section></main>
 <main id="page-cadastro" style="display:none"><section class="section container"><div id="signupContent"></div></section></main>
@@ -379,7 +385,7 @@
         <div class="logo" style="margin-bottom:16px;">
           <img class="logo-footer" src="img/logo-vertical.png" alt="Horizon Wear" style="width: 200px; height: 200px;">
         </div>
-        <p>Moda masculina premium para homens que fazem a diferença. Estilo, qualidade e essência em cada peça.</p>
+        <p>Roupas, calçados e acessórios para compor o seu estilo. Seu estilo. Sua essência.</p>
         <div class="footer-social">
           <a href="https://www.instagram.com/horizon._wear" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
           <a href="#" id="waSocialLink" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
@@ -397,7 +403,9 @@
         <h5>AJUDA</h5>
         <ul>
           <li><a href="#trocas" onclick="showPage('trocas');return false;">Trocas e devoluções</a></li>
-          <li><a href="#" id="waFormasPagamentoLink" target="_blank">Formas de pagamento</a></li>
+          <li><a href="/ajuda" onclick="showPage('ajuda');return false;">Entrega e pagamento</a></li>
+          <li><a href="/ajuda#medidas" onclick="showPage('ajuda');document.getElementById('help-medidas').open=true;return false;">Guia de medidas</a></li>
+          <li><a href="/ajuda" onclick="showPage('ajuda');return false;">Perguntas frequentes</a></li>
           <li><a href="#conta" onclick="showPage('conta');return false;">Rastrear pedido</a></li>
         </ul>
       </div>
@@ -438,7 +446,8 @@
 
 <script src="js/api.js?v=20260924b"></script>
 <script src="js/contact.js?v=20260924b"></script>
-<script src="js/store.js?v=20261002c"></script>
-<script src="js/checkout.js?v=20261002c"></script>
+<script src="js/store.js?v=20261008a"></script>
+<script src="js/atelier.js?v=20261008a"></script>
+<script src="js/checkout.js?v=20261008a"></script>
 </body>
 </html>
