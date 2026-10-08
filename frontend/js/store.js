@@ -24,7 +24,7 @@ function showPage(page,filter){
  document.querySelectorAll('main[id^="page-"]').forEach(el=>el.hidden=true);
  document.querySelectorAll('main[id^="page-"]').forEach(el=>el.style.display='none');
  const el=document.getElementById('page-'+page);if(!el)return;el.hidden=false;el.style.display='block';
- if(page!=='produto'){syncStoreLocation(page);document.title='Horizon Wear | '+({home:'Moda masculina premium',produtos:'Coleção',conta:'Minha conta',cadastro:'Criar conta',checkout:'Finalizar compra',sobre:'Sobre nós',contato:'Contato',privacidade:'Privacidade',trocas:'Trocas e devoluções'}[page]||'Coleção');}
+ if(page!=='produto'){syncStoreLocation(page);document.title='Horizon Wear | '+({home:'Moda masculina premium',produtos:'Coleção',conta:'Minha conta',cadastro:'Criar conta',checkout:'Finalizar compra',sobre:'Sobre nós',contato:'Contato',privacidade:'Privacidade',trocas:'Trocas e devoluções',ajuda:'Ajuda de compra'}[page]||'Coleção');}
  document.querySelectorAll('#navList li').forEach(li=>li.classList.toggle('active',li.dataset.page===page));
  document.body.classList.toggle('checkout-view',page==='checkout');document.querySelector('.skip-link').href='#page-'+page;
  toggleNavigation(false);window.scrollTo(0,0);
