@@ -1,3 +1,4 @@
+import re
 import csv
 import io
 import json
@@ -10,7 +11,7 @@ from pydantic import BaseModel,Field,ConfigDict,model_validator
 from typing import Literal
 from urllib.parse import quote
 from xml.sax.saxutils import escape
-from fastapi import APIRouter,Depends,HTTPException,Query
+from fastapi import APIRouter,Depends,HTTPException,Query,Request
 from fastapi.responses import Response
 import plotly.graph_objects as go
 from ...auth import User,current_user
@@ -22,10 +23,31 @@ PAID_ORDER_STATUSES={'pagamento_aprovado','preparando','enviado','entregue'}
 MONTHS_PT=('Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez')
 FORTALEZA_TZ=timezone(timedelta(hours=-3))
 
-async def admin(user:User=Depends(current_user),db:Database=Depends(get_database)):
+async def admin(request:Request,user:User=Depends(current_user),db:Database=Depends(get_database)):
     rows=await db.request('/rest/v1/profiles',token=user.token,params={'select':'role','id':'eq.'+user.id,'limit':'1'})
     if not rows or rows[0]['role']!='admin':raise HTTPException(403,'Acesso exclusivo da administração.')
+    if user.admin_permissions is not None:
+        path=request.url.path.removeprefix('/api/admin/').split('/')
+        resource=path[1] if path[0]=='export' and len(path)>1 else path[0]
+        permission=RESOURCE_PERMISSIONS.get(resource, 'dashboard')
+        required=set() if resource=='me' else {permission}
+        if 'export' in path: required.add('exports')
+        if not required.issubset(user.admin_permissions):
+            raise HTTPException(403,'Permissão administrativa insuficiente.')
     return user
+
+RESOURCE_PERMISSIONS={
+    'products':'catalog','categories':'catalog','sizes':'catalog','images':'catalog',
+    'product_sizes':'catalog','product_images':'catalog','orders':'orders',
+    'profiles':'customers','payments':'payments','coupons':'coupons','reviews':'reviews',
+    'dashboard':'dashboard','revenue':'dashboard',
+}
+ADMIN_PERMISSIONS=sorted(set(RESOURCE_PERMISSIONS.values())|{'exports'})
+
+@router.get('/me')
+async def admin_me(user:User=Depends(admin)):
+    return {'id':user.id,'owner':user.admin_permissions is None,
+            'permissions':ADMIN_PERMISSIONS if user.admin_permissions is None else list(user.admin_permissions)}
 
 class Product(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -222,7 +244,7 @@ def _revenue_period(period,now):
 
 def _export_safe(value):
     if value is None:return ''
-    text=str(value)
+    text=re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', str(value))
     return "'"+text if text.startswith(('=','+','-','@')) else text
 
 def _excel_col(index):
@@ -245,7 +267,7 @@ def _xlsx_bytes(headers,rows,sheet_name='Faturamento'):
           '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+"".join(xml_rows)+'</sheetData></worksheet>'
     workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
              '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' \
-             f'<sheets><sheet name="{escape(sheet_name[:31])}" sheetId="1" r:id="rId1"/></sheets></workbook>'
+             f'<sheets><sheet name="{escape(sheet_name[:31], {chr(34): "&quot;"})}" sheetId="1" r:id="rId1"/></sheets></workbook>'
     styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font/><font><b/></font></fonts>' \
            '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' \
@@ -390,6 +412,30 @@ async def annual_revenue(year:int|None=Query(default=None,ge=2020,le=2100),
     months=[{'month':MONTHS_PT[i],'revenue':f'{totals[i]:.2f}','orders':counts[i]} for i in range(12)]
     return {'year':selected,'available_years':sorted(years,reverse=True),'total':str(total),
             'months':months,'figure':figure}
+
+@router.get('/export/{resource}')
+async def export_resource(resource:str,format:Literal['csv','xlsx']='csv',
+                          user:User=Depends(admin),db:Database=Depends(get_database)):
+    if resource not in RESOURCE_PERMISSIONS or resource in {'dashboard','revenue','sizes','images'}:
+        raise HTTPException(404,'Recurso não encontrado.')
+    rows=[]
+    while True:
+        batch=await db.request('/rest/v1/'+resource,token=user.token,
+            params={'select':'*','order':'id','limit':'100','offset':str(len(rows))})
+        rows.extend(batch or [])
+        if len(batch or [])<100:break
+        if len(rows)>=10000:
+            raise HTTPException(413,'Exportação excede 10.000 registros.')
+    headers=list(dict.fromkeys(key for row in rows for key in row))
+    values=[[_export_safe(row.get(key)) for key in headers] for row in rows]
+    if format=='xlsx':
+        return Response(_xlsx_bytes(headers,values,resource),
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={'Content-Disposition':f'attachment; filename="{resource}.xlsx"'})
+    output=io.StringIO(newline='');writer=csv.writer(output)
+    writer.writerow(headers);writer.writerows(values)
+    return Response(('\ufeff'+output.getvalue()).encode('utf-8'),media_type='text/csv; charset=utf-8',
+        headers={'Content-Disposition':f'attachment; filename="{resource}.csv"'})
 
 @router.get('/{resource}')
 async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):

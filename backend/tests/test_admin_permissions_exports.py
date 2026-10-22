@@ -14,7 +14,7 @@ def make_client(permissions):
     def handle(request):
         path=request.url.path
         if path=='/auth/v1/user':
-            return httpx.Response(200,json={'id':USER})
+            return httpx.Response(200,json={'id':USER,'app_metadata':{'admin_permissions':permissions}})
         if path=='/rest/v1/profiles':
             return httpx.Response(200,json=[{'role':'admin'}])
         if path=='/auth/v1/admin/users/'+USER:
@@ -50,7 +50,7 @@ def test_export_requires_export_and_resource_permissions():
         assert denied.status_code==403
 
 def test_xlsx_writer_creates_valid_openxml_package():
-    payload=admin_router._xlsx_document(['Nome','Valor'],[['Produto','10.00']],'Dados')
+    payload=admin_router._xlsx_bytes(['Nome','Valor'],[['Produto','10.00']],'Dados')
     assert payload.startswith(b'PK')
     with zipfile.ZipFile(io.BytesIO(payload)) as book:
         names=set(book.namelist())
@@ -61,7 +61,7 @@ def test_xlsx_writer_creates_valid_openxml_package():
         assert 'Produto' in sheet and '10.00' in sheet
 
 
-def test_existing_admin_keeps_full_access_if_auth_admin_lookup_fails():
+def test_legacy_admin_uses_verified_user_without_privileged_lookup():
     def handle(request):
         path=request.url.path
         if path=='/auth/v1/user':
@@ -81,3 +81,23 @@ def test_existing_admin_keeps_full_access_if_auth_admin_lookup_fails():
         assert me.status_code==200
         assert me.json()['owner'] is True
         assert 'dashboard' in me.json()['permissions']
+
+
+def test_empty_or_invalid_permissions_deny_admin_resources():
+    for permissions in ([], 'catalog', {'catalog':True}):
+        with make_client(permissions) as client:
+            assert client.get('/api/admin/products',headers={'Authorization':'Bearer session'}).status_code==403
+
+
+def test_export_permission_does_not_grant_resource_access():
+    with make_client(['exports']) as client:
+        assert client.get('/api/admin/export/products',headers={'Authorization':'Bearer session'}).status_code==403
+
+
+def test_workbook_escapes_xml_and_formula_content():
+    from xml.etree import ElementTree
+    payload=admin_router._xlsx_bytes(['Nome'],[['=1+1\x00']], 'Dados "2026"')
+    with zipfile.ZipFile(io.BytesIO(payload)) as book:
+        for name in book.namelist():
+            if name.endswith('.xml'):ElementTree.fromstring(book.read(name))
+        assert "'=1+1" in book.read('xl/worksheets/sheet1.xml').decode()

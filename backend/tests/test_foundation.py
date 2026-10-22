@@ -58,7 +58,7 @@ def test_supabase_errors_are_not_exposed(code):
     transport=httpx.MockTransport(lambda request:httpx.Response(code,text='PRIVATE INTERNAL DETAILS'))
     with TestClient(create_app(cfg,transport)) as client:
         response=client.get('/api/users/me',headers={'Authorization':'Bearer bad'})
-        assert response.status_code==(code if code in (401,403) else 503)
+        assert response.status_code==(401 if code in (401,403) else 503)
         assert 'PRIVATE' not in response.text
 
 
