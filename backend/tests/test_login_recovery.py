@@ -11,7 +11,7 @@ def make_settings():
                     supabase_anon_key='public-key')
 
 
-def test_login_recovers_common_gmail_typo():
+def test_login_never_sends_password_to_another_email():
     seen=[]
     def handle(request):
         if request.url.path=='/auth/v1/token':
@@ -29,8 +29,8 @@ def test_login_recovers_common_gmail_typo():
         response=client.post('/api/auth/login',json={
             'email':' Usuario@GMAOL.com ','password':'senha-segura'
         })
-    assert response.status_code==200,response.text
-    assert seen==['usuario@gmaol.com','usuario@gmail.com']
+    assert response.status_code==401,response.text
+    assert seen==['usuario@gmaol.com']
 
 
 def test_wrong_login_returns_clear_message():
@@ -44,3 +44,12 @@ def test_wrong_login_returns_clear_message():
         })
     assert response.status_code==401
     assert response.json()['detail']=='E-mail ou senha incorretos.'
+
+
+def test_login_normalizes_spaces_before_validation():
+    def handle(request):
+        assert json.loads(request.content)['email']=='usuario@example.com'
+        return httpx.Response(200,json={'access_token':'test-token'})
+    with TestClient(create_app(make_settings(),httpx.MockTransport(handle))) as client:
+        response=client.post('/api/auth/login',json={'email':' Usuario@EXAMPLE.com ','password':'senha-segura'})
+        assert response.status_code==200

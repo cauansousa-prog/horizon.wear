@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field,ConfigDict
+from pydantic import BaseModel,Field,ConfigDict,field_validator
 from fastapi import APIRouter,Depends,HTTPException,Request
 from ...database import Database,get_database
 from ...auth import User,current_user
@@ -8,6 +8,11 @@ class Credentials(BaseModel):
     model_config=ConfigDict(extra='forbid')
     email:str=Field(min_length=5,max_length=254,pattern=r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
     password:str=Field(min_length=8,max_length=128)
+
+    @field_validator('email',mode='before')
+    @classmethod
+    def normalize_email(cls,value):
+        return value.strip().lower() if isinstance(value,str) else value
 class Signup(Credentials):
     nome_completo:str=Field(min_length=2,max_length=120)
 class Refresh(BaseModel):
@@ -28,14 +33,6 @@ async def login(body:Credentials,db:Database=Depends(get_database)):
     try:
         return await db.request('/auth/v1/token',method='POST',params={'grant_type':'password'},json=payload)
     except HTTPException as exc:
-        if exc.status_code==401 and payload['email'].endswith('@gmaol.com'):
-            payload['email']=payload['email'][:-10]+'@gmail.com'
-            try:
-                return await db.request('/auth/v1/token',method='POST',params={'grant_type':'password'},json=payload)
-            except HTTPException as retry_exc:
-                if retry_exc.status_code==401:
-                    raise HTTPException(401,'E-mail ou senha incorretos.') from None
-                raise
         if exc.status_code==401:
             raise HTTPException(401,'E-mail ou senha incorretos.') from None
         raise

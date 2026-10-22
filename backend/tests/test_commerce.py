@@ -14,7 +14,8 @@ def config(**kw):return Settings(_env_file=None,supabase_url='https://example.su
 def transport(request):
     if request.url.path=='/auth/v1/user':return httpx.Response(200,json={'id':UID})
     if request.url.path=='/rest/v1/profiles':return httpx.Response(200,json=[{'id':UID,'role':'customer'}])
-    if request.url.path=='/rest/v1/product_sizes':return httpx.Response(200,json=[{'id':SID,'tamanho':'M','estoque':2,'products':{'id':UID,'nome':'Peça teste','slug':'peca','preco':100,'preco_promocional':90,'ativo':True,'product_images':[]}}])
+    if request.url.path=='/rest/v1/product_sizes':return httpx.Response(200,json=[{'id':SID,'product_id':UID,'tamanho':'M','estoque':2}])
+    if request.url.path=='/rest/v1/products':return httpx.Response(200,json=[{'id':UID,'nome':'Peça teste','slug':'peca','preco':100,'preco_promocional':90,'ativo':True}])
     return httpx.Response(200,json=[])
 
 @pytest.fixture
