@@ -1,0 +1,7 @@
+@import url("./common.css");
+
+/* Estilos exclusivos da página de pesquisa */
+.page-search .catalog { min-height: 65vh; }
+.page-search #activeFilters:empty { display: none; }
+.page-search #resultCount { font-size: 15px; }
+.page-search .search-form { max-width: 760px; }

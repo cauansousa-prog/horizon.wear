@@ -1,0 +1,12 @@
+@import url("./common.css");
+
+/* Estilos exclusivos da página da conta */
+.page-account .auth-panel { align-self: center; }
+.page-account .profile-settings { border-top-color: #414141; }
+.page-account .settings-row { min-height: 52px; }
+.page-account .delete-account { margin-top: 14px; }
+.page-account #profileMessage { margin-top: 12px; }
+ .account-support { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+ .account-support .text-button { color: var(--blue-light); text-decoration: underline; text-underline-offset: 4px; }
+ #resetDialog .text-button { margin-top: 18px; }
+ #adminLink { margin: 20px 0; }
