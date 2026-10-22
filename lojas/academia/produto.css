@@ -1,0 +1,7 @@
+@import url("./common.css");
+
+/* Estilos exclusivos da página de produto */
+.page-product .product-main { min-height: 60vh; }
+.page-product .product-main-photo:focus-visible { outline-offset: 3px; }
+.page-product .product-accordion a { text-underline-offset: 4px; }
+.page-product .product-page-info { max-width: 620px; }

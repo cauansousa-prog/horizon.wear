@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Finalizar pedido | Aurel Gym</title>
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="checkout.css" />
+  <script defer src="supabase.vendor.js"></script>
+  <script defer src="database.js"></script>
+  <script defer src="checkout.js"></script>
+</head>
+<body>
+  <header class="checkout-header"><a href="index.html" class="logo">AUREL<span>GYM</span></a><span>FINALIZAR PEDIDO</span></header>
+  <main class="checkout-main">
+    <a href="index.html" class="checkout-back">← Voltar à loja</a>
+    <div id="checkoutView">
+      <div class="checkout-heading"><span class="eyebrow">SUA ESCOLHA, SEU RITMO</span><h1>ENTREGA E PAGAMENTO.</h1><p>Preencha seus dados de entrega e escolha uma forma de pagamento.</p></div>
+      <div class="checkout-layout">
+        <form id="checkoutForm" class="checkout-form">
+          <section><h2>1. Seus dados</h2><div class="checkout-grid">
+            <label class="wide">Nome completo<input name="name" autocomplete="name" minlength="2" maxlength="100" required /></label>
+            <label class="wide">E-mail<input name="email" type="email" autocomplete="email" maxlength="254" required /></label>
+            <label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00" required /><small>O sistema guarda somente os quatro últimos dígitos.</small></label>
+          </div></section>
+          <section><h2>2. Endereço de entrega</h2><div class="checkout-grid">
+            <label>CEP<input name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" required /></label>
+            <label>Estado (UF)<input name="state" autocomplete="address-level1" maxlength="2" placeholder="CE" required /></label>
+            <label class="wide">Endereço<input name="address" autocomplete="street-address" maxlength="160" required /></label>
+            <label>Número<input name="number" maxlength="20" required /></label>
+            <label>Complemento (opcional)<input name="complement" maxlength="100" /></label>
+            <label>Bairro<input name="neighborhood" autocomplete="address-level3" maxlength="100" required /></label>
+            <label>Cidade<input name="city" autocomplete="address-level2" maxlength="100" required /></label>
+          </div></section>
+          <section><h2>3. Forma de pagamento</h2><p class="checkout-note">Escolha uma forma de pagamento para registrar no pedido. Nenhuma cobrança é feita nesta etapa.</p>
+            <fieldset class="payment-options">
+              <label><input type="radio" name="payment" value="pix" checked /><span><strong>Pix</strong><small>Será registrada como forma de pagamento do pedido</small></span></label>
+              <label><input type="radio" name="payment" value="cartao" /><span><strong>Cartão</strong><small>Dados do cartão não são solicitados nesta etapa</small></span></label>
+              <label><input type="radio" name="payment" value="boleto" /><span><strong>Boleto</strong><small>Será registrado no pedido; nenhum boleto é emitido nesta etapa</small></span></label>
+            </fieldset>
+          </section>
+          <p id="checkoutMessage" class="checkout-message" role="status" aria-live="polite"></p>
+          <button class="button primary checkout-submit" type="submit">Finalizar pedido</button>
+          <p class="privacy-note">Ao continuar, seus dados de entrega serão usados para exibir este pedido no painel administrativo. O CPF completo não será armazenado.</p>
+        </form>
+        <aside class="checkout-summary"><h2>Resumo do pedido</h2><div id="checkoutItems"></div><div id="checkoutTotal" class="checkout-total"></div></aside>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

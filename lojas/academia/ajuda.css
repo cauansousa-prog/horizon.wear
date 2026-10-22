@@ -1,0 +1,7 @@
+@import url("./common.css");
+
+/* Estilos exclusivos da central de ajuda */
+.page-help .faq-list details[hidden] { display: none; }
+.page-help .faq-list summary:focus-visible { outline-offset: 1px; }
+.page-help .help-search { width: 100%; }
+.page-help #helpEmpty { border-top: 1px solid #383838; }

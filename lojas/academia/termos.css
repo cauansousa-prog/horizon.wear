@@ -1,0 +1,7 @@
+@import url("./common.css");
+
+/* Estilos exclusivos dos termos e da privacidade */
+.page-terms .terms-index { align-self: start; }
+.page-terms .terms-content section { scroll-margin-top: 110px; }
+.page-terms .clear-preferences { margin-block: 10px 18px; }
+.page-terms .section-number { color: var(--blue-light); }

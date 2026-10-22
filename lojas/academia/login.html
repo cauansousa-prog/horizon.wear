@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Acesse sua conta Aurel Gym e gerencie seus dados."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#080808" />
+    <title>Minha conta — Aurel Gym</title>
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body class="page-account" data-page="account">
+    <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+    <div class="announcement-bar">
+      AUREL GYM <span aria-hidden="true">/</span> SEU MOVIMENTO. SEU PRÓXIMO
+      NÍVEL.
+    </div>
+    <header class="header">
+      <a href="index.html" class="logo" aria-label="Aurel Gym, início"
+        >AUREL<span>GYM</span></a
+      >
+      <nav class="desktop-nav" aria-label="Navegação principal">
+        <a href="index.html" data-nav="home">Início</a
+        ><a href="pesquisa.html" data-nav="search">Coleção</a
+        ><a href="pesquisa.html?colecao=Feminino">Feminino</a
+        ><a href="pesquisa.html?colecao=Masculino">Masculino</a>
+      </nav>
+      <button class="header-search" id="headerSearch" aria-haspopup="dialog">
+        <i data-icon="search"></i><span>Encontre sua peça</span><kbd>/</kbd>
+      </button>
+      <div class="header-actions">
+        <a
+          class="icon-button search-mobile"
+          id="searchToggle"
+          href="pesquisa.html"
+          aria-label="Pesquisar peças"
+          aria-haspopup="dialog"
+          ><i data-icon="search"></i></a
+        ><a
+          class="icon-button account-link"
+          id="accountLink"
+          href="login.html"
+          aria-label="Entrar na minha conta"
+          ><i data-icon="user"></i></a
+        ><button
+          class="icon-button"
+          id="favoriteToggle"
+          aria-label="Ver favoritos"
+          aria-pressed="false"
+        >
+          <i data-icon="heart"></i
+          ><span id="favoriteCount" class="count" hidden>0</span></button
+        ><button
+          class="icon-button bag-button"
+          id="cartToggle"
+          aria-label="Abrir sacola"
+          aria-haspopup="dialog"
+        >
+          <i data-icon="bag"></i><span id="cartCount">0</span></button
+        ><button
+          class="icon-button mobile-only"
+          id="menuToggle"
+          aria-label="Abrir menu"
+          aria-expanded="false"
+          aria-controls="mobileNav"
+        >
+          <i data-icon="menu"></i>
+        </button>
+      </div>
+      <nav
+        id="mobileNav"
+        class="mobile-nav"
+        aria-label="Navegação móvel"
+        hidden
+      >
+        <a href="index.html">Início</a><a href="pesquisa.html">Toda a coleção</a
+        ><a href="pesquisa.html?colecao=Feminino">Feminino</a
+        ><a href="pesquisa.html?colecao=Masculino">Masculino</a
+        ><a href="login.html">Minha conta</a
+        ><a href="ajuda.html">Central de ajuda</a
+        ><a href="termos.html">Termos e privacidade</a>
+      </nav>
+    </header>
+    <main id="conteudo" class="account-main section-wrap">
+      <nav class="breadcrumb" aria-label="Caminho da página">
+        <a href="index.html">Início</a><span aria-hidden="true">/</span
+        ><span aria-current="page">Minha conta</span>
+      </nav>
+      <div class="auth-layout">
+        <section class="auth-story" aria-labelledby="accountHeading">
+          <img
+            src="images/training-c.jpg"
+            alt="Atleta usando camiseta preta durante o treino"
+            width="1500"
+            height="1000"
+          />
+          <div>
+            <span class="eyebrow">SEU ESPAÇO AUREL</span>
+            <h1 id="accountHeading">
+              O PRÓXIMO <br />NÍVEL É <br /><em>SEU.</em>
+            </h1>
+            <p>Faça parte do seu próprio movimento.</p>
+            <a href="pesquisa.html" class="underlined-link"
+              >Continue explorando <i data-icon="arrow"></i
+            ></a>
+          </div>
+        </section>
+        <section class="auth-panel" aria-label="Acesso à conta">
+          <div id="accessArea">
+            <span class="eyebrow">MINHA CONTA</span>
+            <h2 id="authTitle">BEM-VINDO<br />DE VOLTA.</h2>
+            <p class="auth-subtitle" id="authSubtitle">
+              Entre para acessar sua conta Aurel.
+            </p>
+            <div
+              class="auth-tabs"
+              role="tablist"
+              aria-label="Entrar ou criar uma conta"
+            >
+              <button
+                type="button"
+                id="loginTab"
+                role="tab"
+                aria-selected="true"
+                aria-controls="authPane"
+                tabindex="0"
+              >
+                Entrar</button
+              ><button
+                type="button"
+                id="registerTab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="authPane"
+                tabindex="-1"
+              >
+                Criar conta
+              </button>
+            </div>
+            <div id="authPane" role="tabpanel" aria-labelledby="loginTab">
+              <form id="authForm">
+                <fieldset id="authFields" disabled>
+                  <legend class="visually-hidden">Dados da conta</legend>
+                  <div class="form-field" id="nameField" hidden>
+                    <label for="fullName">Seu nome</label
+                    ><input
+                      id="fullName"
+                      name="name"
+                      autocomplete="name"
+                      minlength="2"
+                      maxlength="80"
+                      placeholder="Como podemos chamar você?"
+                    />
+                  </div>
+                  <div class="form-field">
+                    <label for="email">E-mail</label
+                    ><input
+                      id="email"
+                      name="email"
+                      type="email"
+                      inputmode="email"
+                      autocomplete="email"
+                      required
+                      maxlength="254"
+                      placeholder="voce@exemplo.com"
+                    />
+                  </div>
+                  <div class="form-field">
+                    <label for="password">Senha</label>
+                    <div class="password-wrap">
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                        minlength="1"
+                        maxlength="128"
+                        aria-describedby="passwordHelp"
+                        placeholder="Sua senha"
+                      /><button
+                        type="button"
+                        id="showPassword"
+                        aria-label="Mostrar senha"
+                        aria-pressed="false"
+                      >
+                        Mostrar
+                      </button>
+                    </div>
+                    <small id="passwordHelp">Digite a senha da sua conta.</small>
+                  </div>
+                  <div class="form-field" id="confirmField" hidden>
+                    <label for="confirmPassword">Confirme a senha</label
+                    ><input
+                      id="confirmPassword"
+                      type="password"
+                      autocomplete="new-password"
+                      maxlength="128"
+                      placeholder="Repita sua senha"
+                    />
+                  </div>
+                  <label class="terms-consent" id="termsField" hidden
+                    ><input type="checkbox" id="acceptTerms" /><span
+                      >Li e aceito os
+                      <a href="termos.html" target="_blank" rel="noopener"
+                        >termos de uso</a
+                      >
+                      e as informações de privacidade.</span
+                    ></label
+                  >
+                  <button
+                    type="submit"
+                    class="button primary auth-submit"
+                    id="authSubmit"
+                  >
+                    Entrar
+                  </button>
+                </fieldset>
+              </form>
+            </div>
+            <p
+              id="authMessage"
+              class="form-message"
+              role="status"
+              aria-live="polite"
+            >
+              Verificando disponibilidade…
+            </p>
+            <a class="guest-link" href="pesquisa.html">Continuar sem entrar </a>
+            <div class="account-support">
+              <button type="button" id="forgotPassword" class="text-button">Esqueci minha senha</button>
+              <button type="button" id="resendConfirmation" class="text-button">Reenviar confirmação</button>
+            </div>
+          </div>
+          <section
+            id="profileArea"
+            hidden
+            aria-labelledby="profileTitle"
+            tabindex="-1"
+          >
+            <span class="eyebrow">MINHA CONTA</span
+            ><span
+              class="profile-avatar"
+              id="profileAvatar"
+              aria-hidden="true"
+            ></span>
+            <h2 id="profileTitle">QUE BOM TER VOCÊ AQUI.</h2>
+            <p id="profileName" class="profile-name"></p>
+            <p id="profileEmail" class="auth-subtitle"></p>
+            <a href="admin.html" id="adminLink" class="button primary auth-submit" hidden>Painel de administrador</a>
+            <div class="profile-choices">
+              <a href="pesquisa.html?favoritos=1"
+                ><i data-icon="heart"></i><strong>Meus favoritos</strong
+                ><span>Sincronizados com sua conta</span></a
+              ><a href="index.html?sacola=1"
+                ><i data-icon="bag"></i><strong>Minha sacola</strong
+                ><span>Suas escolhas de agora</span><i data-icon="arrow"></i
+              ></a>
+            </div>
+            <div class="profile-settings">
+              <h3>Seus dados</h3>
+              <p>Gerencie seu nome e a segurança da conta.</p>
+              <button id="editProfile" class="settings-row">
+                <span>Editar meu nome</span><i data-icon="user"></i></button
+              ><button id="changePassword" class="settings-row">
+                <span>Alterar minha senha</span><i data-icon="lock"></i>
+              </button>
+            </div>
+            <button id="logout" class="button secondary auth-submit">
+              Sair da conta</button
+            ><button id="deleteAccount" class="text-button delete-account" hidden>
+              Excluir minha conta
+            </button>
+            <p id="profileMessage" class="form-message" role="status"></p>
+          </section>
+        </section>
+      </div>
+    </main>
+    <footer class="footer section-wrap">
+      <div class="footer-top">
+        <a href="index.html" class="logo" aria-label="Aurel Gym, início"
+          >AUREL<span>GYM</span></a
+        >
+        <p>Seu movimento. Seu próximo nível.</p>
+        <a href="#conteudo" class="back-top">Voltar ao topo</a>
+      </div>
+      <div class="footer-columns">
+        <div>
+          <h2>Explore seu ritmo.</h2>
+          <p>
+            Essenciais para acompanhar você.<br />Dentro e fora da academia.
+          </p>
+        </div>
+        <nav aria-label="Coleção no rodapé">
+          <h3>Coleção</h3>
+          <a href="pesquisa.html">Todas as peças</a
+          ><a href="pesquisa.html?colecao=Feminino">Feminino</a
+          ><a href="pesquisa.html?colecao=Masculino">Masculino</a>
+        </nav>
+        <nav aria-label="Seu espaço no rodapé">
+          <h3>Seu espaço</h3>
+          <a href="login.html">Minha conta</a
+          ><a href="pesquisa.html?favoritos=1">Meus favoritos</a
+          ><a href="ajuda.html">Central de ajuda</a
+          ><button class="text-button" data-guide>Guia de medidas</button>
+        </nav>
+        <nav aria-label="Informações no rodapé">
+          <h3>Informações</h3>
+          <a href="termos.html">Termos de uso</a
+          ><a href="termos.html#privacidade">Privacidade</a
+          ><button class="text-button" id="photoCredits">
+            Créditos das imagens
+          </button>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Aurel Gym</p>
+        <button class="text-button" id="aboutBrand">Sobre a Aurel</button>
+      </div>
+    </footer>
+    <dialog
+      id="filterDialog"
+      class="filter-dialog"
+      aria-labelledby="filterTitle"
+    >
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">AUREL GYM</span>
+          <h2 id="filterTitle">Refine sua busca</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <div id="mobileFilterSlot"></div>
+      <button class="button primary filter-apply" id="applyFilters">
+        Ver resultados
+      </button>
+    </dialog>
+    <dialog id="cartDialog" class="cart-dialog" aria-labelledby="cartTitle">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">SUAS ESCOLHAS</span>
+          <h2 id="cartTitle">Minha sacola</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <div id="cartItems"></div>
+      <div id="cartSummary"></div>
+    </dialog>
+    <dialog id="infoDialog" class="info-dialog" aria-labelledby="infoTitle">
+      <button
+        class="icon-button info-close"
+        data-close
+        aria-label="Fechar informações"
+      >
+        <i data-icon="close"></i>
+      </button>
+      <div id="infoContent"></div>
+    </dialog>
+    <dialog
+      id="searchDialog"
+      class="search-dialog"
+      aria-labelledby="quickTitle"
+    >
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">ENCONTRE SEU ESSENCIAL</span>
+          <h2 id="quickTitle">O que acompanha seu ritmo?</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <form action="pesquisa.html" class="quick-search-form" role="search">
+        <label class="visually-hidden" for="quickSearch">Buscar peças</label
+        ><i data-icon="search"></i
+        ><input
+          id="quickSearch"
+          type="search"
+          name="q"
+          maxlength="120"
+          placeholder="Peça, cor ou coleção"
+          autocomplete="off"
+        /><button class="button primary" type="submit">Buscar</button>
+      </form>
+      <p id="quickCount" class="quick-count" role="status"></p>
+      <div id="quickResults"></div>
+      <a href="pesquisa.html" class="underlined-link quick-all"
+        >Explorar toda a coleção</a
+      >
+    </dialog>
+    <dialog
+      id="compareDialog"
+      class="compare-dialog"
+      aria-labelledby="compareTitle"
+    >
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">COMPARE SUAS ESCOLHAS</span>
+          <h2 id="compareTitle">Lado a lado. Do seu jeito.</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <div id="compareContent"></div>
+    </dialog>
+    <dialog id="guideDialog" class="guide-dialog" aria-labelledby="guideTitle">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">ENCONTRE SEU AJUSTE</span>
+          <h2 id="guideTitle">Como tirar suas medidas</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <p class="dialog-intro">
+        Uma fita métrica e alguns minutos fazem a diferença na sua escolha.
+      </p>
+      <ol class="measure-steps">
+        <li>
+          <strong>Busto ou tórax</strong>
+          <p>
+            Passe a fita ao redor da parte mais larga do peito, sem apertar,
+            mantendo-a paralela ao chão.
+          </p>
+        </li>
+        <li>
+          <strong>Cintura</strong>
+          <p>
+            Meça a região mais estreita do tronco, com o corpo relaxado e sem
+            prender a respiração.
+          </p>
+        </li>
+        <li>
+          <strong>Quadril</strong>
+          <p>
+            Com os pés juntos, contorne a parte mais larga do quadril e dos
+            glúteos.
+          </p>
+        </li>
+      </ol>
+      <div class="guide-note">
+        <i data-icon="ruler"></i>
+        <p>
+          A numeração varia entre peças. A tabela específica de medidas ainda
+          não está disponível; as letras PP a GG, sozinhas, não garantem o
+          ajuste.
+        </p>
+      </div>
+    </dialog>
+    <dialog id="zoomDialog" class="zoom-dialog" aria-labelledby="zoomTitle">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">AUREL GYM</span>
+          <h2 id="zoomTitle">Detalhes da peça</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <img id="zoomImage" alt="" />
+    </dialog>
+    <div class="compare-bar" id="compareBar" hidden>
+      <div class="compare-bar-label">
+        <i data-icon="compare"></i
+        ><span
+          ><strong>Suas escolhas</strong
+          ><small><span id="compareCount">0</span> de 3 peças</small></span
+        >
+      </div>
+      <div id="comparePreview" class="compare-preview" aria-hidden="true"></div>
+      <button class="button primary" id="openCompare">Comparar</button
+      ><button
+        class="icon-button"
+        id="clearCompare"
+        aria-label="Limpar comparação"
+      >
+        <i data-icon="close"></i>
+      </button>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog id="deleteDialog" class="info-dialog" aria-labelledby="deleteTitle">
+      <button
+        class="icon-button info-close"
+        data-close
+        aria-label="Fechar exclusão"
+      >
+        <i data-icon="close"></i></button
+      ><span class="eyebrow">SUA PRIVACIDADE</span>
+      <h2 id="deleteTitle">Excluir sua conta?</h2>
+      <p>
+        Seu cadastro e suas sessões serão removidos. Esta ação não pode ser
+        desfeita.
+      </p>
+      <form id="deleteForm">
+        <div class="form-field">
+          <label for="deletePassword">Confirme sua senha</label
+          ><input
+            id="deletePassword"
+            type="password"
+            required
+            minlength="8"
+            maxlength="128"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="button primary auth-submit" type="submit">
+          Confirmar exclusão</button
+        ><button class="text-button cancel-delete" type="button" data-close>
+          Manter minha conta
+        </button>
+        <p id="deleteMessage" class="form-message" role="status"></p>
+      </form>
+    </dialog>
+    <dialog id="profileDialog" class="info-dialog" aria-labelledby="editTitle">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">MINHA CONTA</span>
+          <h2 id="editTitle">Editar seu nome</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <form id="profileForm">
+        <div class="form-field">
+          <label for="editName">Seu nome</label
+          ><input
+            id="editName"
+            autocomplete="name"
+            required
+            minlength="2"
+            maxlength="80"
+          />
+        </div>
+        <div class="form-field">
+          <label for="profilePassword">Senha atual</label
+          ><input
+            id="profilePassword"
+            type="password"
+            autocomplete="current-password"
+            required
+            minlength="8"
+            maxlength="128"
+          />
+        </div>
+        <button type="submit" class="button primary auth-submit">
+          Salvar nome
+        </button>
+        <p id="editMessage" class="form-message" role="status"></p>
+      </form>
+    </dialog>
+    <dialog
+      id="passwordDialog"
+      class="info-dialog"
+      aria-labelledby="changeTitle"
+    >
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">SEGURANÇA DA CONTA</span>
+          <h2 id="changeTitle">Alterar sua senha</h2>
+        </div>
+        <button class="icon-button" data-close aria-label="Fechar">
+          <i data-icon="close"></i>
+        </button>
+      </div>
+      <p class="dialog-intro">
+        Ao salvar, as outras sessões da sua conta serão encerradas.
+      </p>
+      <form id="passwordForm">
+        <div class="form-field">
+          <label for="currentPassword">Senha atual</label
+          ><input
+            id="currentPassword"
+            type="password"
+            autocomplete="current-password"
+            required
+            minlength="8"
+            maxlength="128"
+          />
+        </div>
+        <div class="form-field">
+          <label for="newPassword">Nova senha</label
+          ><input
+            id="newPassword"
+            type="password"
+            autocomplete="new-password"
+            required
+            minlength="8"
+            maxlength="128"
+          /><small>Use de 8 a 128 caracteres.</small>
+        </div>
+        <div class="form-field">
+          <label for="repeatNewPassword">Repita a nova senha</label
+          ><input
+            id="repeatNewPassword"
+            type="password"
+            autocomplete="new-password"
+            required
+            minlength="8"
+            maxlength="128"
+          />
+        </div>
+        <button type="submit" class="button primary auth-submit">
+          Salvar nova senha
+        </button>
+        <p id="changeMessage" class="form-message" role="status"></p>
+      </form>
+    </dialog>
+    <dialog id="emailDialog" class="info-dialog" aria-labelledby="emailDialogTitle">
+      <button type="button" class="icon-button dialog-close" data-close aria-label="Fechar">×</button>
+      <h2 id="emailDialogTitle">RECUPERAR SENHA</h2>
+      <p id="emailDialogHelp">Informe o e-mail usado no cadastro.</p>
+      <form id="emailForm">
+        <div class="form-field"><label for="supportEmail">E-mail</label><input id="supportEmail" type="email" autocomplete="email" maxlength="254" required /></div>
+        <button type="submit" class="button primary auth-submit">Enviar e-mail</button>
+        <p id="emailMessage" class="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </dialog>
+    <dialog id="resetDialog" class="info-dialog" aria-labelledby="resetTitle">
+      <h2 id="resetTitle">CRIAR NOVA SENHA</h2>
+      <p>Escolha uma nova senha para sua conta Aurel.</p>
+      <form id="resetForm">
+        <div class="form-field"><label for="resetPassword">Nova senha</label><input id="resetPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></div>
+        <div class="form-field"><label for="resetConfirm">Confirme a nova senha</label><input id="resetConfirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /></div>
+        <button type="submit" class="button primary auth-submit">Salvar nova senha</button>
+        <button type="button" id="cancelReset" class="text-button">Cancelar recuperação</button>
+        <p id="resetMessage" class="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </dialog>
+    <!-- AUREL APP START --><script defer src="supabase.vendor.js"></script><script defer src="database.js"></script><script defer src="loja.js"></script><!-- AUREL APP END --><!-- AUREL ACCOUNT START --><script defer src="account.js"></script><!-- AUREL ACCOUNT END -->
+  </body>
+</html>
