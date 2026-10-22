@@ -7,7 +7,7 @@ Abra **/central/** no endereço da hospedagem. Os botões carregam cada site den
 | Loja | Pasta do site | Fonte dos dados |
 | --- | --- | --- |
 | Horizon Wear | `frontend/` (site atual) | Tabelas atuais da Horizon |
-| Aurel Gym (Academia) | `lojas/academia/` | Banco Aurel existente, cliente `database.js` |
+| Academia | `lojas/academia/` | `hub_products`, com `loja_id = academia` |
 | Construção | `lojas/construcao/` | `hub_products`, com `loja_id = construcao` |
 
 Cada pasta dos amigos deve conter **index.html**. Copie o conteúdo do site para a pasta correspondente e substitua o modelo. CSS, JavaScript e imagens próprios podem ficar dentro dessa pasta. Use caminhos relativos, como `css/style.css`, `js/app.js` e `img/produto.jpg`. Não use `<base href="/">` nos sites dos amigos; caminhos `/css/...` apontariam para os arquivos da Horizon.
@@ -60,9 +60,3 @@ Para o outro amigo, use `'construcao'`. A atribuição não é permitida pelo na
 A migração incremental é `supabase/migrations/0007_store_hub.sql`. Ela adiciona tabelas próprias para os novos sites, no mesmo Supabase, e mantém os registros atuais da Horizon. O catálogo da academia não aparece no catálogo de construção, e as relações de pedidos impedem misturar produtos de lojas diferentes.
 
 As pastas, o cliente e a API são publicados juntos pelo Vercel. Mantenha tokens, senhas de banco e chaves privadas somente nas variáveis do servidor; não copie `.env`, arquivos Python, dependências ou credenciais para as pastas dos sites.
-
-## Aurel Gym na central
-
-A opção Academia abre a Aurel Gym em `/lojas/academia/`, dentro da central existente (`/central/`). A loja foi copiada de `kauasouza2527-ui/aurelgymJ`, revisão `bce1198fc7e7e3c14e5f123cbbd17760e05cbe7e`, com suas páginas, imagens, catálogo, sacola, checkout e painel administrativo. O site de origem continua independente.
-
-Esta loja usa seu cliente `database.js` e o banco Aurel já existente (`tfoljlaubarztsuurctt`); não usa as tabelas `hub_products` da loja modelo. Produtos e pedidos continuam no painel Aurel (`/lojas/academia/admin.html`), acessível pelo login da loja. As credenciais e permissões existentes são preservadas. Os links de confirmação e recuperação de senha continuam retornando ao domínio original da Aurel, conforme a configuração atual do Supabase. Nenhuma migração SQL da Aurel foi reaplicada.

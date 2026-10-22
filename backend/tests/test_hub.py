@@ -41,42 +41,6 @@ def test_central_static_and_frames():
             assert client.get(path).status_code==404
         assert client.get('/api/lojas/invalida/products').status_code==404
 
-
-def test_aurel_store_pages_and_nested_assets_are_embeddable():
-    from html.parser import HTMLParser
-    from urllib.parse import urljoin, urlsplit
-
-    class Assets(HTMLParser):
-        def __init__(self):
-            super().__init__()
-            self.urls = []
-        def handle_starttag(self, tag, attrs):
-            values = dict(attrs)
-            if tag in ('script', 'img', 'link'):
-                value = values.get('src') or values.get('href')
-                if value and not urlsplit(value).scheme:
-                    self.urls.append(value)
-
-    with setup_client([]) as client:
-        central = client.get('/central/').text
-        assert 'Aurel Gym' in central
-        assert "name:'Aurel Gym'" in client.get('/central/central.js').text
-        assert next(s for s in client.get('/api/lojas').json() if s['slug'] == 'academia')['name'] == 'Aurel Gym'
-        for name in ('index', 'produto', 'pesquisa', 'login', 'ajuda', 'termos', 'checkout', 'admin'):
-            path = '/lojas/academia/' + name + '.html'
-            response = client.get(path)
-            assert response.status_code == 200, path
-            assert response.headers['x-frame-options'] == 'SAMEORIGIN'
-            parser = Assets()
-            parser.feed(response.text)
-            for asset in parser.urls:
-                asset_path = urljoin(path, asset)
-                assert asset_path.startswith('/lojas/academia/'), asset_path
-                assert client.get(asset_path).status_code == 200, asset_path
-        assert 'supabase.createClient' in client.get('/lojas/academia/database.js').text
-        assert 'name="loja" content="construcao"' in client.get('/lojas/construcao/').text
-
-
 def test_quotes_and_demo_cannot_mix_stores_or_write_stock():
     calls=[]
     body={'items':[{'product_id':PID,'quantity':2}]}
