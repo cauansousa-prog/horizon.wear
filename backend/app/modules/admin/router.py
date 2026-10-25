@@ -72,10 +72,12 @@ class ProductSizeInput(BaseModel):
     estoque:int=Field(ge=0,le=100000,strict=True)
 
 class ProductCreate(Product):
-    imagem_path:str=Field(pattern=r'^products/[0-9a-f-]{36}[.](jpg|png|webp)\Z',max_length=64)
+    imagem_path:str=Field(min_length=44,max_length=48)
     tamanhos:list[ProductSizeInput]=Field(min_length=1,max_length=12)
     @model_validator(mode='after')
     def validate_sizes(self):
+        if not re.fullmatch(r'products/[0-9a-f-]{36}[.](jpg|png|webp)',self.imagem_path):
+            raise ValueError('Caminho de imagem inválido.')
         labels=[size.tamanho.strip().upper() for size in self.tamanhos]
         if any(not label for label in labels) or len(set(labels))!=len(labels):
             raise ValueError('Tamanhos devem estar preenchidos e não podem se repetir.')
