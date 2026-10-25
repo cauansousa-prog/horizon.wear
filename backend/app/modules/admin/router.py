@@ -66,6 +66,21 @@ class Product(BaseModel):
     def promotion(self):
         if self.preco_promocional is not None and self.preco_promocional>=self.preco:raise ValueError('Promoção deve ser menor que o preço.')
         return self
+class ProductSizeInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    tamanho:str=Field(min_length=1,max_length=20)
+    estoque:int=Field(ge=0,le=100000,strict=True)
+
+class ProductCreate(Product):
+    imagem_url:str=Field(pattern=r'^https://',max_length=2048)
+    tamanhos:list[ProductSizeInput]=Field(min_length=1,max_length=12)
+    @model_validator(mode='after')
+    def validate_sizes(self):
+        labels=[size.tamanho.strip().upper() for size in self.tamanhos]
+        if any(not label for label in labels) or len(set(labels))!=len(labels):
+            raise ValueError('Tamanhos devem estar preenchidos e não podem se repetir.')
+        return self
+
 class Size(BaseModel):
     model_config=ConfigDict(extra='forbid')
     product_id:UUID
@@ -440,12 +455,16 @@ async def export_resource(resource:str,format:Literal['csv','xlsx']='csv',
 @router.get('/{resource}')
 async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
     if resource not in {'products','categories','product_sizes','product_images','orders','profiles','payments','coupons','reviews'}:raise HTTPException(404)
-    order='created_at.desc' if resource in {'orders','payments','reviews'} else 'id'
+    order='criado_em.desc' if resource=='payments' else 'created_at.desc' if resource in {'orders','reviews'} else 'id'
     return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':order,'limit':'100','offset':str(offset)})
 
 @router.post('/products',status_code=201)
-async def create_product(body:Product,user:User=Depends(admin),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/products',method='POST',token=user.token,json=body.model_dump(mode='json'))
+async def create_product(body:ProductCreate,user:User=Depends(admin),db:Database=Depends(get_database)):
+    payload=body.model_dump(mode='json')
+    image_url=payload.pop('imagem_url')
+    sizes=payload.pop('tamanhos')
+    return await db.request('/rest/v1/rpc/horizon_admin_create_product',method='POST',token=user.token,
+        json={'p_product':payload,'p_image_url':image_url,'p_sizes':sizes},explain_data_errors=True)
 @router.put('/products/{product_id}')
 async def update_product(product_id:UUID,body:Product,user:User=Depends(admin),db:Database=Depends(get_database)):
     return await db.request('/rest/v1/products',method='PATCH',token=user.token,params={'id':'eq.'+str(product_id)},json=body.model_dump(mode='json'))
