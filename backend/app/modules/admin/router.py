@@ -72,12 +72,10 @@ class ProductSizeInput(BaseModel):
     estoque:int=Field(ge=0,le=100000,strict=True)
 
 class ProductCreate(Product):
-    imagem_path:str=Field(min_length=44,max_length=48)
+    imagem_url:str=Field(pattern=r'^https://',max_length=2048)
     tamanhos:list[ProductSizeInput]=Field(min_length=1,max_length=12)
     @model_validator(mode='after')
     def validate_sizes(self):
-        if not re.fullmatch(r'products/[0-9a-f-]{36}[.](jpg|png|webp)',self.imagem_path):
-            raise ValueError('Caminho de imagem inválido.')
         labels=[size.tamanho.strip().upper() for size in self.tamanhos]
         if any(not label for label in labels) or len(set(labels))!=len(labels):
             raise ValueError('Tamanhos devem estar preenchidos e não podem se repetir.')
@@ -475,7 +473,7 @@ async def upload_product_image(request:Request,user:User=Depends(admin),db:Datab
         raise HTTPException(415,'Envie uma imagem JPG, PNG ou WebP válida.')
     image_path=f'products/{uuid4()}.{formats[content_type][0]}'
     await db.upload_product_image(image_path,token=user.token,content=content,content_type=content_type)
-    return {'path':image_path}
+    return {'url':f'{db.settings.supabase_url}/storage/v1/object/public/product-images/{image_path}'}
 
 @router.post('/products',status_code=201)
 async def create_product(body:ProductCreate,user:User=Depends(admin),db:Database=Depends(get_database)):
