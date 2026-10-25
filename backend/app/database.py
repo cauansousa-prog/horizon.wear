@@ -12,7 +12,7 @@ class Database:
         self.client = client
         self.settings = settings
 
-    async def request(self, path, *, token=None, params=None, method="GET", json=None):
+    async def request(self, path, *, token=None, params=None, method="GET", json=None, explain_data_errors=False):
         if not self.settings.database_configured:
             raise HTTPException(503, 'Configure SUPABASE_URL e SUPABASE_ANON_KEY no servidor.')
         anon_key = self.settings.supabase_anon_key.get_secret_value()
@@ -27,7 +27,21 @@ class Database:
         if response.status_code in (401, 403):
             raise HTTPException(response.status_code, 'Acesso não autorizado.')
         if response.status_code in (400, 409, 422, 429):
-            raise HTTPException(response.status_code, 'Não foi possível concluir. Confira os dados, sua sessão e o estoque disponível.')
+            detail='Não foi possível concluir. Confira os dados, sua sessão e o estoque disponível.'
+            if explain_data_errors:
+                try:
+                    code=response.json().get('code')
+                except (ValueError,AttributeError):
+                    code=None
+                if code=='23505':
+                    detail='Já existe uma peça com esse endereço. Escolha outro endereço.'
+                elif code=='23503':
+                    detail='A categoria selecionada não está mais disponível. Atualize a página e tente novamente.'
+                elif code in {'22023','23514','22P02'}:
+                    detail='Confira os dados da peça, a imagem e o estoque por tamanho.'
+                elif response.status_code==429:
+                    detail='Muitas tentativas em sequência. Aguarde um pouco e tente novamente.'
+            raise HTTPException(response.status_code, detail)
         if response.is_error:
             raise HTTPException(503, 'Falha ao consultar Supabase. Confira configuração e migração.')
         if response.status_code == 204 or not response.content:
