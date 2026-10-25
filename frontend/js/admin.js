@@ -29,7 +29,7 @@ async function uploadProductImage(file){
  const response=await fetch('/api/admin/product-images/upload',{method:'POST',headers:{Authorization:'Bearer '+adminSession.access_token,'Content-Type':file.type},body:file});
  let data={};try{data=await response.json();}catch{}
  if(!response.ok)throw Error(data.detail||'Não foi possível enviar a imagem.');
- return data.path;
+ return data.url;
 }
 async function editProduct(p={}){
  try{
@@ -69,7 +69,7 @@ async function editProduct(p={}){
      if(!sizes.length)throw Error('Informe pelo menos um tamanho e seu estoque.');
      if(new Set(sizes.map(size=>size.tamanho)).size!==sizes.length)throw Error('Cada tamanho deve aparecer uma única vez.');
      submit.disabled=true;submit.textContent='Enviando imagem…';
-     data.imagem_path=await uploadProductImage(imageFile);data.tamanhos=sizes;
+     data.imagem_url=await uploadProductImage(imageFile);data.tamanhos=sizes;
     }
     await call('products'+(p.id?'/'+p.id:''),p.id?'PUT':'POST',data);
     await listing('products');
