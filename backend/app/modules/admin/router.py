@@ -6,7 +6,7 @@ import zipfile
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from uuid import UUID
+from uuid import UUID,uuid4
 from pydantic import BaseModel,Field,ConfigDict,model_validator
 from typing import Literal
 from urllib.parse import quote
@@ -457,6 +457,23 @@ async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin)
     if resource not in {'products','categories','product_sizes','product_images','orders','profiles','payments','coupons','reviews'}:raise HTTPException(404)
     order='criado_em.desc' if resource=='payments' else 'created_at.desc' if resource in {'orders','reviews'} else 'id'
     return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':order,'limit':'100','offset':str(offset)})
+
+@router.post('/product-images/upload',status_code=201)
+async def upload_product_image(request:Request,user:User=Depends(admin),db:Database=Depends(get_database)):
+    content=await request.body()
+    if not content or len(content)>4*1024*1024:
+        raise HTTPException(413,'Escolha uma imagem de até 4 MB.')
+    content_type=request.headers.get('content-type','').split(';',1)[0].strip().lower()
+    formats={
+        'image/jpeg':('jpg',content.startswith(b'\xff\xd8\xff')),
+        'image/png':('png',content.startswith(b'\x89PNG\r\n\x1a\n')),
+        'image/webp':('webp',len(content)>=12 and content[:4]==b'RIFF' and content[8:12]==b'WEBP'),
+    }
+    if content_type not in formats or not formats[content_type][1]:
+        raise HTTPException(415,'Envie uma imagem JPG, PNG ou WebP válida.')
+    image_path=f'products/{uuid4()}.{formats[content_type][0]}'
+    await db.upload_product_image(image_path,token=user.token,content=content,content_type=content_type)
+    return {'path':image_path}
 
 @router.post('/products',status_code=201)
 async def create_product(body:ProductCreate,user:User=Depends(admin),db:Database=Depends(get_database)):
