@@ -965,3 +965,5 @@ async def fulfillment(order_id:UUID,body:Fulfillment,user:User=Depends(admin),db
     if body.status=='enviado' and not body.rastreio.strip():raise HTTPException(422,'Informe o código de rastreio.')
     return await privileged_rpc(db,'horizon_advance_order',
                                 {'p_order':str(order_id),'p_target':body.status,'p_tracking':body.rastreio.strip()})
+
+# Invalida bytecode de deploys anteriores após corrigir a validação do caminho de imagem.
