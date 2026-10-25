@@ -25,7 +25,61 @@ async function listing(resource,offset=0){try{
  document.getElementById('adminSearch').oninput=e=>{let visible=0;document.querySelectorAll('[data-search]').forEach(row=>{row.hidden=!row.dataset.search.includes(e.target.value.toLocaleLowerCase('pt-BR'));if(!row.hidden)visible++;});document.getElementById('emptyTable').hidden=visible>0;};
  document.getElementById('previous').onclick=()=>listing(current,Math.max(0,page-100));document.getElementById('next').onclick=()=>listing(current,page+100);if(resource==='products')document.getElementById('newProduct').onclick=()=>editProduct();message('');
  }catch(e){message(e.message);}}
-async function editProduct(p={}){try{const creating=!p.id,categories=await call('categories');document.getElementById('editor').innerHTML=`<form class="admin-form" id="productForm"><button type="button" class="editor-close wide" onclick="document.getElementById('editor').innerHTML=''">Fechar edição ×</button><h3 class="wide">${p.id?'Editar produto':'Novo produto'}</h3>${['nome','slug','tecido','caimento'].map(n=>`<label>${labels[n]||n}<input name="${n}" value="${escapeHTML(p[n])}" ${['nome','slug'].includes(n)?'required':''}></label>`).join('')}<label>Categoria<select name="categoria_id" required>${categories.map(c=>`<option value="${c.id}" ${c.id===p.categoria_id?'selected':''}>${escapeHTML(c.nome)}</option>`).join('')}</select></label>${['preco','preco_promocional'].map(n=>`<label>${labels[n]||n}<input type="number" step="0.01" min="0.01" name="${n}" value="${escapeHTML(p[n])}" ${n==='preco'?'required':''}></label>`).join('')}${creating?`<label class="wide">Imagem principal (link HTTPS)<input type="url" name="imagem_url" placeholder="https://..." required></label><label class="wide">Tamanhos e estoque<textarea name="estoque_tamanhos" placeholder="P: 5, M: 8, G: 6, GG: 3" required></textarea><small>Separe cada tamanho por vírgula e informe o estoque após os dois-pontos.</small></label>`:''}<label class="wide">Descrição<textarea name="descricao">${escapeHTML(p.descricao)}</textarea></label>${['ativo','destaque','lancamento'].map(n=>`<label>${labels[n]||n}<input type="checkbox" name="${n}" ${p[n]?'checked':''}></label>`).join('')}<button class="btn-gold">${creating?'Adicionar peça':'Salvar produto'}</button></form>`;document.getElementById('productForm').onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));for(const k of ['ativo','destaque','lancamento'])data[k]=e.target.elements[k].checked;data.preco_promocional=data.preco_promocional||null;if(creating){const entries=String(data.estoque_tamanhos||'').split(',').map(value=>value.trim()).filter(Boolean);delete data.estoque_tamanhos;const sizes=entries.map(entry=>{const match=entry.match(/^([^:,]{1,20}):\s*(\d+)$/);if(!match)throw Error('Use o formato P: 5, M: 8 para informar tamanhos e estoque.');const quantidade=Number(match[2]),tamanho=match[1].trim().toUpperCase();if(!tamanho||!Number.isSafeInteger(quantidade)||quantidade>100000)throw Error('Confira os tamanhos e os estoques informados.');return{tamanho,estoque:quantidade};});if(!sizes.length)throw Error('Informe pelo menos um tamanho e seu estoque.');if(new Set(sizes.map(size=>size.tamanho)).size!==sizes.length)throw Error('Cada tamanho deve aparecer uma única vez.');data.tamanhos=sizes;}try{await call('products'+(p.id?'/'+p.id:''),p.id?'PUT':'POST',data);await listing('products');message(creating?'Peça adicionada com imagem e estoque.':'Produto salvo.');}catch(err){message(err.message);}};}catch(e){message(e.message);}}document.addEventListener('click',e=>{const a=e.target.closest('[data-edit]');if(a)editProduct(currentRows[Number(a.dataset.edit)]);const s=e.target.closest('[data-stock]');if(s){const row=currentRows[Number(s.dataset.stock)];document.getElementById('editor').innerHTML=`<form id="stockForm"><label>Estoque para ${escapeHTML(row.tamanho)}<input name="stock" type="number" min="0" step="1" value="${row.estoque}" required></label><button class="btn-gold">Salvar estoque</button></form>`;document.getElementById('stockForm').onsubmit=async ev=>{ev.preventDefault();try{await call('sizes/'+row.id,'PUT',{product_id:row.product_id,tamanho:row.tamanho,estoque:Number(new FormData(ev.target).get('stock'))});listing('product_sizes');}catch(err){message(err.message);}};}});
+async function uploadProductImage(file){
+ const response=await fetch('/api/admin/product-images/upload',{method:'POST',headers:{Authorization:'Bearer '+adminSession.access_token,'Content-Type':file.type},body:file});
+ let data={};try{data=await response.json();}catch{}
+ if(!response.ok)throw Error(data.detail||'Não foi possível enviar a imagem.');
+ return data.path;
+}
+async function editProduct(p={}){
+ try{
+  const creating=!p.id,categories=await call('categories');
+  document.getElementById('editor').innerHTML=`<form class="admin-form" id="productForm"><button type="button" class="editor-close wide" onclick="document.getElementById('editor').innerHTML=''">Fechar edição ×</button><h3 class="wide">${p.id?'Editar produto':'Novo produto'}</h3>${['nome','slug','tecido','caimento'].map(n=>`<label>${labels[n]||n}<input name="${n}" value="${escapeHTML(p[n])}" ${['nome','slug'].includes(n)?'required':''}></label>`).join('')}<label>Categoria<select name="categoria_id" required>${categories.map(c=>`<option value="${c.id}" ${c.id===p.categoria_id?'selected':''}>${escapeHTML(c.nome)}</option>`).join('')}</select></label>${['preco','preco_promocional'].map(n=>`<label>${labels[n]||n}<input type="number" step="0.01" min="0.01" name="${n}" value="${escapeHTML(p[n])}" ${n==='preco'?'required':''}></label>`).join('')}${creating?`<label class="wide">Imagem principal<input type="file" name="imagem_file" accept="image/jpeg,image/png,image/webp" required></label><img class="wide product-image-preview" id="productImagePreview" alt="Prévia da imagem selecionada" hidden><label class="wide">Tamanhos e estoque<textarea name="estoque_tamanhos" placeholder="P: 5, M: 8, G: 6, GG: 3" required></textarea><small>Separe cada tamanho por vírgula e informe o estoque após os dois-pontos.</small></label>`:''}<label class="wide">Descrição<textarea name="descricao">${escapeHTML(p.descricao)}</textarea></label>${['ativo','destaque','lancamento'].map(n=>`<label>${labels[n]||n}<input type="checkbox" name="${n}" ${p[n]?'checked':''}></label>`).join('')}<button class="btn-gold" type="submit">${creating?'Adicionar peça':'Salvar produto'}</button></form>`;
+  const form=document.getElementById('productForm');
+  if(creating){
+   const imageInput=form.elements.imagem_file,preview=document.getElementById('productImagePreview');
+   imageInput.addEventListener('change',()=>{
+    if(preview.dataset.objectUrl)URL.revokeObjectURL(preview.dataset.objectUrl);
+    const file=imageInput.files?.[0];
+    preview.hidden=!file;
+    if(file){preview.dataset.objectUrl=URL.createObjectURL(file);preview.src=preview.dataset.objectUrl;}
+   });
+  }
+  form.onsubmit=async event=>{
+   event.preventDefault();
+   const submit=form.querySelector('button[type="submit"]');
+   try{
+    const data=Object.fromEntries(new FormData(form));
+    for(const key of ['ativo','destaque','lancamento'])data[key]=form.elements[key].checked;
+    data.preco_promocional=data.preco_promocional||null;
+    if(creating){
+     const imageFile=form.elements.imagem_file.files?.[0];
+     if(!imageFile)throw Error('Escolha a imagem principal da peça.');
+     if(imageFile.size>4*1024*1024)throw Error('A imagem deve ter até 4 MB.');
+     if(!['image/jpeg','image/png','image/webp'].includes(imageFile.type))throw Error('Use uma imagem JPG, PNG ou WebP.');
+     const entries=String(data.estoque_tamanhos||'').split(',').map(value=>value.trim()).filter(Boolean);
+     delete data.estoque_tamanhos;delete data.imagem_file;
+     const sizes=entries.map(entry=>{
+      const match=entry.match(/^([^:,]{1,20}):\s*(\d+)$/);
+      if(!match)throw Error('Use o formato P: 5, M: 8 para informar tamanhos e estoque.');
+      const quantidade=Number(match[2]),tamanho=match[1].trim().toUpperCase();
+      if(!tamanho||!Number.isSafeInteger(quantidade)||quantidade>100000)throw Error('Confira os tamanhos e os estoques informados.');
+      return{tamanho,estoque:quantidade};
+     });
+     if(!sizes.length)throw Error('Informe pelo menos um tamanho e seu estoque.');
+     if(new Set(sizes.map(size=>size.tamanho)).size!==sizes.length)throw Error('Cada tamanho deve aparecer uma única vez.');
+     submit.disabled=true;submit.textContent='Enviando imagem…';
+     data.imagem_path=await uploadProductImage(imageFile);data.tamanhos=sizes;
+    }
+    await call('products'+(p.id?'/'+p.id:''),p.id?'PUT':'POST',data);
+    await listing('products');
+    message(creating?'Peça adicionada com imagem e estoque.':'Produto salvo.');
+   }catch(error){message(error.message);}
+   finally{submit.disabled=false;submit.textContent=creating?'Adicionar peça':'Salvar produto';}
+  };
+ }catch(error){message(error.message);}
+}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-edit]');if(a)editProduct(currentRows[Number(a.dataset.edit)]);const s=e.target.closest('[data-stock]');if(s){const row=currentRows[Number(s.dataset.stock)];document.getElementById('editor').innerHTML=`<form id="stockForm"><label>Estoque para ${escapeHTML(row.tamanho)}<input name="stock" type="number" min="0" step="1" value="${row.estoque}" required></label><button class="btn-gold">Salvar estoque</button></form>`;document.getElementById('stockForm').onsubmit=async ev=>{ev.preventDefault();try{await call('sizes/'+row.id,'PUT',{product_id:row.product_id,tamanho:row.tamanho,estoque:Number(new FormData(ev.target).get('stock'))});listing('product_sizes');}catch(err){message(err.message);}};}});
 document.addEventListener('click',e=>{const button=e.target.closest('[data-order]');if(!button)return;
  const order=currentRows[Number(button.dataset.order)];
  const next={pagamento_aprovado:'preparando',preparando:'enviado',enviado:'entregue'}[order.status];if(!next)return;

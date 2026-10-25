@@ -1,5 +1,6 @@
 """Supabase Data API. Cada requisição mantém o JWT do usuário e suas políticas RLS."""
 import httpx
+from urllib.parse import quote
 from fastapi import HTTPException, Request
 from .config import Settings
 
@@ -50,6 +51,44 @@ class Database:
             return response.json()
         except ValueError:
             raise HTTPException(503, 'Resposta inválida do Supabase.') from None
+
+    async def upload_product_image(self, object_path, *, token, content, content_type):
+        if not self.settings.database_configured:
+            raise HTTPException(503, 'Configure SUPABASE_URL e SUPABASE_ANON_KEY no servidor.')
+        anon_key = self.settings.supabase_anon_key.get_secret_value()
+        path = '/storage/v1/object/product-images/' + quote(object_path, safe='/')
+        headers = {'apikey': anon_key, 'Authorization': f'Bearer {token}',
+                   'Content-Type': content_type, 'x-upsert': 'false',
+                   'cache-control': 'max-age=31536000'}
+        try:
+            response = await self.client.request('POST', self.settings.supabase_url + path,
+                                                 headers=headers, content=content)
+        except httpx.RequestError:
+            raise HTTPException(503, 'Supabase indisponível para enviar a imagem.') from None
+        if response.status_code in (401, 403):
+            raise HTTPException(response.status_code, 'Sua sessão expirou ou não tem permissão para enviar imagens.')
+        if response.status_code == 413:
+            raise HTTPException(413, 'A imagem excede o limite de 4 MB.')
+        if response.status_code in (400, 409, 415, 422):
+            raise HTTPException(415, 'Envie uma imagem JPG, PNG ou WebP válida.')
+        if response.is_error:
+            raise HTTPException(503, 'Não foi possível armazenar a imagem. Tente novamente.')
+        return True
+
+    async def delete_product_image(self, object_path, *, token):
+        if not self.settings.database_configured:
+            raise HTTPException(503, 'Configure SUPABASE_URL e SUPABASE_ANON_KEY no servidor.')
+        anon_key = self.settings.supabase_anon_key.get_secret_value()
+        headers = {'apikey': anon_key, 'Authorization': f'Bearer {token}',
+                   'Content-Type': 'application/json'}
+        try:
+            response = await self.client.request(
+                'DELETE', self.settings.supabase_url + '/storage/v1/object/product-images',
+                headers=headers, json={'prefixes': [object_path]})
+        except httpx.RequestError:
+            raise HTTPException(503, 'Supabase indisponível para remover a imagem.') from None
+        if response.is_error:
+            raise HTTPException(503, 'Não foi possível remover a imagem enviada.')
 
     async def admin_request(self, path, *, params=None, method="GET", json=None):
         """Chamada administrativa interna; a chave de serviço nunca vai ao navegador."""
