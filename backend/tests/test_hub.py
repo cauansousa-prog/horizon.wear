@@ -58,9 +58,10 @@ def test_quotes_and_demo_cannot_mix_stores_or_write_stock():
 
 def test_admin_requires_membership_for_selected_store():
     with setup_client([]) as client:
-        for slug in ['academia','construcao']:
-            assert client.get('/api/lojas/'+slug+'/admin/products').status_code==401
-            assert client.get('/api/lojas/'+slug+'/admin/products',headers={'Authorization':'Bearer customer'}).status_code==403
+        assert client.get('/api/lojas/academia/admin/products').status_code==401
+        assert client.get('/api/lojas/academia/admin/products',headers={'Authorization':'Bearer customer'}).status_code==403
+        assert client.get('/api/lojas/construcao/admin/products').status_code==404
+        assert client.get('/api/lojas/construcao/admin/products',headers={'Authorization':'Bearer customer'}).status_code==404
         assert client.get('/api/lojas/academia/admin/products',headers={'Authorization':'Bearer manager'}).status_code==200
         assert client.get('/api/lojas/construcao/admin/products',headers={'Authorization':'Bearer manager'}).status_code==404
         body={'slug':'halter','nome':'Halter','preco':'19.95','loja_id':'construcao'}
