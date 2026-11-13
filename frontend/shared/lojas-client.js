@@ -17,7 +17,7 @@ window.HorizonHub=(()=>{
  }
  async function authenticate(action,body){const data=await request('/api/auth/'+action,{method:'POST',body:JSON.stringify(body)});if(!data.access_token)throw Error('Não foi possível iniciar sua sessão.');localStorage.setItem(sessionKey,JSON.stringify(data));return data.user;}
  function store(slug){
-  if(!['academia','construcao'].includes(slug))throw Error('Loja não cadastrada na central.');
+  if(slug!=='academia')throw Error('Loja não cadastrada na central.');
   const base='/api/lojas/'+slug,key='hub-cart-'+slug,historyKey='hub-demo-orders-'+slug;
   function cart(){try{const items=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(items)?items:[];}catch{return [];}}
   return Object.freeze({slug,products:()=>request(base+'/products'),
