@@ -29,15 +29,15 @@ def setup_client(calls):
 
 def test_central_static_and_frames():
     with setup_client([]) as client:
-        assert len(client.get('/api/lojas').json())==3
+        assert [x['slug'] for x in client.get('/api/lojas').json()]==['horizon','academia']
         assert client.get('/central/').headers['x-frame-options']=='DENY'
-        for path in ['/Index.html','/lojas/academia/','/lojas/construcao/','/central/admin.html']:
+        for path in ['/Index.html','/lojas/academia/','/central/admin.html']:
             response=client.get(path)
             assert response.status_code==200,path
             assert response.headers['x-frame-options']=='SAMEORIGIN'
         for path in ['/central/central.js','/shared/lojas-client.js','/shared/loja-modelo.css']:
             assert client.get(path).status_code==200
-        for path in ['/lojas/academia/.env','/lojas/construcao/backend.py','/lojas/LEIA-ME.md']:
+        for path in ['/lojas/academia/.env','/lojas/construcao/','/lojas/LEIA-ME.md']:
             assert client.get(path).status_code==404
         assert client.get('/api/lojas/invalida/products').status_code==404
 
@@ -46,7 +46,7 @@ def test_quotes_and_demo_cannot_mix_stores_or_write_stock():
     body={'items':[{'product_id':PID,'quantity':2}]}
     with setup_client(calls) as client:
         assert client.post('/api/lojas/academia/quote',json=body).json()['total']=='39.90'
-        assert client.post('/api/lojas/construcao/quote',json=body).status_code==409
+        assert client.post('/api/lojas/construcao/quote',json=body).status_code==404
         assert client.post('/api/lojas/academia/quote',json={'items':[{'product_id':PID,'quantity':3}]}).status_code==409
         assert client.post('/api/lojas/academia/quote',json={**body,'total':1}).status_code==422
         for method in ['pix','cartao','boleto']:
@@ -62,7 +62,7 @@ def test_admin_requires_membership_for_selected_store():
             assert client.get('/api/lojas/'+slug+'/admin/products').status_code==401
             assert client.get('/api/lojas/'+slug+'/admin/products',headers={'Authorization':'Bearer customer'}).status_code==403
         assert client.get('/api/lojas/academia/admin/products',headers={'Authorization':'Bearer manager'}).status_code==200
-        assert client.get('/api/lojas/construcao/admin/products',headers={'Authorization':'Bearer manager'}).status_code==403
+        assert client.get('/api/lojas/construcao/admin/products',headers={'Authorization':'Bearer manager'}).status_code==404
         body={'slug':'halter','nome':'Halter','preco':'19.95','loja_id':'construcao'}
         assert client.post('/api/lojas/academia/admin/products',json=body,headers={'Authorization':'Bearer manager'}).status_code==422
 
