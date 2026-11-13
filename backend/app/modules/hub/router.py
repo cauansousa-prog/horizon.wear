@@ -10,7 +10,7 @@ from ...database import Database,get_database
 router=APIRouter(prefix='/lojas',tags=['central de lojas'])
 STORES={
     'horizon':{'slug':'horizon','name':'Horizon Wear','description':'Moda masculina','url':'/Index.html'},
-    'academia':{'slug':'academia','name':'Academia','description':'Treino, movimento e bem-estar','url':'/lojas/academia/'},
+    'academia':{'slug':'academia','name':'Aurel Gym','description':'Roupas esportivas e treino','url':'/lojas/academia/'},
 }
 
 def future_store(slug):
