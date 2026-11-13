@@ -105,7 +105,7 @@ def create_app(settings=None, transport=None):
 
     app.include_router(storefront_router)
 
-    for store in ('academia','construcao'):
+    for store in ('academia',):
         app.mount('/lojas/'+store,StoreFiles(directory=ROOT/'lojas'/store,html=True),name='loja-'+store)
     app.mount('/', StaticFiles(directory=ROOT / 'frontend', html=True), name='frontend')
     return app
