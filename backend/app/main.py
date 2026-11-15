@@ -21,6 +21,9 @@ from .database import Database, get_database
 from .modules.users.router import router as users_router
 from .modules.hub.router import router as hub_router
 
+# Página de entrada Tríade, única origem externa autorizada a exibir a loja dentro dela.
+TRIADE_ORIGIN = 'https://triade-seven.vercel.app'
+
 class StoreFiles(StaticFiles):
     async def get_response(self,path,scope):
         item=PurePosixPath(path)
@@ -52,6 +55,11 @@ def create_app(settings=None, transport=None):
         embeddable=path in ('/','/Index.html','/index.html','/admin.html','/central/admin.html') or path.startswith(('/lojas/','/produto/'))
         response.headers.setdefault('X-Frame-Options','SAMEORIGIN' if embeddable else 'DENY')
         response.headers.setdefault('Content-Security-Policy',"frame-ancestors 'self'" if embeddable else "frame-ancestors 'none'")
+        # Tríade pode exibir as páginas públicas da loja (nunca a API nem o painel administrativo).
+        if not path.startswith('/api/') and 'admin' not in path:
+            if 'X-Frame-Options' in response.headers:
+                del response.headers['X-Frame-Options']
+            response.headers['Content-Security-Policy']=f"frame-ancestors 'self' {TRIADE_ORIGIN}"
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
         response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
         if request.url.scheme == 'https':
