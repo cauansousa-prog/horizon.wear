@@ -22,6 +22,9 @@ class Address(BaseModel):
     referencia:str=Field(default='',max_length=200)
     telefone:str=Field(default='',max_length=25)
     padrao:bool=False
+class Favorite(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    product_id:UUID
 
 @router.patch('/users/me')
 async def update_profile(body:Profile,user:User=Depends(current_user),db:Database=Depends(get_database)):
@@ -32,19 +35,59 @@ async def update_profile(body:Profile,user:User=Depends(current_user),db:Databas
 
 @router.get('/addresses')
 async def addresses(user:User=Depends(current_user),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/addresses',token=user.token,params={'user_id':'eq.'+user.id,'order':'created_at.desc'})
+    return await db.request('/rest/v1/addresses',token=user.token,params={'user_id':'eq.'+user.id,'order':'padrao.desc,created_at.desc'})
 
 @router.post('/addresses',status_code=201)
 async def add_address(body:Address,user:User=Depends(current_user),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/addresses',method='POST',token=user.token,json={**body.model_dump(),'user_id':user.id})
+    existing=await db.request('/rest/v1/addresses',token=user.token,params={'user_id':'eq.'+user.id,'select':'id','limit':'1'})
+    make_default=body.padrao or not existing
+    if make_default:
+        await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'user_id':'eq.'+user.id},json={'padrao':False})
+    rows=await db.request('/rest/v1/addresses',method='POST',token=user.token,json={**body.model_dump(),'padrao':make_default,'user_id':user.id})
+    return rows[0] if isinstance(rows,list) and rows else {'saved':True}
+
+@router.patch('/addresses/{address_id}/default')
+async def default_address(address_id:UUID,user:User=Depends(current_user),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/addresses',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id,'select':'id','limit':'1'})
+    if not rows:raise HTTPException(404,'Endereço não encontrado.')
+    await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'user_id':'eq.'+user.id},json={'padrao':False})
+    await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id},json={'padrao':True})
+    return {'saved':True}
 
 @router.patch('/addresses/{address_id}')
 async def edit_address(address_id:UUID,body:Address,user:User=Depends(current_user),db:Database=Depends(get_database)):
-    return await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id},json=body.model_dump())
+    if body.padrao:
+        await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'user_id':'eq.'+user.id},json={'padrao':False})
+    rows=await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id},json=body.model_dump())
+    if not rows:raise HTTPException(404,'Endereço não encontrado.')
+    return rows[0]
 
 @router.delete('/addresses/{address_id}')
 async def delete_address(address_id:UUID,user:User=Depends(current_user),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/addresses',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id,'select':'id,padrao','limit':'1'})
+    if not rows:raise HTTPException(404,'Endereço não encontrado.')
     await db.request('/rest/v1/addresses',method='DELETE',token=user.token,params={'id':'eq.'+str(address_id),'user_id':'eq.'+user.id})
+    if rows[0].get('padrao'):
+        remaining=await db.request('/rest/v1/addresses',token=user.token,params={'user_id':'eq.'+user.id,'select':'id','order':'created_at.desc','limit':'1'})
+        if remaining:
+            await db.request('/rest/v1/addresses',method='PATCH',token=user.token,params={'id':'eq.'+str(remaining[0]['id']),'user_id':'eq.'+user.id},json={'padrao':True})
+    return {'deleted':True}
+
+@router.get('/favorites')
+async def favorites(user:User=Depends(current_user),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/favorites',token=user.token,params={'user_id':'eq.'+user.id,'select':'product_id,created_at','order':'created_at.desc'})
+    return rows or []
+
+@router.post('/favorites',status_code=201)
+async def add_favorite(body:Favorite,user:User=Depends(current_user),db:Database=Depends(get_database)):
+    product=await db.request('/rest/v1/products',params={'id':'eq.'+str(body.product_id),'ativo':'eq.true','select':'id','limit':'1'})
+    if not product:raise HTTPException(404,'Produto indisponível.')
+    await db.request('/rest/v1/favorites',method='POST',token=user.token,json={'user_id':user.id,'product_id':str(body.product_id)})
+    return {'saved':True}
+
+@router.delete('/favorites/{product_id}')
+async def remove_favorite(product_id:UUID,user:User=Depends(current_user),db:Database=Depends(get_database)):
+    await db.request('/rest/v1/favorites',method='DELETE',token=user.token,params={'user_id':'eq.'+user.id,'product_id':'eq.'+str(product_id)})
     return {'deleted':True}
 
 @router.get('/orders')
