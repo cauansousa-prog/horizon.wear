@@ -13,12 +13,12 @@ class Database:
         self.client = client
         self.settings = settings
 
-    async def request(self, path, *, token=None, params=None, method="GET", json=None, explain_data_errors=False):
+    async def request(self, path, *, token=None, params=None, method="GET", json=None, explain_data_errors=False, prefer="return=representation"):
         if not self.settings.database_configured:
             raise HTTPException(503, 'Configure SUPABASE_URL e SUPABASE_ANON_KEY no servidor.')
         anon_key = self.settings.supabase_anon_key.get_secret_value()
         headers = {'apikey': anon_key, 'Authorization': f'Bearer {token or anon_key}',
-                   'Prefer': 'return=representation'}
+                   'Prefer': prefer}
         try:
             response = await self.client.request(method, self.settings.supabase_url + path, headers=headers, params=params, json=json)
         except httpx.RequestError:
@@ -26,6 +26,8 @@ class Database:
         if path=='/auth/v1/user' and response.status_code in (400, 401, 403):
             raise HTTPException(401, 'Sua sessão expirou. Entre novamente.')
         if response.status_code in (401, 403):
+            if path == '/rest/v1/favorites' and response.status_code == 403:
+                raise HTTPException(503, 'O Supabase bloqueou o acesso à tabela de favoritos. Aplique a migração supabase/migrations/0011_favorites_repair.sql e confira as permissões da tabela.')
             raise HTTPException(response.status_code, 'Acesso não autorizado.')
         if response.status_code in (400, 409, 422, 429):
             detail='Não foi possível concluir. Confira os dados, sua sessão e o estoque disponível.'
@@ -44,6 +46,19 @@ class Database:
                     detail='Muitas tentativas em sequência. Aguarde um pouco e tente novamente.'
             raise HTTPException(response.status_code, detail)
         if response.is_error:
+            if path == '/rest/v1/favorites':
+                try:
+                    error_data = response.json()
+                    error_code = error_data.get('code') if isinstance(error_data, dict) else None
+                except (ValueError, AttributeError):
+                    error_code = None
+                if response.status_code == 404 or error_code in {'PGRST205', '42P01'}:
+                    detail = 'A tabela de favoritos não foi encontrada no Supabase. Aplique a migração supabase/migrations/0011_favorites_repair.sql no projeto usado pela Horizon Wear.'
+                elif error_code in {'PGRST204', '42703'}:
+                    detail = 'A estrutura da tabela de favoritos está desatualizada no Supabase. Aplique a migração supabase/migrations/0011_favorites_repair.sql.'
+                else:
+                    detail = 'O Supabase não conseguiu acessar a tabela de favoritos. Confira a migração 0011 e as permissões da tabela no projeto da Horizon Wear.'
+                raise HTTPException(503, detail)
             raise HTTPException(503, 'Falha ao consultar Supabase. Confira configuração e migração.')
         if response.status_code == 204 or not response.content:
             return None
