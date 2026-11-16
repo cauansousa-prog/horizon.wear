@@ -24,6 +24,7 @@ Este código usa o esquema português documentado em [supabase/INSPECAO_EXISTENT
 1. `supabase/migrations/0002_existing_security.sql`: corrige a política recursiva de perfis, impede alterações diretas de papéis e pagamentos, e instala a função de carrinho.
 2. `supabase/migrations/0003_checkout_existing.sql`: adiciona reservas, idempotência, confirmação de pagamentos, baixa transacional de estoque e avanço seguro dos pedidos.
 3. `supabase/migrations/0004_public_catalog.sql`: permite que visitantes leiam produtos ativos sem consultar perfis privados.
+4. `supabase/migrations/0010_customer_favorites.sql`: cria favoritos persistentes por cliente, com RLS para cada usuário consultar e alterar somente os próprios favoritos. A migração deve ser aplicada depois das migrações anteriores já existentes.
 
 Não aplique `0001_foundation.sql` nesse banco. Esse arquivo é um rascunho anterior para outro esquema e foi mantido como histórico; ele não corresponde à API atual.
 
