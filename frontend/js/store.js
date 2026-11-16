@@ -8,10 +8,22 @@ function saveSession(value){const oldIdentity=session?.user?.id||session?.user?.
 window.hwLogout=async function(){const token=session?.access_token||'';localStorage.setItem('hw-cart',JSON.stringify(cart));saveSession(null);cart=storageCart();try{renderCart();}catch(e){}try{if(typeof window.renderAccount==='function')await window.renderAccount();}catch(e){}if(token){fetch('/api/auth/logout',{method:'POST',headers:{Authorization:'Bearer '+token}}).catch(()=>{});}showToast('Você saiu da sua conta.');};
 function favoriteSlugs(){return products.filter(p=>favoriteIds.has(String(p.id))).map(p=>p.slug);}
 async function loadFavorites(){
- if(!session)return;
- const rows=await api('/api/favorites');favoriteIds=new Set((rows||[]).map(x=>String(x.product_id)));
- let cached=[];try{cached=JSON.parse(localStorage.getItem('horizon-wishlist-v1')||'[]')}catch{}
- const owner=String(session?.user?.id||session?.user?.email||'');const previousOwner=localStorage.getItem('hw-wishlist-owner');if(!previousOwner||previousOwner===owner){for(const slug of cached){const p=products.find(x=>x.slug===slug);if(p&&!favoriteIds.has(String(p.id))){await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});favoriteIds.add(String(p.id));}}localStorage.setItem('hw-wishlist-owner',owner);}
+ if(!session){favoriteIds.clear();if(typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs([]);return;}
+ const rows=await api('/api/favorites');
+ if(!Array.isArray(rows))throw Error('O servidor retornou uma resposta inválida ao carregar seus favoritos. Atualize a página e tente novamente.');
+ favoriteIds=new Set(rows.filter(x=>x&&x.product_id).map(x=>String(x.product_id)));
+ let cached=[];try{const saved=JSON.parse(localStorage.getItem('horizon-wishlist-v1')||'[]');cached=Array.isArray(saved)?saved.filter(x=>typeof x==='string'):[]}catch{}
+ const owner=String(session?.user?.id||session?.user?.email||'');const previousOwner=localStorage.getItem('hw-wishlist-owner');
+ if(!previousOwner||previousOwner===owner){
+  for(const slug of cached){
+   const p=products.find(x=>x.slug===slug);
+   if(p&&!favoriteIds.has(String(p.id))){
+    await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});
+    favoriteIds.add(String(p.id));
+   }
+  }
+  localStorage.setItem('hw-wishlist-owner',owner);
+ }
  if(typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs(favoriteSlugs());
 }
 window.hwToggleFavorite=async function(slug){
@@ -150,7 +162,7 @@ document.addEventListener('click',async e=>{
 });
 async function startStore(){
  const hash=new URLSearchParams(location.hash.slice(1));if(hash.has('access_token')){saveSession({access_token:hash.get('access_token'),refresh_token:hash.get('refresh_token'),expires_at:Math.floor(Date.now()/1000)+Number(hash.get('expires_in')||3600)});const recovery=hash.get('type')==='recovery';history.replaceState(null,'','/#conta');if(recovery){showPage('conta');document.getElementById('accountContent').innerHTML=`<form id="newPassword">${input('Nova senha','password','password')}<button class="btn-gold">Salvar senha</button></form>`;document.getElementById('newPassword').onsubmit=async e=>{e.preventDefault();try{await api('/api/auth/password',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});renderAccount();showToast('Senha atualizada.');}catch(err){showToast(err.message);}};await loadCatalog();await loadCart();return;}}
- await loadStoreExperience();restoreCatalog();await loadCatalog();if(session)try{await loadFavorites();}catch(e){showToast('Não foi possível carregar seus favoritos.');}try{await loadCart();}catch(e){showToast(e.message);}
+ await loadStoreExperience();restoreCatalog();await loadCatalog();try{await loadCart();}catch(e){showToast(e.message);}
  routeStore();
 }
 function toggleNavigation(open){
