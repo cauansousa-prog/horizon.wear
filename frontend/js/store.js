@@ -1,10 +1,27 @@
 const money = value => Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeImage = value => {if(!value)return '/img/logo-icone.png';try {const u=new URL(value,location.origin);return ['https:','http:'].includes(u.protocol)?esc(u.href):'/img/logo-icone.png';} catch{return '/img/logo-icone.png';}};
-let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve(), catalogState='loading';
+let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve(), catalogState='loading', favoriteIds=new Set();
 try {session=JSON.parse(localStorage.getItem('hw-session')||'null');} catch {localStorage.removeItem('hw-session');}
 const storageCart=()=>{try {const v=JSON.parse(localStorage.getItem('hw-cart')||'[]');return Array.isArray(v)?v.filter(i=>typeof i.size_id==='string'&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=99).slice(0,100):[];}catch{return [];}};
 function saveSession(value){const oldIdentity=session?.user?.id||session?.user?.email||null,newIdentity=value?.user?.id||value?.user?.email||null;if(oldIdentity!==newIdentity)sessionStorage.removeItem('hw-checkout-attempt');session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
+function favoriteSlugs(){return products.filter(p=>favoriteIds.has(String(p.id))).map(p=>p.slug);}
+async function loadFavorites(){
+ if(!session)return;
+ const rows=await api('/api/favorites');favoriteIds=new Set((rows||[]).map(x=>String(x.product_id)));
+ let cached=[];try{cached=JSON.parse(localStorage.getItem('horizon-wishlist-v1')||'[]')}catch{}
+ for(const slug of cached){const p=products.find(x=>x.slug===slug);if(p&&!favoriteIds.has(String(p.id))){await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});favoriteIds.add(String(p.id));}}
+ if(typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs(favoriteSlugs());
+}
+window.hwToggleFavorite=async function(slug){
+ if(!session)return false;
+ const p=products.find(x=>x.slug===slug);if(!p)throw Error('Produto não encontrado.');
+ const id=String(p.id);
+ if(favoriteIds.has(id)){await api('/api/favorites/'+encodeURIComponent(id),{method:'DELETE'});favoriteIds.delete(id);}
+ else{await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});favoriteIds.add(id);}
+ if(typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs(favoriteSlugs());
+ return true;
+};
 async function api(path,options={},retry=true){
   const publicRead=(!options.method||options.method==='GET')&&/^\/api\/(products(?:[/?]|$)|categories(?:[/?]|$)|reviews\/)/.test(path);
   if(!publicRead && session?.refresh_token && session.expires_at*1000<Date.now()+30000 && !path.startsWith('/api/auth/')) {
@@ -58,7 +75,7 @@ async function loadCatalog(){
  try{
   const categoryRequest=api('/api/categories').catch(()=>[]);
   const loaded=[];let offset=0;while(true){const page=await api('/api/products?offset='+offset);if(!Array.isArray(page))throw Error('Não foi possível carregar a coleção.');loaded.push(...page);if(page.length<100)break;offset+=100;}
-  products=loaded;categories=await categoryRequest;catalogState='ready';
+  products=loaded;categories=await categoryRequest;catalogState='ready';if(session)try{await loadFavorites();}catch(e){showToast('Não foi possível sincronizar seus favoritos agora.');}
   if(!categories.length)categories=[...new Map(products.filter(p=>p.categories).map(p=>[p.categories.id,{...p.categories,imagem_url:imageFor(p)}])).values()];
   document.getElementById('catGrid').innerHTML=categories.map(c=>`<a class="cat-card" href="/colecao/${encodeURIComponent(c.slug)}" data-category="${esc(c.slug)}"><img loading="lazy" src="${safeImage(c.imagem_url)}" alt="${esc(c.nome)}" width="400" height="300"><div class="cat-overlay"><h3>${esc(c.nome)}</h3><span>EXPLORAR ↗</span></div></a>`).join('');
   const selected=[...products].sort((a,b)=>Number(b.destaque)-Number(a.destaque));
@@ -120,18 +137,18 @@ async function renderAccount(){
  el.insertAdjacentHTML('beforeend',deviceOrdersHTML());
  document.getElementById('logout').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST'});}catch{}localStorage.setItem('hw-cart',JSON.stringify(cart));saveSession(null);cart=storageCart();renderCart();renderAccount();};
  document.getElementById('profileForm').onsubmit=async e=>{e.preventDefault();const form=e.target,button=form.querySelector('button');form.querySelectorAll('input').forEach(i=>i.value=i.value.trim());if(!form.reportValidity())return;button.disabled=true;button.textContent='Salvando…';try{await api('/api/users/me',{method:'PATCH',body:JSON.stringify(Object.fromEntries(new FormData(form)))});await renderAccount();const saved=document.getElementById('profileForm');if(saved)saved.insertAdjacentHTML('beforeend','<p role="status" class="quiet">Nome e telefone salvos.</p>');showToast('Nome e telefone salvos.');}catch(err){showToast(err.message);}finally{button.disabled=false;button.textContent='Salvar dados';}};
- document.getElementById('addressForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/addresses',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});renderAccount();}catch(err){showToast(err.message);}};
+ document.getElementById('addressForm').onsubmit=async e=>{e.preventDefault();try{const values=Object.fromEntries(new FormData(e.target));values.cep=values.cep.replace(/\\D/g,'');values.estado=values.estado.toUpperCase();await api('/api/addresses',{method:'POST',body:JSON.stringify(values)});await renderAccount();showToast('Endereço salvo para suas próximas compras.');}catch(err){showToast(err.message);}};
  }catch(e){if(!session){renderAccount();return;}el.textContent=e.message;}
 }
 document.addEventListener('click',async e=>{
  const f=e.target.closest('[data-filter]');if(f)setFilter(f.dataset.filter);
  const c=e.target.closest('[data-category]');if(c){e.preventDefault();showPage('produtos',c.dataset.category);}
  const q=e.target.closest('[data-size][data-qty]');if(q)changeItem(q.dataset.size,Number(q.dataset.qty));
- const a=e.target.closest('[data-delete-address]');if(a){try{await api('/api/addresses/'+a.dataset.deleteAddress,{method:'DELETE'});renderAccount();}catch(err){showToast(err.message);}}
+ const d=e.target.closest('[data-default-address]');if(d){try{await api('/api/addresses/'+d.dataset.defaultAddress+'/default',{method:'PATCH'});renderAccount();showToast('Endereço principal atualizado.');}catch(err){showToast(err.message);}}\n const a=e.target.closest('[data-delete-address]');if(a){try{await api('/api/addresses/'+a.dataset.deleteAddress,{method:'DELETE'});renderAccount();}catch(err){showToast(err.message);}}
 });
 async function startStore(){
  const hash=new URLSearchParams(location.hash.slice(1));if(hash.has('access_token')){saveSession({access_token:hash.get('access_token'),refresh_token:hash.get('refresh_token'),expires_at:Math.floor(Date.now()/1000)+Number(hash.get('expires_in')||3600)});const recovery=hash.get('type')==='recovery';history.replaceState(null,'','/#conta');if(recovery){showPage('conta');document.getElementById('accountContent').innerHTML=`<form id="newPassword">${input('Nova senha','password','password')}<button class="btn-gold">Salvar senha</button></form>`;document.getElementById('newPassword').onsubmit=async e=>{e.preventDefault();try{await api('/api/auth/password',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});renderAccount();showToast('Senha atualizada.');}catch(err){showToast(err.message);}};await loadCatalog();await loadCart();return;}}
- await loadStoreExperience();restoreCatalog();await loadCatalog();try{await loadCart();}catch(e){showToast(e.message);}
+ await loadStoreExperience();restoreCatalog();await loadCatalog();if(session)try{await loadFavorites();}catch(e){showToast('Não foi possível carregar seus favoritos.');}try{await loadCart();}catch(e){showToast(e.message);}
  routeStore();
 }
 function toggleNavigation(open){
