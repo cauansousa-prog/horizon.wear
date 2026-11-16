@@ -6,7 +6,7 @@ async function openCheckout(fromRoute=false){
  const el=document.getElementById('checkoutContent');el.textContent='Conferindo seus itens…';
  try{
  if(!cart.length){el.innerHTML='<div class="checkout-empty"><span aria-hidden="true">↗</span><h2>Sua próxima escolha está na coleção.</h2><p>Adicione uma peça ao carrinho para continuar.</p><button class="btn-gold" onclick="showPage(\'produtos\')">Explorar a coleção</button></div>';return;}
- const [quote,config]=await Promise.all([api('/api/cart/quote',{method:'POST',body:JSON.stringify({items:cart})}),api('/api/checkout/config')]);
+ const [quote,config,savedAddresses]=await Promise.all([api('/api/cart/quote',{method:'POST',body:JSON.stringify({items:cart})}),api('/api/checkout/config'),session?api('/api/addresses').catch(()=>[]):Promise.resolve([])]);
  const directMode=Boolean(config.direct_mode);
  if(directMode){config.available=true;config.methods=config.direct_methods||['pix','cartao','boleto'];}
  if(!config.available){el.innerHTML='<div class="checkout-empty"><h2>Checkout indisponível.</h2><p>Seu carrinho continua salvo. Tente novamente em instantes.</p><button class="btn-outline" onclick="showPage(\'produtos\')">Continuar comprando</button></div>';return;}
@@ -21,6 +21,13 @@ async function openCheckout(fromRoute=false){
  form.elements.phone.maxLength=20;
  if(session?.user?.email)form.elements.email.value=session.user.email;
  if(session)api('/api/users/me').then(p=>{if(!form.elements.name.value)form.elements.name.value=p.full_name||'';if(!form.elements.phone.value)form.elements.phone.value=p.phone||'';}).catch(()=>{});
+ if(savedAddresses.length){
+  const primary=savedAddresses.find(a=>a.padrao)||savedAddresses[0];
+  form.elements.name.value=form.elements.name.value||primary.destinatario||'';
+  form.elements.phone.value=form.elements.phone.value||primary.telefone||'';
+  for(const [field,key] of [['cep','cep'],['rua','rua'],['numero','numero'],['bairro','bairro'],['cidade','cidade'],['estado','estado'],['complemento','complemento']])form.elements[field].value=primary[key]||'';
+  const notice=document.createElement('p');notice.className='quiet saved-address-notice';notice.textContent='Endereço principal carregado automaticamente da sua conta.';form.querySelector('[data-step="1"] .step-intro').after(notice);
+ }
  form.elements.cpf.inputMode='numeric';form.elements.cep.inputMode='numeric';form.elements.estado.maxLength=2;
  for(const [name,ac] of Object.entries({name:'name',email:'email',phone:'tel',cep:'postal-code',rua:'address-line1',complemento:'address-line2',cidade:'address-level2',estado:'address-level1'}))form.elements[name].autocomplete=ac;
  function updateStep(){
