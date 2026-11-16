@@ -253,3 +253,35 @@ body .tag-novo{background:var(--mk-gold)!important;color:#111!important;border:0
   .acct-support{flex-direction:column;align-items:flex-start;gap:16px;padding:22px 20px}
   .acct-support img{width:96px;padding:0 0 14px;border:0;border-bottom:1px solid #3a3320}
 }
+
+
+/* ---------- Ajustes mobile: topo compacto, sem faixa promocional ---------- */
+@media (max-width: 700px){
+  body .topbar{display:none!important}
+  body header.main{position:sticky;top:0}
+  body header.main .container{
+    height:58px!important;
+    min-height:58px;
+    padding:0 14px!important;
+    gap:8px!important;
+  }
+  body header.main .logo-full{height:34px!important;width:auto;max-width:142px}
+  body header.main .header-icons{gap:5px!important}
+  body header.main .header-icons>button{
+    width:30px!important;
+    min-width:30px!important;
+    height:36px!important;
+    font-size:19px!important;
+  }
+  body header.main .header-icons>button i{font-size:19px!important}
+  body header.main .header-icons .search-bar~button i,
+  body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:18px!important}
+  body header.main .wish-badge,
+  body header.main .cart-badge{
+    top:0;
+    right:-3px;
+    min-width:15px;
+    height:15px;
+    font-size:9px;
+  }
+}
