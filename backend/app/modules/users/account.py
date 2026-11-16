@@ -82,7 +82,10 @@ async def favorites(user:User=Depends(current_user),db:Database=Depends(get_data
 async def add_favorite(body:Favorite,user:User=Depends(current_user),db:Database=Depends(get_database)):
     product=await db.request('/rest/v1/products',params={'id':'eq.'+str(body.product_id),'ativo':'eq.true','select':'id','limit':'1'})
     if not product:raise HTTPException(404,'Produto indisponível.')
-    await db.request('/rest/v1/favorites',method='POST',token=user.token,json={'user_id':user.id,'product_id':str(body.product_id)})
+    await db.request('/rest/v1/favorites',method='POST',token=user.token,
+        params={'on_conflict':'user_id,product_id'},
+        json={'user_id':user.id,'product_id':str(body.product_id)},
+        prefer='resolution=ignore-duplicates,return=minimal')
     return {'saved':True}
 
 @router.delete('/favorites/{product_id}')
