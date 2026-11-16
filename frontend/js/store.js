@@ -4,13 +4,13 @@ const safeImage = value => {if(!value)return '/img/logo-icone.png';try {const u=
 let products=[], categories=[], cart=[], activeFilter='todos', searchQuery='', session=null, refreshPromise=null, mutation=Promise.resolve(), catalogState='loading', favoriteIds=new Set();
 try {session=JSON.parse(localStorage.getItem('hw-session')||'null');} catch {localStorage.removeItem('hw-session');}
 const storageCart=()=>{try {const v=JSON.parse(localStorage.getItem('hw-cart')||'[]');return Array.isArray(v)?v.filter(i=>typeof i.size_id==='string'&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=99).slice(0,100):[];}catch{return [];}};
-function saveSession(value){const oldIdentity=session?.user?.id||session?.user?.email||null,newIdentity=value?.user?.id||value?.user?.email||null;if(oldIdentity!==newIdentity)sessionStorage.removeItem('hw-checkout-attempt');session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
+function saveSession(value){const oldIdentity=session?.user?.id||session?.user?.email||null,newIdentity=value?.user?.id||value?.user?.email||null;if(oldIdentity!==newIdentity){sessionStorage.removeItem('hw-checkout-attempt');if(oldIdentity&&newIdentity)localStorage.setItem('hw-wishlist-owner',String(newIdentity));if(oldIdentity&&!newIdentity&&typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs([]);}session=value;value?localStorage.setItem('hw-session',JSON.stringify(value)):localStorage.removeItem('hw-session');}
 function favoriteSlugs(){return products.filter(p=>favoriteIds.has(String(p.id))).map(p=>p.slug);}
 async function loadFavorites(){
  if(!session)return;
  const rows=await api('/api/favorites');favoriteIds=new Set((rows||[]).map(x=>String(x.product_id)));
  let cached=[];try{cached=JSON.parse(localStorage.getItem('horizon-wishlist-v1')||'[]')}catch{}
- for(const slug of cached){const p=products.find(x=>x.slug===slug);if(p&&!favoriteIds.has(String(p.id))){await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});favoriteIds.add(String(p.id));}}
+ const owner=String(session?.user?.id||session?.user?.email||'');const previousOwner=localStorage.getItem('hw-wishlist-owner');if(!previousOwner||previousOwner===owner){for(const slug of cached){const p=products.find(x=>x.slug===slug);if(p&&!favoriteIds.has(String(p.id))){await api('/api/favorites',{method:'POST',body:JSON.stringify({product_id:p.id})});favoriteIds.add(String(p.id));}}localStorage.setItem('hw-wishlist-owner',owner);}
  if(typeof window.hwSetFavoriteSlugs==='function')window.hwSetFavoriteSlugs(favoriteSlugs());
 }
 window.hwToggleFavorite=async function(slug){
