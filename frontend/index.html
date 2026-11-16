@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/refinement.css"><link rel="stylesheet" href="css/experience.css?v=20260924b">
 <link rel="stylesheet" href="css/horizon.css?v=20261001e">
 <link rel="stylesheet" href="css/atelier.css?v=20261008a">
+<link rel="stylesheet" href="css/mock.css?v=20261115a">
 </head>
 <body>
 <a class="skip-link" href="#page-home">Pular para o conteúdo</a>
@@ -26,9 +27,9 @@
 
 <div class="topbar">
   <div class="container">
-    <span><i class="fa-solid fa-truck"></i> <span data-shipping-label>CONSULTE A ENTREGA</span></span>
-    <span>SEU ESTILO. SUA ESSÊNCIA. <strong>↗</strong></span>
-    <span><i class="fa-solid fa-rotate"></i> TROCA FÁCIL EM ATÉ 7 DIAS</span>
+    <span class="tb-ship"><i class="fa-solid fa-truck"></i> <span class="tb-cap" data-shipping-label>Consulte a entrega</span><span class="tb-rest"> para todo o Brasil</span></span>
+    <span class="tb-center"><span class="tb-promo" id="tbPromo" hidden><strong>10% OFF</strong> na primeira compra &nbsp;|&nbsp; <b>Cupom: HORIZON10</b></span><span class="tb-tag" id="tbTag">Seu estilo. Sua essência.</span></span>
+    <span class="tb-swap"><i class="fa-solid fa-rotate"></i> Troca fácil em até 7 dias</span>
   </div>
 </div>
 
@@ -36,20 +37,28 @@
 <header class="main">
   <div class="container">
     <a class="logo" href="/" aria-label="Horizon Wear — início">
-      <img class="logo-icon" src="img/logo-icone.png" alt="Horizon Wear">
-      <div class="logo-word">
-        <span class="lw-main lw-gold">HORIZON</span>
-        <span class="lw-sub lw-white">WEAR</span>
-      </div>
+      <img class="logo-full" src="img/logo-header.png" alt="Horizon Wear" width="1554" height="308">
     </a>
 
     <nav class="primary" id="primaryNav" aria-label="Navegação principal">
       <ul id="navList">
-        <li data-page="produtos" data-nav-filter="novidades"><a href="/colecao/novidades" onclick="showPage('produtos','novidades');return false;">NOVIDADES</a></li>
-        <li data-page="produtos" data-nav-filter="roupas"><a href="/colecao/roupas" onclick="showPage('produtos','roupas');return false;">ROUPAS</a></li>
-        <li data-page="produtos" data-nav-filter="calcados"><a href="/colecao/calcados" onclick="showPage('produtos','calcados');return false;">CALÇADOS</a></li>
-        <li data-page="produtos" data-nav-filter="acessorios"><a href="/colecao/acessorios" onclick="showPage('produtos','acessorios');return false;">ACESSÓRIOS</a></li>
-        <li class="mobile-help"><a href="/sobre" onclick="showPage('sobre');return false;">Sobre a Horizon</a></li>
+        <li data-page="home" data-nav-key="inicio"><a href="/" onclick="showPage('home');return false;">Início</a></li>
+        <li class="has-drop" data-page="produtos" data-nav-key="produtos"><button type="button" class="drop-btn" aria-haspopup="true" aria-expanded="false">Produtos <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+          <ul class="drop-menu" id="dropMenu">
+            <li><a href="/colecao/todos" onclick="showPage('produtos','todos');return false;">Toda a coleção</a></li>
+            <li><a href="/colecao/camisetas" onclick="showPage('produtos','camisetas');return false;">Camisetas</a></li>
+            <li><a href="/colecao/calcas" onclick="showPage('produtos','calcas');return false;">Calças</a></li>
+            <li><a href="/colecao/blusas" onclick="showPage('produtos','blusas');return false;">Blusas</a></li>
+            <li><a href="/colecao/chapeus" onclick="showPage('produtos','chapeus');return false;">Chapéus</a></li>
+            <li><a href="/colecao/relogios" onclick="showPage('produtos','relogios');return false;">Relógios</a></li>
+            <li><a href="/colecao/calcados" onclick="showPage('produtos','calcados');return false;">Calçados</a></li>
+            <li><a href="/colecao/acessorios" onclick="showPage('produtos','acessorios');return false;">Acessórios</a></li>
+          </ul></li>
+        <li data-page="produtos" data-nav-filter="novidades" data-nav-key="lancamentos"><a href="/colecao/novidades" onclick="showPage('produtos','novidades');return false;">Lançamentos</a></li>
+        <li data-page="produtos" data-nav-filter="acessorios" data-nav-key="acessorios"><a href="/colecao/acessorios" onclick="showPage('produtos','acessorios');return false;">Acessórios</a></li>
+        <li data-page="produtos" data-nav-filter="calcados" data-nav-key="calcados"><a href="/colecao/calcados" onclick="showPage('produtos','calcados');return false;">Calçados</a></li>
+        <li data-page="sobre" data-nav-key="sobre"><a href="/sobre" onclick="showPage('sobre');return false;">Sobre nós</a></li>
+        <li data-page="contato" data-nav-key="contato"><a href="/contato" onclick="showPage('contato');return false;">Contato</a></li>
         <li class="mobile-help"><a href="/ajuda" onclick="showPage('ajuda');return false;">Atendimento e ajuda</a></li>
       </ul>
     </nav>
@@ -60,6 +69,7 @@
         <button aria-label="Fechar pesquisa" onclick="toggleSearch()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <button aria-label="Pesquisar" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button class="wish-btn" aria-label="Favoritos" onclick="toggleWishlist(true)"><i class="fa-regular fa-heart"></i><span class="wish-badge" id="wishCount">0</span></button>
       <button aria-label="Minha conta" onclick="showPage('conta')"><i class="fa-regular fa-user"></i></button>
       <button aria-label="Carrinho" onclick="toggleCart(true)">
         <i class="fa-solid fa-bag-shopping"></i>
@@ -71,34 +81,27 @@
 
 
 <main id="page-home">
-  <section class="hero">
-    <div class="container">
-      <div class="hero-copy">
-        <div class="eyebrow">SEU ESTILO. SUA ESSÊNCIA.</div>
-        <h1>VISTA SEU<span class="accent">MELHOR HORIZONTE.</span></h1>
-        <p class="lead">Camisetas, calças e acessórios para compor o seu estilo, dos essenciais aos detalhes.</p>
-        <a href="#" class="btn-gold" onclick="showPage('produtos','todos');return false;"><i class="fa-solid fa-bag-shopping"></i> EXPLORAR A COLEÇÃO</a>
-      </div>
-      <div class="hero-photo">
-        <img src="img/hero.png" alt="Modelo vestindo camiseta preta" fetchpriority="high" width="1774" height="1774">
-      </div>
-    </div>
+  <section class="hero-banner">
+    <h1 class="sr-only">Vista seu melhor horizonte. Moda masculina para homens que fazem a diferença.</h1>
+    <a href="/colecao/todos" onclick="showPage('produtos','todos');return false;" aria-label="Explorar a coleção Horizon Wear">
+      <picture><source media="(max-width:700px)" srcset="img/hero-mobile.jpg"><img src="img/hero-desktop.jpg" alt="Vista seu melhor horizonte. Moda masculina para homens que fazem a diferença." width="2400" height="478" fetchpriority="high"></picture>
+    </a>
   </section>
 
   <section class="features">
     <div class="container">
-      <div class="feature"><div class="icon"><i class="fa-solid fa-truck-fast"></i></div><div><h4>ENTREGA</h4><p data-shipping-label>Condições no checkout</p></div></div>
-      <div class="feature"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>COMPRA SEGURA</h4><p>Dados protegidos</p></div></div>
-      <div class="feature"><div class="icon"><i class="fa-solid fa-bag-shopping"></i></div><div><h4>SEU ESTILO, SUA ESCOLHA</h4><p>Dos essenciais aos acessórios</p></div></div>
-      <div class="feature"><div class="icon"><i class="fa-solid fa-arrows-rotate"></i></div><div><h4>TROCA FÁCIL</h4><p>Até 7 dias após o recebimento</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-truck"></i></div><div><h4><span class="tb-cap" data-shipping-label>Entrega</span></h4><p>Para todo o Brasil</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><div><h4>Compra Segura</h4><p>Ambiente 100% seguro</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-regular fa-credit-card"></i></div><div><h4>Parcele em até 12x</h4><p>No cartão de crédito</p></div></div>
+      <div class="feature"><div class="icon"><i class="fa-solid fa-arrows-rotate"></i></div><div><h4>Troca Fácil</h4><p>Até 7 dias após o recebimento</p></div></div>
     </div>
   </section>
 
-  <section class="section categories-section" id="categorias"><div class="container"><p class="section-kicker">ENCONTRE SUA PEÇA</p><div class="section-head"><h2>Compre por categoria.</h2></div><div class="cat-grid" id="catGrid"></div></div></section>
+  <section class="section categories-section" id="categorias"><div class="container"><div class="mk-title"><h2>Categorias</h2></div><div class="cat-grid" id="catGrid"></div></div></section>
   <section class="section" id="lancamentos">
     <div class="container">
       <div class="section-head-row">
-        <div><p class="section-kicker">A SUA PRÓXIMA ESCOLHA</p><div class="section-head" style="margin-bottom:0;"><h2>Seleção Horizon.</h2></div></div>
+        <div class="mk-title mk-title--left"><h2>Lançamentos</h2></div>
         <a class="collection-link" href="#produtos" onclick="showPage('produtos','todos');return false;">Ver toda a coleção <span aria-hidden="true">↗</span></a>
       </div>
       <div class="arrivals-track" id="arrivalsTrack" aria-live="polite"><p class="catalog-loading" role="status">Carregando sua próxima escolha…</p></div>
@@ -449,5 +452,6 @@
 <script src="js/store.js?v=20261008a"></script>
 <script src="js/atelier.js?v=20261008a"></script>
 <script src="js/checkout.js?v=20261008a"></script>
+<script src="js/mock.js?v=20261115a"></script>
 </body>
 </html>
