@@ -31,10 +31,14 @@ def test_central_static_and_frames():
     with setup_client([]) as client:
         assert [x['slug'] for x in client.get('/api/lojas').json()]==['horizon','academia']
         assert client.get('/central/').headers['x-frame-options']=='DENY'
-        for path in ['/Index.html','/lojas/academia/','/central/admin.html']:
+        for path in ['/Index.html','/lojas/academia/']:
             response=client.get(path)
             assert response.status_code==200,path
-            assert response.headers['x-frame-options']=='SAMEORIGIN'
+            assert 'x-frame-options' not in response.headers
+            assert response.headers['content-security-policy']=="frame-ancestors 'self' https://triade-seven.vercel.app"
+        response=client.get('/central/admin.html')
+        assert response.status_code==200
+        assert response.headers['x-frame-options']=='SAMEORIGIN'
         for path in ['/central/central.js','/shared/lojas-client.js','/shared/loja-modelo.css']:
             assert client.get(path).status_code==200
         for path in ['/lojas/academia/.env','/lojas/construcao/','/lojas/LEIA-ME.md']:

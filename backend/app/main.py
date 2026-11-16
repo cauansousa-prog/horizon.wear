@@ -55,8 +55,8 @@ def create_app(settings=None, transport=None):
         embeddable=path in ('/','/Index.html','/index.html','/admin.html','/central/admin.html') or path.startswith(('/lojas/','/produto/'))
         response.headers.setdefault('X-Frame-Options','SAMEORIGIN' if embeddable else 'DENY')
         response.headers.setdefault('Content-Security-Policy',"frame-ancestors 'self'" if embeddable else "frame-ancestors 'none'")
-        # Tríade pode exibir as páginas da loja, inclusive o painel administrativo (nunca a API).
-        if not path.startswith('/api/'):
+        # Tríade pode exibir as páginas da loja, inclusive o painel administrativo (nunca a API nem a central antiga).
+        if not path.startswith(('/api/','/central')):
             if 'X-Frame-Options' in response.headers:
                 del response.headers['X-Frame-Options']
             response.headers['Content-Security-Policy']=f"frame-ancestors 'self' {TRIADE_ORIGIN}"
