@@ -324,7 +324,7 @@ window.renderAccount=async function(){
   el.insertAdjacentHTML('beforeend',typeof deviceOrdersHTML==='function'?deviceOrdersHTML():'');
 
   var q=function(s){return el.querySelector(s);};
-  q('#logout').onclick=async function(){try{await api('/api/auth/logout',{method:'POST'});}catch(e){}localStorage.setItem('hw-cart',JSON.stringify(cart));saveSession(null);cart=storageCart();renderCart();window.renderAccount();};
+  q('#logout').onclick=async function(e){if(e)e.preventDefault();var button=q('#logout');if(button){button.disabled=true;button.textContent='Saindo…';}if(typeof window.hwLogout==='function'){await window.hwLogout();return;}saveSession(null);cart=storageCart();renderCart();await window.renderAccount();};
   var form=q('#profileForm'),edit=q('#acctEdit'),save=q('#acctSave');
   edit.onclick=function(){var on=form.querySelector('input').readOnly;form.querySelectorAll('input').forEach(function(i){i.readOnly=!on;});save.hidden=!on;edit.innerHTML=on?'Cancelar':'<i class="fa-solid fa-pen" aria-hidden="true"></i> Editar';if(on)form.querySelector('input').focus();};
   form.onsubmit=async function(e){e.preventDefault();form.querySelectorAll('input').forEach(function(i){i.value=i.value.trim();});if(!form.reportValidity())return;save.disabled=true;save.textContent='Salvando…';
