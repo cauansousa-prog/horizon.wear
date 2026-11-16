@@ -23,10 +23,15 @@ async function openCheckout(fromRoute=false){
  if(session)api('/api/users/me').then(p=>{if(!form.elements.name.value)form.elements.name.value=p.full_name||'';if(!form.elements.phone.value)form.elements.phone.value=p.phone||'';}).catch(()=>{});
  if(savedAddresses.length){
   const primary=savedAddresses.find(a=>a.padrao)||savedAddresses[0];
-  form.elements.name.value=form.elements.name.value||primary.destinatario||'';
-  form.elements.phone.value=form.elements.phone.value||primary.telefone||'';
-  for(const [field,key] of [['cep','cep'],['rua','rua'],['numero','numero'],['bairro','bairro'],['cidade','cidade'],['estado','estado'],['complemento','complemento']])form.elements[field].value=primary[key]||'';
-  const notice=document.createElement('p');notice.className='quiet saved-address-notice';notice.textContent='Endereço principal carregado automaticamente da sua conta.';form.querySelector('[data-step="1"] .step-intro').after(notice);
+  const label=document.createElement('label');label.className='saved-address-choice';label.textContent='Usar endereço salvo';
+  const select=document.createElement('select');select.id='savedAddressSelect';
+  const blank=document.createElement('option');blank.value='';blank.textContent='Preencher outro endereço';select.append(blank);
+  savedAddresses.forEach(a=>{const option=document.createElement('option');option.value=a.id;option.textContent=a.destinatario+' · '+a.rua+', '+a.numero+' · '+a.cidade+'/'+a.estado+(a.padrao?' (Principal)':'');select.append(option);});
+  label.append(select);form.querySelector('[data-step="1"] .step-intro').after(label);
+  const applySavedAddress=a=>{if(!a)return;form.elements.name.value=form.elements.name.value||a.destinatario||'';form.elements.phone.value=form.elements.phone.value||a.telefone||'';for(const [field,key] of [['cep','cep'],['rua','rua'],['numero','numero'],['bairro','bairro'],['cidade','cidade'],['estado','estado'],['complemento','complemento']])form.elements[field].value=a[key]||'';};
+  select.value=primary.id;applySavedAddress(primary);
+  select.addEventListener('change',()=>{const chosen=savedAddresses.find(a=>a.id===select.value);if(chosen)applySavedAddress(chosen);});
+  const notice=document.createElement('p');notice.className='quiet saved-address-notice';notice.textContent='Seu endereço principal foi carregado automaticamente. Você pode escolher outro.';label.after(notice);
  }
  form.elements.cpf.inputMode='numeric';form.elements.cep.inputMode='numeric';form.elements.estado.maxLength=2;
  for(const [name,ac] of Object.entries({name:'name',email:'email',phone:'tel',cep:'postal-code',rua:'address-line1',complemento:'address-line2',cidade:'address-level2',estado:'address-level1'}))form.elements[name].autocomplete=ac;
