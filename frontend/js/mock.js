@@ -52,12 +52,24 @@ function paintHeart(btn){
  btn.innerHTML='<i class="'+(on?'fa-solid':'fa-regular')+' fa-heart" aria-hidden="true"></i>';
 }
 function updateCount(){var n=readWish().length;var el=$('#wishCount');if(el)el.textContent=String(n);}
-function toggleSlug(slug){
+function applySlug(slug){
  var a=readWish(),i=a.indexOf(slug);
  if(i>-1)a.splice(i,1);else a.push(slug);
  writeWish(a);updateCount();
- $$('.wish-heart').forEach(function(b){if(b.getAttribute('data-slug')===slug)paintHeart(b);});
+ $('.wish-heart').forEach(function(b){if(b.getAttribute('data-slug')===slug)paintHeart(b);});
  renderWishPanel();
+}
+window.hwSetFavoriteSlugs=function(slugs){
+ writeWish(Array.isArray(slugs)?slugs:[]);updateCount();
+ $('.wish-heart').forEach(paintHeart);renderWishPanel();
+};
+function toggleSlug(slug){
+ if(typeof window.hwToggleFavorite==='function'){
+  window.hwToggleFavorite(slug).then(function(done){if(!done)applySlug(slug);})
+   .catch(function(err){if(typeof window.showToast==='function')window.showToast(err.message||'Não foi possível salvar o favorito.');});
+  return;
+ }
+ applySlug(slug);
 }
 function slugOf(card){
  var a=$('.product-media',card)||$('a[href^="/produto/"]',card);
