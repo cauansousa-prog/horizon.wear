@@ -285,3 +285,57 @@ body .tag-novo{background:var(--mk-gold)!important;color:#111!important;border:0
     font-size:9px;
   }
 }
+
+
+/* ---------- Benefícios em uma única linha em todas as telas ---------- */
+body .features .container{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:stretch;
+  gap:0!important;
+  padding-inline:clamp(8px,2.5vw,36px)!important;
+}
+body .features .feature{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;
+  gap:clamp(5px,1vw,12px)!important;
+  padding:14px clamp(4px,1vw,14px)!important;
+  border:0!important;
+  border-left:1px solid #262626!important;
+  text-align:left;
+}
+body .features .feature:first-child{border-left:0!important}
+body .features .feature .icon{
+  flex:0 0 auto;
+  width:auto!important;
+  font-size:clamp(16px,1.8vw,25px)!important;
+}
+body .features .feature>div:last-child{min-width:0}
+body .features .feature h4{
+  font-size:clamp(10px,1.05vw,14px)!important;
+  line-height:1.2;
+  white-space:normal;
+}
+body .features .feature p{
+  font-size:clamp(8px,.9vw,12px)!important;
+  line-height:1.25;
+  white-space:normal;
+}
+@media(max-width:560px){
+  body .features .container{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    padding-inline:5px!important;
+  }
+  body .features .feature{
+    flex-direction:column!important;
+    gap:4px!important;
+    padding:10px 3px!important;
+    text-align:center!important;
+  }
+  body .features .feature .icon{font-size:18px!important}
+  body .features .feature h4{font-size:9px!important;line-height:1.15}
+  body .features .feature p{font-size:8px!important;line-height:1.15}
+}
