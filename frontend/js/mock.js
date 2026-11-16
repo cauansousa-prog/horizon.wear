@@ -138,18 +138,20 @@ window.toggleWishlist=function(open){
 };
 
 /* ---------- Menu "Produtos" ---------- */
-function closeDrop(){$$('.has-drop').forEach(function(li){li.classList.remove('open');var b=$('.drop-btn',li);if(b)b.setAttribute('aria-expanded','false');});}
+function closeDrop(){$('.has-drop').forEach(function(li){li.classList.remove('open');var b=$('.drop-btn',li);if(b)b.setAttribute('aria-expanded','false');});}
 function bindDrop(){
- $$('.has-drop').forEach(function(li){
+ $('.has-drop').forEach(function(li){
   var b=$('.drop-btn',li);if(!b)return;
-  b.addEventListener('click',function(e){
-   e.stopPropagation();
-   var open=!li.classList.contains('open');closeDrop();
-   li.classList.toggle('open',open);b.setAttribute('aria-expanded',open?'true':'false');
-  });
-  $$('.drop-menu a',li).forEach(function(a){a.addEventListener('click',closeDrop);});
+  b.onclick=function(e){
+   e.preventDefault();e.stopPropagation();
+   var open=b.getAttribute('aria-expanded')!=='true';
+   closeDrop();
+   if(open){li.classList.add('open');b.setAttribute('aria-expanded','true');}
+  };
+  $('.drop-menu a',li).forEach(function(a){a.addEventListener('click',closeDrop);});
  });
  document.addEventListener('click',function(e){if(!e.target.closest||!e.target.closest('.has-drop'))closeDrop();});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrop();});
 }
 function syncNav(){
  var visible=$$('main[id^="page-"]').filter(function(m){return !m.hidden&&m.style.display!=='none';})[0];
