@@ -237,8 +237,8 @@
   /* ===== Contato page ===== */
   .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;padding:70px 0;}
   .wa-card{
-    background:linear-gradient(135deg,#1e3426,#383734);
-    border:1px solid #2c4634;border-radius:12px;padding:36px;margin-bottom:26px;
+    background:linear-gradient(135deg,#52514e,#383734);
+    border:1px solid #61605d;border-radius:12px;padding:36px;margin-bottom:26px;
   }
   .wa-card h3{font-size:19px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
   .wa-card h3 i{color:var(--whatsapp);}
