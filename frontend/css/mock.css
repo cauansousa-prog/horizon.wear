@@ -399,3 +399,68 @@ body .status-pill,body .payment-method,body .tag-novo{
 body .add-cart-btn.added{background:#353535!important;color:#fff!important}
 body .cart-empty i{color:#777!important}
 body :focus-visible{outline-color:#bdbdbd!important}
+
+/* Identidade Horizon Wear — acentos dourados e top-navbar. */
+:root{
+  --gold:#d4af37;--gold-light:#f0d878;--gold-soft:#8d7428;
+  --mk-gold:#d4af37;
+}
+body .topbar strong,body .topbar i,body .topbar .tb-tag,
+body .logo-word .lw-sub,body .logo-word .lw-main.lw-gold,
+body .policy-block a,body .policy-contact-box a,
+body .price,body .detail-price,body .cart-item-price,
+body .cart-total-row strong,body .section-kicker,
+body .section-head h2,body .feature .icon,
+body .policy-block h3,body .policy-block h3 i,
+body .info-item i,body .value-card i,body .footer-cols h5,
+body .footer-social a,body .collection-link,body .text-button{
+  color:#d4af37!important;
+}
+body header.main nav.primary a,
+body header.main nav.primary .drop-btn{
+  color:#d5d5d5!important;
+  transition:color .2s,background-color .2s,border-color .2s;
+}
+body header.main nav.primary a:hover,
+body header.main nav.primary .drop-btn:hover,
+body header.main nav.primary li.active>a,
+body header.main nav.primary li.active>.drop-btn{
+  color:#e2bd4f!important;
+}
+body header.main .header-icons>button{
+  background:#29230f!important;
+  color:#e2bd4f!important;
+  border:1px solid #6b5720!important;
+  border-radius:8px;
+}
+body header.main .header-icons>button:hover{
+  background:#3a2f12!important;
+  color:#ffe28a!important;
+  border-color:#d4af37!important;
+}
+body header.main .header-icons>button i{color:inherit!important}
+body header.main .header-icons .wish-badge,
+body header.main .header-icons .cart-badge{
+  background:#d4af37!important;color:#17130a!important;
+  border:1px solid #f0d878!important;
+}
+body .btn-gold,body .btn-whatsapp,body .add-cart-btn,
+body .form-submit,body .filter-chip.active{
+  background:#b99124!important;color:#111!important;
+  border-color:#d4af37!important;
+}
+body .btn-gold:hover,body .btn-whatsapp:hover,body .add-cart-btn:hover,
+body .form-submit:hover,body .filter-chip.active:hover{
+  background:#d4af37!important;color:#111!important;border-color:#f0d878!important;
+}
+body .btn-outline{
+  border-color:#8d7428!important;color:#e2bd4f!important;
+}
+body .btn-outline:hover{
+  background:#29230f!important;color:#ffe28a!important;border-color:#d4af37!important;
+}
+body .product-card:hover,body .cat-card:hover{border-color:#8d7428!important}
+body .product-card .favorite-btn,body .product-card .wish-btn{
+  border-color:#8d7428!important;
+}
+body :focus-visible{outline-color:#d4af37!important}
