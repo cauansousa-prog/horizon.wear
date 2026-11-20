@@ -336,3 +336,66 @@ body .features .feature p{
   body .features .feature h4{font-size:9px!important;line-height:1.15}
   body .features .feature p{font-size:8px!important;line-height:1.15}
 }
+
+/* Horizon Wear — paleta grafite monocromática (somente cores). */
+:root{
+  --bg:#101010;--bg-soft:#181818;--card:#1c1c1c;--white:#f5f5f5;
+  --muted:#a0a0a0;--line:#292929;--gold:#c8c8c8;--gold-light:#e2e2e2;
+  --gold-soft:#777777;--mk-gold:#c8c8c8;--mk-line:#292929;
+}
+html,body{background:#101010!important;color:#f5f5f5}
+body .topbar,body header.main,body footer,body .features,
+body .page-header-block,body .about-hero,body .hero,body .editorial-band,
+body .store-note{background-color:#181818!important;color:#f5f5f5}
+body .hero{background-image:linear-gradient(120deg,#111 0%,#1b1b1b 100%)!important}
+body .product-card,body .value-card,body .contact-form,body .policy-toc,
+body .policy-contact-box,body .cart-sidebar,body .wishlist-sidebar,
+body .account-card,body .checkout-card,body .checkout-summary,
+body .orders-list,body .catalog-controls,body .wa-card,
+body .look-card,body .store-note>div{background-color:#1c1c1c!important;color:#f5f5f5}
+body .product-media,body .gallery-main,body .gallery-thumb,body .look-card>a,
+body .cart-item img,body .summary-product img,body dialog{background-color:#181818!important}
+body input,body textarea,body select,body .catalog-search,
+body .search-bar,body .filter-chip,body .qty-row button{
+  background-color:#181818!important;color:#f5f5f5!important;border-color:#292929!important
+}
+body input::placeholder,body textarea::placeholder{color:#a0a0a0!important}
+body .btn-gold,body .btn-outline,body .btn-whatsapp,body .add-cart-btn,
+body .form-submit,body .filter-chip.active,body .tag-novo,
+body .cart-badge,body .wish-badge{
+  background:#303030!important;color:#f5f5f5!important;border-color:#454545!important
+}
+body .btn-gold:hover,body .btn-outline:hover,body .btn-whatsapp:hover,
+body .add-cart-btn:hover,body .form-submit:hover,body .filter-chip:hover{
+  background:#3a3a3a!important;color:#fff!important;border-color:#666!important
+}
+body .filter-chip.active{background:#3a3a3a!important;border-color:#555!important}
+body a:hover,body button:hover,body .header-icons>button:hover,
+body nav.primary a:hover,body nav.primary button:hover{color:#fff!important}
+body .dropdown,body .drop-menu,body .search-bar.open{background:#1c1c1c!important;border-color:#292929!important}
+body .dropdown a:hover,body .drop-menu a:hover{background:#292929!important;color:#fff!important}
+body .price,body .detail-price,body .cart-item-price,body .cart-total-row strong,
+body .section-kicker,body .section-head h2,body .feature .icon,
+body .policy-block h3,body .policy-block h3 i,body .info-item i,
+body .value-card i,body .footer-cols h5,body .footer-social a,
+body .collection-link,body .text-button{color:#d0d0d0!important}
+body .topbar strong,body .topbar i,body .topbar .tb-tag,
+body .logo-word .lw-sub,body .logo-word .lw-main.lw-gold,
+body .policy-block a,body .policy-contact-box a{color:#d0d0d0!important}
+body .product-card,body .cat-card,body .value-card,body .contact-form,
+body .policy-toc,body .policy-contact-box,body .cart-sidebar,
+body .checkout-card,body .checkout-summary,body .orders-list,
+body .catalog-controls,body .wa-card,body .look-card,body .account-card{
+  border-color:#292929!important;box-shadow:0 10px 30px rgba(0,0,0,.22)
+}
+body .topbar,body header.main,body footer,body .features,
+body .feature,body .cart-header,body .cart-footer,body .policy-block,
+body .footer-cols,body .footer-bottom{border-color:#292929!important}
+body .overlay{background:rgba(0,0,0,.72)!important}
+body .product-card:hover,body .cat-card:hover{border-color:#444!important}
+body .status-pill,body .payment-method,body .tag-novo{
+  background:#292929!important;color:#dedede!important;border-color:#404040!important
+}
+body .add-cart-btn.added{background:#353535!important;color:#fff!important}
+body .cart-empty i{color:#777!important}
+body :focus-visible{outline-color:#bdbdbd!important}
