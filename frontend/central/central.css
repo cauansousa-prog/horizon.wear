@@ -13,3 +13,17 @@ body{background:#101010!important;color:#f5f5f5!important}
 .central-note,#loadStatus{color:#a0a0a0!important}
 #notice{background:#1c1c1c!important;color:#e0e0e0!important}
 :focus-visible{outline-color:#bdbdbd!important}
+
+/* Central — detalhes dourados da identidade Horizon Wear. */
+:root{--gold:#d4af37;--line:#292929}
+.central-brand span,.eyebrow,.notice,.card-icon,.card-tag,.card-action{color:#d4af37!important}
+.central-header button{
+  background:#29230f!important;color:#e2bd4f!important;border-color:#6b5720!important
+}
+.central-header button:hover,.central-header button[aria-current]{
+  background:#3a2f12!important;color:#ffe28a!important;border-color:#d4af37!important
+}
+.store-card{border-color:#6b5720!important}
+.store-card:hover{border-color:#d4af37!important}
+.card-icon{border-color:#6b5720!important}
+:focus-visible{outline-color:#d4af37!important}
