@@ -875,3 +875,28 @@
 .annual-revenue-chart .plotly .gridlayer path,.annual-revenue-chart .plotly .zerolinelayer path,
 .annual-revenue-chart .plotly .xlines-above,.annual-revenue-chart .plotly .ylines-above{stroke:#383838!important}
 .admin-body :focus-visible{outline-color:#bdbdbd!important}
+
+/* Identidade Horizon Wear Admin — dourado de assinatura. */
+:root{
+  --admin-yellow:#d4af37;--admin-yellow-soft:#30260e;--admin-yellow-deep:#f0d878;
+  --hw-yellow:#d4af37;--hw-yellow-2:#f0d878;--hw-yellow-soft:#30260e;
+}
+.admin-brand,.admin-brand small,.admin-sidebar .nav-caption,
+.admin-heading .eyebrow,.row-action,.purchase-total,
+.chart-summary #revenuePeriodTotal strong{color:#d4af37!important}
+.admin-nav button.active,.admin-nav button:hover{
+  background:#30260e!important;color:#f0d878!important;border-color:#8d7428!important
+}
+.admin-body .btn-gold{
+  background:#b99124!important;color:#111!important;border-color:#d4af37!important
+}
+.admin-body .btn-gold:hover{
+  background:#d4af37!important;color:#111!important;border-color:#f0d878!important
+}
+.revenue-periods button.active,.revenue-periods button:hover,
+.chart-export-actions button:hover{
+  background:#30260e!important;color:#f0d878!important;border-color:#8d7428!important
+}
+.admin-table th{color:#d4af37!important}
+.row-action:hover{background:#30260e!important;color:#f0d878!important}
+.admin-body :focus-visible{outline-color:#d4af37!important}
