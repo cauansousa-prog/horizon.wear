@@ -464,3 +464,21 @@ body .product-card .favorite-btn,body .product-card .wish-btn{
   border-color:#8d7428!important;
 }
 body :focus-visible{outline-color:#d4af37!important}
+
+/* Ajuste fino: navegação sem contorno e cards com acabamento discreto. */
+body header.main .header-icons>button{
+  border:0!important;
+}
+body .product-card{
+  border:1px solid #292929!important;
+  border-radius:8px!important;
+  overflow:hidden;
+  background:#1c1c1c!important;
+}
+body .product-card:hover{
+  border-color:rgba(212,175,55,.28)!important;
+}
+body .product-info{
+  padding:16px 14px 14px!important;
+  background:#1c1c1c!important;
+}
