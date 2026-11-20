@@ -818,3 +818,60 @@
   }
 }
 
+/* Horizon Wear Admin — paleta grafite monocromática (somente cores). */
+:root{
+  --admin-bg:#101010;--admin-surface:#1c1c1c;--admin-surface-soft:#181818;
+  --admin-text:#f5f5f5;--admin-muted:#a0a0a0;--admin-border:#292929;
+  --admin-yellow:#bdbdbd;--admin-yellow-soft:#292929;--admin-yellow-deep:#d0d0d0;
+  --hw-dark-0:#101010;--hw-dark-1:#111111;--hw-dark-2:#181818;
+  --hw-dark-3:#1c1c1c;--hw-dark-4:#242424;--hw-line:#292929;
+  --hw-line-soft:#242424;--hw-text:#f5f5f5;--hw-text-soft:#c0c0c0;
+  --hw-muted:#a0a0a0;--hw-yellow:#c8c8c8;--hw-yellow-2:#a8a8a8;
+  --hw-yellow-soft:#292929;
+}
+.admin-body{background:#101010!important;color:#f5f5f5!important}
+.admin-sidebar,.admin-topbar{background:#090909!important;color:#f5f5f5!important;border-color:#292929!important}
+.admin-brand,.admin-brand small,.admin-sidebar .nav-caption,.admin-topbar>a{color:#d0d0d0!important}
+.admin-nav button{background:#181818!important;color:#c8c8c8!important;border-color:#292929!important}
+.admin-nav button:hover,.admin-nav button.active{background:#303030!important;color:#fff!important;border-color:#505050!important}
+.back-store,.admin-heading .eyebrow,.admin-heading h1,.admin-heading p:last-child{color:#e0e0e0!important}
+.admin-body .btn-outline,.admin-body .btn-gold{background:#292929!important;color:#f5f5f5!important;border-color:#444!important;box-shadow:0 8px 22px rgba(0,0,0,.22)!important}
+.admin-body .btn-outline:hover,.admin-body .btn-gold:hover{background:#383838!important;color:#fff!important;border-color:#666!important}
+.dashboard article,.dashboard .orders-card,.revenue-chart-card,.recent-purchases-card,.admin-panel,
+.panel-heading,.admin-form,#stockForm,.table-tools,.admin-table{
+  background:#1c1c1c!important;color:#f5f5f5!important;border-color:#292929!important
+}
+.dashboard p,.dashboard small,.revenue-card p,.revenue-card small,
+.dashboard-card-head small,.table-tools label,.table-tools>span,.table-footer,
+.admin-form label,#stockForm label,.empty-table,.loading-state,.empty-metric,.muted{
+  color:#a0a0a0!important
+}
+.dashboard strong,.dashboard-card-head>div>p,.panel-heading h2,
+.empty-table h2,.admin-table td:first-child,.purchase-row strong{color:#f5f5f5!important}
+.metric-icon,.metric-icon.green,.revenue-card .metric-icon,.count-badge,
+.payment-method,.status-pill,.status-pill.positive,.status-pill.neutral{
+  background:#292929!important;color:#dedede!important;border-color:#414141!important
+}
+.dashboard .revenue-card{background:#202020!important;color:#f5f5f5!important;border-color:#383838!important}
+.revenue-periods,.table-tools{background:#111!important;border-color:#292929!important}
+.revenue-periods button,.chart-export-actions button{background:#222!important;color:#d0d0d0!important;border-color:#383838!important}
+.revenue-periods button:hover,.revenue-periods button.active,
+.chart-export-actions button:hover{background:#383838!important;color:#fff!important;border-color:#555!important}
+.admin-body input,.admin-body select,.admin-body textarea{
+  background:#111!important;color:#f5f5f5!important;border-color:#383838!important
+}
+.admin-body input::placeholder,.admin-body textarea::placeholder{color:#888!important}
+.admin-body input:focus,.admin-body select:focus,.admin-body textarea:focus{
+  background:#181818!important;border-color:#888!important;box-shadow:0 0 0 3px rgba(200,200,200,.10)!important
+}
+.admin-table th{background:#111!important;color:#bdbdbd!important}
+.admin-table td{color:#d0d0d0!important}
+.admin-table th,.admin-table td,.purchase-row,.dashboard-card-head,.chart-summary{border-color:#292929!important}
+.admin-table tbody tr:hover,.purchase-row:hover{background:#252525!important}
+.row-action,.purchase-total,.chart-summary #revenuePeriodTotal strong{color:#d0d0d0!important}
+#adminMessage:not(:empty){background:#242424!important;color:#e0e0e0!important;border-color:#444!important;box-shadow:none!important}
+.annual-revenue-chart .plotly text{fill:#bdbdbd!important}
+.annual-revenue-chart .plotly .gtitle{fill:#f5f5f5!important}
+.annual-revenue-chart .plotly .gridlayer path,.annual-revenue-chart .plotly .zerolinelayer path,
+.annual-revenue-chart .plotly .xlines-above,.annual-revenue-chart .plotly .ylines-above{stroke:#383838!important}
+.admin-body :focus-visible{outline-color:#bdbdbd!important}
