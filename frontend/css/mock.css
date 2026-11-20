@@ -482,3 +482,54 @@ body .product-info{
   padding:16px 14px 14px!important;
   background:#1c1c1c!important;
 }
+
+/* Ajustes solicitados: ícones limpos e hero responsivo sem cortes. */
+body header.main .header-icons>button,
+body header.main .header-icons>button:hover,
+body header.main .header-icons>button:focus-visible{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+body header.main .header-icons>button{
+  border-radius:0!important;
+}
+body header.main .header-icons>button i{
+  color:#e2bd4f!important;
+}
+.hero-banner{
+  background:#101010!important;
+  overflow:hidden;
+}
+.hero-banner a,
+.hero-banner picture{
+  display:block;
+  width:100%;
+  max-width:2400px;
+  margin:0 auto;
+}
+.hero-banner img{
+  display:block;
+  width:100%;
+  height:auto!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+}
+@media (min-width:701px){
+  .hero-banner img{
+    width:100%;
+    max-width:2400px;
+    margin:0 auto;
+  }
+}
+@media (max-width:700px){
+  .hero-banner img{
+    width:100%;
+    max-width:100%;
+    height:auto!important;
+    aspect-ratio:auto!important;
+    object-fit:contain!important;
+  }
+}
