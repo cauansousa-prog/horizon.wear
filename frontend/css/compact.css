@@ -1,4 +1,4 @@
-/* Horizon Wear — layout compacto, navbar preta, botões menores, ícones coloridos e texto do hero.
+/* Horizon Wear — layout compacto, navbar preta, botões menores, ícones brancos e texto do hero.
    Carregado por último; altera somente aparência. Nenhuma regra de negócio, rota ou banco é tocada aqui. */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Pinyon+Script&display=swap');
 
@@ -24,19 +24,28 @@ html body header.main nav.primary .drop-btn{font-size:14px;padding:6px 0}
 html body header.main nav.primary .drop-menu{background:#0b0b0b!important;border-color:#232323!important}
 html body header.main nav.primary .drop-menu a{padding:8px 16px;font-size:13.5px}
 
-/* Ícones do topo: menores, com mais respiro e cada um com a sua cor */
+/* Botões do topo (lupa, favoritos, conta, carrinho e menu): brancos.
+   Ao passar o mouse, tocar ou clicar ficam cinza; só o coração fica vermelho. */
 html body header.main .header-icons{gap:16px}
-html body header.main .header-icons>button{min-width:38px;height:36px;font-size:18px}
-html body header.main .header-icons>button i{font-size:18px;color:#e2bd4f!important;transition:transform .15s ease,filter .15s ease}
-html body header.main .header-icons>button:hover i{transform:scale(1.12);filter:brightness(1.15)}
-/* lupa: branca */
-html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:17px;color:#ffffff!important}
-/* coração (favoritos): vermelho */
-html body header.main .header-icons>button.wish-btn i{color:#ff3b4e!important}
-/* conta/login: branco */
-html body header.main .header-icons>button[aria-label="Minha conta"] i{color:#ffffff!important}
-/* carrinho: dourado vivo */
-html body header.main .header-icons>button[aria-label="Carrinho"] i{color:#ffb830!important}
+html body header.main .header-icons>button{min-width:38px;height:36px;font-size:18px;color:#ffffff!important;transition:color .15s ease}
+html body header.main .header-icons>button i{font-size:18px;color:#ffffff!important;transition:transform .15s ease,color .15s ease}
+html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:17px}
+html body header.main .header-icons>button:hover,
+html body header.main .header-icons>button:active,
+html body header.main .header-icons>button:focus-visible,
+html body header.main .header-icons>button[aria-expanded="true"]{color:#9a9a9a!important}
+html body header.main .header-icons>button:hover i,
+html body header.main .header-icons>button:active i,
+html body header.main .header-icons>button:focus-visible i,
+html body header.main .header-icons>button[aria-expanded="true"] i{color:#9a9a9a!important}
+html body header.main .header-icons>button:hover i{transform:scale(1.08)}
+/* coração: branco; vermelho ao passar o mouse ou clicar */
+html body header.main .header-icons>button.wish-btn:hover,
+html body header.main .header-icons>button.wish-btn:active,
+html body header.main .header-icons>button.wish-btn:focus-visible{color:#ff3b4e!important}
+html body header.main .header-icons>button.wish-btn:hover i,
+html body header.main .header-icons>button.wish-btn:active i,
+html body header.main .header-icons>button.wish-btn:focus-visible i{color:#ff3b4e!important}
 html body header.main .header-icons .wish-badge,
 html body header.main .header-icons .cart-badge{min-width:16px;height:16px;font-size:9px;top:2px;right:-4px}
 
