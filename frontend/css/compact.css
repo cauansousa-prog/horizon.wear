@@ -48,6 +48,8 @@ html body header.main .header-icons>button.wish-btn:active i,
 html body header.main .header-icons>button.wish-btn:focus-visible i{color:#ff3b4e!important}
 html body header.main .header-icons .wish-badge,
 html body header.main .header-icons .cart-badge{min-width:16px;height:16px;font-size:9px;top:2px;right:-4px}
+/* bolinha de contagem dos favoritos: vermelha */
+html body header.main .header-icons .wish-badge{background:#e5253a!important;background-color:#e5253a!important;color:#ffffff!important}
 
 /* ---------- Botões menores ---------- */
 html body .btn-gold,
