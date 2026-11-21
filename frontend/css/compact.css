@@ -1,0 +1,114 @@
+/* Horizon Wear — layout compacto, navbar preta e botões menores.
+   Carregado por último; altera somente aparência (tamanhos, espaçamentos e cor do topo).
+   Nenhuma regra de negócio, rota ou integração com o banco é tocada aqui. */
+
+/* ---------- Largura e alinhamento: tudo "encaixado" no mesmo eixo ---------- */
+html body .topbar .container,
+html body header.main .container,
+html body main .container,
+html body footer .container{max-width:1400px}
+html body #categorias .container{max-width:1400px;padding-inline:clamp(20px,3.5vw,52px)}
+html body main .container,
+html body footer .container{padding-inline:clamp(20px,3.5vw,52px)}
+
+/* ---------- Barra superior (faixa de avisos) ---------- */
+html body .topbar{background-color:#000!important;border-bottom:1px solid #1c1c1c!important;font-size:12px}
+html body .topbar .container{height:28px;font-size:12px;padding-inline:clamp(24px,4vw,56px)}
+
+/* ---------- Navbar preta e menor ---------- */
+html body header.main{background-color:#000!important;border-bottom:1px solid #1f1f1f!important;box-shadow:none}
+html body header.main .container{height:56px;gap:20px;padding-inline:clamp(24px,4vw,56px)}
+html body header.main .logo-full{height:36px}
+html body header.main nav.primary>ul>li>a,
+html body header.main nav.primary .drop-btn{font-size:14px;padding:6px 0}
+html body header.main nav.primary .drop-menu{background:#0b0b0b!important;border-color:#232323!important}
+html body header.main nav.primary .drop-menu a{padding:8px 16px;font-size:13.5px}
+
+/* Ícones do topo (lupa, coração, conta, carrinho): dourados, menores e com mais respiro */
+html body header.main .header-icons{gap:16px}
+html body header.main .header-icons>button{min-width:38px;height:36px;font-size:18px}
+html body header.main .header-icons>button i{font-size:18px;color:#e2bd4f!important}
+html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:17px}
+html body header.main .header-icons>button:hover i{color:#ffe28a!important}
+html body header.main .header-icons .wish-badge,
+html body header.main .header-icons .cart-badge{min-width:16px;height:16px;font-size:9px;top:2px;right:-4px}
+
+/* ---------- Botões menores ---------- */
+html body .btn-gold,
+html body .btn-outline,
+html body .btn-whatsapp,
+html body .form-submit{min-height:38px!important;padding:8px 18px!important;font-size:12px!important;border-radius:6px}
+html body .add-cart-btn{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;border-radius:6px}
+html body .auth-submit{min-height:42px!important}
+
+/* ---------- Hero banner: imagem inteira, sem ocupar a tela toda ---------- */
+html body .hero-banner a,
+html body .hero-banner picture{max-width:1400px}
+html body .hero-banner img{width:100%;height:auto!important;max-height:72vh;object-fit:contain!important}
+
+/* ---------- Faixa de benefícios ---------- */
+html body .features .feature{padding:12px 18px;gap:12px}
+html body .features .feature .icon{font-size:24px}
+html body .features .feature h4{font-size:14px}
+html body .features .feature p{font-size:12px}
+
+/* ---------- Seções, títulos e cards ---------- */
+html body .section{padding:40px 0}
+html body #categorias{padding-top:24px}
+html body .mk-title{margin:0 0 18px}
+html body .mk-title h2{font-size:clamp(13px,1.2vw,15px)}
+html body .section-head-row h2{font-size:clamp(20px,2vw,28px)}
+html body .section-kicker{font-size:10px;margin-bottom:8px}
+html body #categorias .cat-grid{gap:14px}
+html body .mk-cat-ov{padding:24px 8px 10px;gap:6px}
+html body .mk-cat-ov h3{font-size:13px}
+html body .mk-more{padding:3px 10px;font-size:11px}
+html body .arrivals-track{gap:22px 16px}
+html body .product-grid{gap:22px 16px}
+html body .product-info h3{font-size:13px;min-height:36px;margin:5px 0 8px}
+html body .product-info{padding:12px 12px 12px!important}
+html body .editorial-band{margin-top:32px;margin-bottom:32px}
+html body .editorial-band>div{padding:28px 40px}
+html body .editorial-band h2{font-size:30px}
+html body .editorial-band>img{height:260px}
+html body .page-header-block,
+html body .about-hero{padding:24px 0}
+html body .page-header-block h1,
+html body .about-hero h1{font-size:clamp(24px,3vw,34px)}
+
+/* ---------- Rodapé ---------- */
+html body footer{padding:30px 0 14px}
+html body .footer-cols{gap:28px;padding-bottom:22px}
+html body footer .logo-footer{width:96px!important;height:96px!important}
+
+/* ---------- Telas médias e celular: menu suspenso preto ---------- */
+@media (max-width:1099px){
+  html body header.main .container{height:56px;gap:10px}
+  html body header.main nav.primary{background:#0b0b0b!important;border-color:#232323!important}
+  html body header.main nav.primary li.active{background:#161616!important}
+}
+
+/* ---------- Celular ---------- */
+@media (max-width:700px){
+  html body header.main .container{height:54px!important;min-height:54px;padding:0 18px!important;gap:6px!important}
+  html body header.main .logo-full{height:30px!important;max-width:124px}
+  html body header.main .header-icons{gap:8px!important}
+  html body header.main .header-icons>button{width:30px!important;min-width:30px!important;height:32px!important}
+  html body header.main .header-icons>button i{font-size:17px!important}
+  html body header.main .header-icons .search-bar~button i,
+  html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:16px!important}
+  html body .hero-banner a,
+  html body .hero-banner picture{max-width:100%}
+  html body .hero-banner img{max-height:none}
+  html body .btn-gold,
+  html body .btn-outline,
+  html body .btn-whatsapp,
+  html body .form-submit{min-height:40px!important;padding:9px 16px!important;font-size:12px!important}
+  html body .section{padding:30px 0}
+  html body .editorial-band>div{padding:24px 22px}
+  html body .editorial-band h2{font-size:26px}
+  html body .editorial-band>img{height:200px}
+  html body .features .feature .icon{font-size:20px}
+  html body .features .feature h4{font-size:11.5px}
+  html body .features .feature p{font-size:10px}
+}
