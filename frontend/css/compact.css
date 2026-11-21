@@ -1,6 +1,6 @@
-/* Horizon Wear — layout compacto, navbar preta e botões menores.
-   Carregado por último; altera somente aparência (tamanhos, espaçamentos e cor do topo).
-   Nenhuma regra de negócio, rota ou integração com o banco é tocada aqui. */
+/* Horizon Wear — layout compacto, navbar preta, botões menores, ícones coloridos e texto do hero.
+   Carregado por último; altera somente aparência. Nenhuma regra de negócio, rota ou banco é tocada aqui. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Pinyon+Script&display=swap');
 
 /* ---------- Largura e alinhamento: tudo "encaixado" no mesmo eixo ---------- */
 html body .topbar .container,
@@ -24,12 +24,19 @@ html body header.main nav.primary .drop-btn{font-size:14px;padding:6px 0}
 html body header.main nav.primary .drop-menu{background:#0b0b0b!important;border-color:#232323!important}
 html body header.main nav.primary .drop-menu a{padding:8px 16px;font-size:13.5px}
 
-/* Ícones do topo (lupa, coração, conta, carrinho): dourados, menores e com mais respiro */
+/* Ícones do topo: menores, com mais respiro e cada um com a sua cor */
 html body header.main .header-icons{gap:16px}
 html body header.main .header-icons>button{min-width:38px;height:36px;font-size:18px}
-html body header.main .header-icons>button i{font-size:18px;color:#e2bd4f!important}
-html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:17px}
-html body header.main .header-icons>button:hover i{color:#ffe28a!important}
+html body header.main .header-icons>button i{font-size:18px;color:#e2bd4f!important;transition:transform .15s ease,filter .15s ease}
+html body header.main .header-icons>button:hover i{transform:scale(1.12);filter:brightness(1.15)}
+/* lupa: branca */
+html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:17px;color:#ffffff!important}
+/* coração (favoritos): vermelho */
+html body header.main .header-icons>button.wish-btn i{color:#ff3b4e!important}
+/* conta/login: branco */
+html body header.main .header-icons>button[aria-label="Minha conta"] i{color:#ffffff!important}
+/* carrinho: dourado vivo */
+html body header.main .header-icons>button[aria-label="Carrinho"] i{color:#ffb830!important}
 html body header.main .header-icons .wish-badge,
 html body header.main .header-icons .cart-badge{min-width:16px;height:16px;font-size:9px;top:2px;right:-4px}
 
@@ -41,10 +48,29 @@ html body .form-submit{min-height:38px!important;padding:8px 18px!important;font
 html body .add-cart-btn{min-height:36px!important;padding:7px 12px!important;font-size:12px!important;border-radius:6px}
 html body .auth-submit{min-height:42px!important}
 
-/* ---------- Hero banner: imagem inteira, sem ocupar a tela toda ---------- */
+/* ---------- Hero banner: imagem inteira + texto de destaque ---------- */
 html body .hero-banner a,
 html body .hero-banner picture{max-width:1400px}
+html body .hero-banner a{position:relative}
 html body .hero-banner img{width:100%;height:auto!important;max-height:72vh;object-fit:contain!important}
+/* título (fonte decorativa Cinzel Decorative) */
+html body .hero-banner a::before{
+  content:"Vista seu\A melhor\A horizonte";
+  white-space:pre;position:absolute;z-index:2;pointer-events:none;
+  left:6%;top:15%;
+  font-family:'Cinzel Decorative','Times New Roman',serif;font-weight:900;
+  font-size:clamp(26px,4.2vw,60px);line-height:1.08;letter-spacing:.02em;
+  color:#2a170b;text-shadow:0 2px 18px rgba(255,236,200,.65);
+}
+/* subtítulo (fonte caligráfica Pinyon Script) */
+html body .hero-banner a::after{
+  content:"Moda masculina para homens\A que fazem a diferença.";
+  white-space:pre;position:absolute;z-index:2;pointer-events:none;
+  left:6%;top:calc(15% + clamp(26px,4.2vw,60px) * 3.5);
+  font-family:'Pinyon Script','Brush Script MT',cursive;font-weight:400;
+  font-size:clamp(18px,2.5vw,36px);line-height:1.25;
+  color:#5b3512;text-shadow:0 1px 14px rgba(255,236,200,.7);
+}
 
 /* ---------- Faixa de benefícios ---------- */
 html body .features .feature{padding:12px 18px;gap:12px}
@@ -95,11 +121,13 @@ html body footer .logo-footer{width:96px!important;height:96px!important}
   html body header.main .header-icons{gap:8px!important}
   html body header.main .header-icons>button{width:30px!important;min-width:30px!important;height:32px!important}
   html body header.main .header-icons>button i{font-size:17px!important}
-  html body header.main .header-icons .search-bar~button i,
   html body header.main .header-icons>button[aria-label="Pesquisar"] i{font-size:16px!important}
   html body .hero-banner a,
   html body .hero-banner picture{max-width:100%}
   html body .hero-banner img{max-height:none}
+  /* texto do hero no céu claro, à esquerda do modelo */
+  html body .hero-banner a::before{left:6%;top:4%;font-size:clamp(22px,8vw,40px);line-height:1.1}
+  html body .hero-banner a::after{left:6%;top:calc(4% + clamp(22px,8vw,40px) * 3.5);font-size:clamp(16px,5.4vw,26px);line-height:1.2}
   html body .btn-gold,
   html body .btn-outline,
   html body .btn-whatsapp,
