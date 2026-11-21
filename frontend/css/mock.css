@@ -533,3 +533,32 @@ body header.main .header-icons>button i{
     object-fit:contain!important;
   }
 }
+
+/* Login: aceite obrigatório da Política de Privacidade. */
+.auth-panel .auth-policy{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  margin:18px 0 4px!important;
+  color:#d0d0d0!important;
+  font-size:13px!important;
+  line-height:1.55!important;
+  cursor:pointer;
+}
+.auth-panel .auth-policy input[type="checkbox"]{
+  appearance:auto!important;
+  -webkit-appearance:checkbox!important;
+  width:17px!important;
+  min-width:17px!important;
+  height:17px!important;
+  margin:2px 0 0!important;
+  padding:0!important;
+  accent-color:#d4af37;
+  cursor:pointer;
+}
+.auth-panel .auth-policy a{
+  color:#d4af37!important;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.auth-panel .auth-policy a:hover{color:#f0d878!important}
