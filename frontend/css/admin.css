@@ -900,3 +900,32 @@
 .admin-table th{color:#d4af37!important}
 .row-action:hover{background:#30260e!important;color:#f0d878!important}
 .admin-body :focus-visible{outline-color:#d4af37!important}
+
+
+/* Cadastro de produtos: formulário mais claro, com retorno junto ao botão. */
+.admin-form.product-editor{background:var(--admin-panel,#171717);color:var(--admin-text,#f5f5f5);border-color:var(--admin-border,#303030);gap:18px 22px}
+.product-form-heading h3{margin:6px 0;font-size:22px}
+.product-form-heading p,.product-form-heading .form-step,.admin-form small,.optional-label{color:var(--admin-muted,#a4a4a4);font-size:11px}
+.product-form-heading .form-step{letter-spacing:.14em;font-weight:700}
+.admin-form.product-editor label{gap:7px}
+.admin-form.product-editor input:not([type=checkbox]):not([type=file]),.admin-form.product-editor select,.admin-form.product-editor textarea{width:100%;background:var(--admin-input,#101010);color:var(--admin-text,#f5f5f5);border-color:var(--admin-border,#363636);border-radius:9px;min-height:46px}
+.admin-form.product-editor input[type=file]{width:100%;padding:12px;background:var(--admin-input,#101010);border:1px dashed var(--admin-border,#555);border-radius:9px;color:var(--admin-text,#f5f5f5)}
+.admin-form.product-editor input:focus,.admin-form.product-editor select:focus,.admin-form.product-editor textarea:focus{border-color:var(--gold,#d4af37)}
+.image-preview-wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--admin-muted,#aaa);font-size:11px}
+.admin-form.product-editor .product-image-preview{width:auto;max-width:min(100%,180px);max-height:210px}
+.product-flags{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.product-flags .flag-option{display:flex;flex-direction:row;align-items:flex-start;gap:10px;padding:13px;border:1px solid var(--admin-border,#343434);border-radius:9px;background:var(--admin-input,#101010)}
+.product-flags .flag-option input{margin-top:3px;flex:none}
+.product-flags .flag-option span{display:grid;gap:3px}
+.product-flags .flag-option strong{font-size:12px}
+.product-flags .flag-option small{line-height:1.4}
+.form-feedback{display:none;margin:0;padding:12px 14px;border-radius:8px;font-size:12px}
+.form-feedback:not(:empty){display:block}
+.form-feedback.is-error{background:rgba(190,55,55,.12);border:1px solid rgba(220,90,90,.35);color:#f0aaaa}
+.form-feedback.is-success{background:rgba(70,150,90,.12);border:1px solid rgba(90,180,110,.35);color:#a8ddb1}
+.form-feedback.is-info{background:rgba(200,170,70,.10);border:1px solid rgba(200,170,70,.28);color:var(--admin-muted,#ddd)}
+.product-form-actions{display:flex;gap:10px;align-items:center}
+.product-form-actions button{min-width:150px}
+#adminMessage[data-state="error"]{border-left-color:#c65c5c;color:#f0aaaa}
+#adminMessage[data-state="success"]{border-left-color:#5c9b65;color:#a8ddb1}
+@media(max-width:700px){.admin-form.product-editor{grid-template-columns:1fr;gap:15px;margin:0 10px 18px;padding:16px}.product-flags{grid-template-columns:1fr}.product-form-actions{flex-direction:column;align-items:stretch}.product-form-actions button{width:100%}.product-form-heading h3{font-size:19px}}
