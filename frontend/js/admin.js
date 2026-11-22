@@ -5,7 +5,7 @@ const message=(m,type='info')=>{const el=document.getElementById('adminMessage')
 async function call(path,method='GET',body){if(!adminSession)throw Error('Entre na sua conta para acessar a administração.');const r=await fetch('/api/admin/'+path,{method,headers:{Authorization:'Bearer '+adminSession.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{};}catch{data={detail:raw||'O servidor retornou uma resposta inválida.'};}if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'Confira os campos e tente novamente.');return data;}
 const names={products:'Produtos',product_sizes:'Estoque',categories:'Categorias',product_images:'Imagens',orders:'Pedidos',profiles:'Clientes',payments:'Pagamentos',coupons:'Cupons',reviews:'Avaliações'};
 const fields={products:['nome','slug','preco','preco_promocional','ativo'],product_sizes:['product_id','tamanho','estoque'],categories:['nome','slug','grupo'],product_images:['product_id','url','ordem'],orders:['codigo','nome_cliente','status','review_required','total','rastreio'],profiles:['nome_completo','telefone','role'],payments:['order_id','metodo','status','valor'],coupons:['codigo','tipo','valor','ativo'],reviews:['product_id','nota','comentario']};
-let currentRows=[],page=0,current='products';
+let currentRows=[],page=0,current='products',stockSearchRows=null,stockSearchRequest=0,stockSearchTimer=null;
 const labels={nome:'Produto',slug:'Endereço da peça',preco:'Preço',preco_promocional:'Preço promocional',ativo:'Visibilidade',product_id:'Produto',tamanho:'Tamanho',estoque:'Unidades',grupo:'Grupo',url:'Imagem',ordem:'Ordem',codigo:'Pedido',nome_cliente:'Cliente',status:'Situação',review_required:'Conferência',total:'Total',rastreio:'Rastreamento',nome_completo:'Nome',telefone:'Telefone',role:'Perfil',order_id:'Pedido',metodo:'Método',valor:'Valor',tipo:'Tipo',nota:'Nota',comentario:'Comentário',tecido:'Tecido',caimento:'Caimento',destaque:'Em destaque',lancamento:'Lançamento'};
 const statusLabels={recebido:'Recebido',pagamento_aprovado:'Pagamento aprovado',preparando:'Em preparação',enviado:'Enviado',entregue:'Entregue',cancelado:'Cancelado',pending:'Pendente',approved:'Aprovado',admin:'Administrador',cliente:'Cliente'};
 const icons={products:'▧',product_sizes:'▤',categories:'◫',product_images:'▣',orders:'▱',profiles:'◎',payments:'◈',coupons:'◇',reviews:'☆'};
@@ -22,7 +22,42 @@ async function listing(resource,offset=0){try{
    tr.insertAdjacentHTML('beforeend',`<td>${allowed?`<button class="row-action" data-order="${i}">Avançar pedido</button>`:''}</td>`);
   });
  }
- document.getElementById('adminSearch').oninput=e=>{let visible=0;document.querySelectorAll('[data-search]').forEach(row=>{row.hidden=!row.dataset.search.includes(e.target.value.toLocaleLowerCase('pt-BR'));if(!row.hidden)visible++;});document.getElementById('emptyTable').hidden=visible>0;};
+ document.getElementById('adminSearch').oninput=e=>{
+  const query=e.target.value.trim().toLocaleLowerCase('pt-BR');
+  if(resource!=='product_sizes'){
+   let visible=0;document.querySelectorAll('[data-search]').forEach(row=>{row.hidden=!row.dataset.search.includes(query);if(!row.hidden)visible++;});
+   document.getElementById('emptyTable').hidden=visible>0;return;
+  }
+  clearTimeout(stockSearchTimer);
+  const request=++stockSearchRequest;
+  if(!query){document.getElementById('adminContent').querySelector('.table-footer').hidden=false;listing('product_sizes',0);return;}
+  stockSearchTimer=setTimeout(async()=>{
+   try{
+    const loadAll=async(name)=>{
+     const all=[];let start=0,batch=[];
+     do{batch=await call(name+'?offset='+start);if(!Array.isArray(batch))throw Error('Resposta inválida ao pesquisar o estoque.');all.push(...batch);start+=100;}while(batch.length===100&&start<50000);
+     return all;
+    };
+    const [allSizes,allProducts]=await Promise.all([loadAll('product_sizes'),loadAll('products')]);
+    if(request!==stockSearchRequest)return;
+    allProducts.forEach(p=>productNames[p.id]=p.nome);
+    stockSearchRows=allSizes;
+    currentRows=allSizes.filter(row=>{
+     const productName=productNames[row.product_id]||'';
+     return (productName+' '+row.tamanho+' '+row.estoque).toLocaleLowerCase('pt-BR').includes(query);
+    });
+    const tbody=document.querySelector('#adminContent tbody');
+    tbody.innerHTML=currentRows.map((r,i)=>'<tr data-search="'+escapeHTML(((productNames[r.product_id]||r.product_id)+' '+r.tamanho+' '+r.estoque).toLocaleLowerCase('pt-BR'))+'">'+
+     '<td>'+escapeHTML(productNames[r.product_id]||r.product_id)+'</td><td>'+escapeHTML(r.tamanho)+'</td><td>'+escapeHTML(r.estoque)+'</td>'+
+     '<td><button class="row-action" data-stock="'+i+'">Ajustar estoque</button></td></tr>').join('');
+    document.querySelector('#adminContent .count-badge').textContent=currentRows.length;
+    document.querySelector('#adminContent .table-tools span').textContent='Encontrados '+currentRows.length+' tamanhos em todo o estoque';
+    document.getElementById('emptyTable').hidden=currentRows.length>0;
+    document.getElementById('emptyTable').textContent='Nenhum produto ou tamanho encontrado.';
+    document.querySelector('#adminContent .table-footer').hidden=true;
+   }catch(error){if(request===stockSearchRequest)message(error.message||'Não foi possível pesquisar todos os tamanhos.','error');}
+  },220);
+ };
  document.getElementById('previous').onclick=()=>listing(current,Math.max(0,page-100));document.getElementById('next').onclick=()=>listing(current,page+100);if(resource==='products')document.getElementById('newProduct').onclick=()=>editProduct();message('');
  }catch(e){message(e.message);}}
 async function uploadProductImage(file){
