@@ -349,3 +349,14 @@
     .value-cards{grid-template-columns:1fr;}
     .cart-sidebar{width:100vw;}
   }
+
+/* Histórico de pedidos: situação e rastreio em destaque */
+.orders-list .order-status{display:inline-flex;width:max-content;max-width:100%;margin:10px 0 4px;padding:7px 12px;border:1px solid #8d7428;border-radius:999px;background:rgba(212,175,55,.10);color:#f0d878;font-size:.82rem;font-weight:700}
+.orders-list .order-status.status-enviado{border-color:rgba(96,165,250,.5);background:rgba(59,130,246,.13);color:#93c5fd}
+.orders-list .order-status.status-entregue{border-color:rgba(167,139,250,.5);background:rgba(139,92,246,.13);color:#c4b5fd}
+.orders-list .order-status.status-recebido{border-color:rgba(45,212,191,.5);background:rgba(20,184,166,.13);color:#5eead4}
+.orders-list .order-status.status-cancelado{border-color:rgba(248,113,113,.5);background:rgba(239,68,68,.13);color:#fca5a5}
+.orders-list .order-value{font-weight:800;color:#f0d878}
+.orders-list .order-tracking{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border:1px solid rgba(96,165,250,.38);border-radius:10px;background:rgba(59,130,246,.10)}
+.orders-list .order-tracking strong{color:#93c5fd;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+.orders-list .order-tracking span{color:#f5f5f5;font-weight:700;overflow-wrap:anywhere}
