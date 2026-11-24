@@ -46,7 +46,7 @@ async function api(path,options={},retry=true){
   const timer=controller?setTimeout(()=>controller.abort(),15000):null;
   let r;try{r=await fetch(path,{...options,...(controller?{signal:controller.signal}:{}),headers:{...headers,...options.headers}});}catch(e){if(e.name==='AbortError')throw Error('A coleção demorou para responder. Tente novamente.');throw e;}finally{if(timer)clearTimeout(timer);}
   let data;try{data=await r.json();}catch{data=null;}
-  if(!r.ok){if(r.status===401&&!path.startsWith('/api/auth/'))saveSession(null);throw Error(typeof data?.detail==='string'?data.detail:'Não foi possível concluir. Confira os dados e tente novamente.');}
+  if(!r.ok){if(r.status===401&&!path.startsWith('/api/auth/')&&path!=='/api/reviews/store')saveSession(null);throw Error(typeof data?.detail==='string'?data.detail:'Não foi possível concluir. Confira os dados e tente novamente.');}
   return data;
 }
 function showToast(message){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=message;t.classList.add('show');clearTimeout(window.hwToastTimer);window.hwToastTimer=setTimeout(()=>t.classList.remove('show'),4500);}
@@ -145,11 +145,11 @@ async function renderAccount(){
  if(!session){el.innerHTML=authLayout(false)+deviceOrdersHTML();
  const login=document.getElementById('loginForm');login.onsubmit=async e=>{e.preventDefault();const button=login.querySelector('[type="submit"]');button.disabled=true;try{const values=Object.fromEntries(new FormData(login));delete values.aceita_politica;values.email=String(values.email||'').trim().toLowerCase();const data=await api('/api/auth/login',{method:'POST',body:JSON.stringify(values)});saveSession(data);try{await mergeCart();await loadFavorites();}catch(err){showToast('Você entrou. '+err.message);}renderAccount();}catch(err){showToast(err.message);}finally{button.disabled=false;}};
  return;}
- el.textContent='Carregando sua conta…';try{const [profile,addresses,orders,storeReviewState]=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store')]);
+ el.textContent='Carregando sua conta…';try{const [profile,addresses,orders,storeReviewState]=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store').catch(()=>({review:null,eligible:false,unavailable:true}))]);
  const spentTotal=orders.reduce((sum,o)=>sum+(o.payments||[]).reduce((value,p)=>value+(p.status==='approved'?Number(p.valor||0):['refunded','charged_back'].includes(p.status)?-Number(p.valor||0):0),0),0);
  window.__hwAccountOrders=orders;
  const storeReview=storeReviewState.review||null;
- const reviewForm=storeReview&&storeReview.approved
+ const reviewForm=storeReviewState.unavailable ? '<p class="quiet">A área de avaliações está temporariamente indisponível. Você ainda pode usar sua conta normalmente.</p>' : storeReview&&storeReview.approved
   ? '<div class="store-review-state is-approved"><strong>✓ Sua avaliação já foi publicada</strong><p>Obrigado por compartilhar sua experiência com a Horizon Wear.</p><div class="review-stars" aria-label="Nota '+Number(storeReview.nota)+' de 5">'+('★'.repeat(Number(storeReview.nota))+'☆'.repeat(5-Number(storeReview.nota)))+'</div><p>'+esc(storeReview.comentario||'')+'</p></div>'
   : storeReviewState.eligible
    ? '<form id="storeReviewForm" class="store-review-form"><p class="quiet">'+(storeReview?'Sua avaliação está aguardando análise. Você ainda pode editá-la.':'Você já recebeu um pedido. Conte como foi sua experiência.')+'</p><label>Nota<select name="nota" required><option value="">Selecione uma nota</option>'+[5,4,3,2,1].map(n=>'<option value="'+n+'" '+(storeReview&&Number(storeReview.nota)===n?'selected':'')+'>'+n+' estrela(s)'+(n===5?' · Excelente':n===4?' · Muito bom':n===3?' · Bom':n===2?' · Regular':' · Precisa melhorar')+'</option>').join('')+'</select></label><label>Comentário <span class="quiet">· opcional</span><textarea name="comentario" rows="3" maxlength="2000" placeholder="O que achou do atendimento, entrega e experiência?">'+esc(storeReview?.comentario||'')+'</textarea></label><button class="btn-gold" type="submit">'+(storeReview?'Atualizar avaliação':'Enviar avaliação')+'</button></form>'
