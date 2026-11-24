@@ -76,3 +76,8 @@
 #page-checkout .demo-payment-facts strong{color:#f3d77f;text-align:right}
 #page-checkout .demo-payment-success{border-color:#d4af37}
 @media(max-width:520px){#page-checkout .demo-card-grid{grid-template-columns:1fr}}
+
+#page-checkout .delivery-note{background:linear-gradient(110deg,rgba(212,175,55,.16),rgba(212,175,55,.045));border-color:rgba(212,175,55,.38)}
+#page-checkout .payment-option:has(input:checked){background:linear-gradient(110deg,rgba(212,175,55,.18),rgba(212,175,55,.055));border-color:#e8c75b;box-shadow:0 8px 24px rgba(212,175,55,.13)}
+#page-checkout .form-grid input:valid:not(:placeholder-shown){border-color:rgba(212,175,55,.55)}
+#page-checkout .form-grid input[aria-busy=true]{border-color:#d4af37}
