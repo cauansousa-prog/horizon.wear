@@ -141,7 +141,7 @@ async def _reconcile_open_payments(db,user):
             'select':'mercadopago_payment_id,status',
             'status':'in.(pending,in_process,authorized)',
             'mercadopago_payment_id':'not.is.null',
-            'order':'created_at.desc','limit':'50'
+            'order':'criado_em.desc','limit':'50'
         })
     except HTTPException:
         rows=[]
