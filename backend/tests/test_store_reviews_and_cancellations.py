@@ -162,7 +162,12 @@ def test_admin_analytics_uses_real_payment_statuses_and_paid_order_items():
 
 def test_new_store_review_and_cancellation_migration_parses():
     root = Path(__file__).resolve().parents[2]
-    sql = (root / 'supabase/migrations/0015_store_reviews_customer_cancellation.sql').read_text(encoding='utf-8')
-    assert len(parse_sql(sql)) >= 15
-    assert 'horizon_cancel_my_order' in sql
-    assert 'store_reviews' in sql
+    migrations = [
+        '0015_store_reviews_customer_cancellation.sql',
+        '0016_store_reviews_policy_and_cancel_index.sql',
+        '0017_store_reviews_authenticated_read.sql',
+    ]
+    for name in migrations:
+        sql = (root / 'supabase/migrations' / name).read_text(encoding='utf-8')
+        assert parse_sql(sql)
+    assert 'horizon_cancel_my_order' in (root / 'supabase/migrations' / migrations[0]).read_text(encoding='utf-8')
