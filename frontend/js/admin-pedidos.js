@@ -7,7 +7,7 @@
 'use strict';
 
 /* Antes "recebido" aparecia como "Recebido", mas na verdade é o pedido novo que ainda não foi pago. */
-if(typeof statusLabels==='object'&&statusLabels)statusLabels.recebido='Aguardando pagamento';
+if(typeof statusLabels==='object'&&statusLabels)statusLabels.aguardando_pagamento='Aguardando pagamento';
 
 var ST={
  aguardando_pagamento:{label:'Aguardando pagamento',c:'wait'},
