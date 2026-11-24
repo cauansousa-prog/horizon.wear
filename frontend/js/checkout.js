@@ -1,10 +1,10 @@
 let checkoutController=null, checkoutPoll=null;
 function setupCheckoutAssist(form){
  const cpf=form.elements.cpf,phone=form.elements.phone,cep=form.elements.cep;
- const digits=value=>String(value||'').replace(/\\D/g,'');
- const maskCpf=value=>{const d=digits(value).slice(0,11);return d.replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d{1,2})$/,'$1-$2');};
+ const digits=value=>String(value||'').replace(/\D/g,'');
+ const maskCpf=value=>{const d=digits(value).slice(0,11);return d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');};
  const maskPhone=value=>{
-  let d=digits(value);if(/^\\s*\\+55/.test(String(value)))d=d.slice(2);d=d.slice(0,11);
+  let d=digits(value);if(/^\s*\+55/.test(String(value)))d=d.slice(2);d=d.slice(0,11);
   if(d.length<=2)return d?'+55 ('+d:'';
   const area=d.slice(0,2),local=d.slice(2);
   if(local.length<=4)return '+55 ('+area+') '+local;
@@ -12,7 +12,7 @@ function setupCheckoutAssist(form){
   return '+55 ('+area+') '+local.slice(0,5)+'-'+local.slice(5);
  };
  const validCpf=value=>{
-  const d=digits(value);if(d.length!==11||/^([0-9])\\1{10}$/.test(d))return false;
+  const d=digits(value);if(d.length!==11||/^([0-9])\1{10}$/.test(d))return false;
   let sum=0;for(let i=0;i<9;i++)sum+=Number(d[i])*(10-i);
   let first=(sum*10)%11;if(first===10)first=0;if(first!==Number(d[9]))return false;
   sum=0;for(let i=0;i<10;i++)sum+=Number(d[i])*(11-i);
@@ -21,7 +21,7 @@ function setupCheckoutAssist(form){
  cpf.addEventListener('input',()=>{cpf.value=maskCpf(cpf.value);cpf.setCustomValidity('');});
  cpf.addEventListener('blur',()=>{if(cpf.value&&!validCpf(cpf.value))cpf.setCustomValidity('Confira o CPF informado.');else cpf.setCustomValidity('');});
  phone.addEventListener('input',()=>{phone.value=maskPhone(phone.value);});
- cep.addEventListener('input',()=>{const d=digits(cep.value).slice(0,8);cep.value=d.replace(/(\\d{5})(\\d)/,'$1-$2');cep.dataset.lookup='';});
+ cep.addEventListener('input',()=>{const d=digits(cep.value).slice(0,8);cep.value=d.replace(/(\d{5})(\d)/,'$1-$2');cep.dataset.lookup='';});
  cep.addEventListener('blur',async()=>{
   const d=digits(cep.value);if(d.length!==8||cep.dataset.lookup===d)return;
   cep.dataset.lookup=d;
@@ -41,7 +41,7 @@ function setupCheckoutAssist(form){
  });
  if(cpf.value)cpf.value=maskCpf(cpf.value);
  if(phone.value)phone.value=maskPhone(phone.value);
- if(cep.value){const d=digits(cep.value);if(d.length===8)cep.value=d.replace(/(\\d{5})(\\d)/,'$1-$2');}
+ if(cep.value){const d=digits(cep.value);if(d.length===8)cep.value=d.replace(/(\d{5})(\d)/,'$1-$2');}
 }
 
 async function openCheckout(fromRoute=false){
@@ -66,7 +66,7 @@ async function openCheckout(fromRoute=false){
  form.elements.phone.maxLength=20;
  const fieldHints={name:'Como aparece no seu documento',email:'Ex.: voce@email.com',cpf:'000.000.000-00',phone:'+55 (00) 00000-0000',cep:'00000-000',estado:'Ex.: CE',rua:'Nome da rua ou avenida',numero:'Somente números',bairro:'Seu bairro',cidade:'Sua cidade',complemento:'Apartamento, bloco ou referência (opcional)'};
  for(const [name,hint] of Object.entries(fieldHints)){const field=form.elements[name];if(field){field.placeholder=hint;field.setAttribute('aria-label',name==='name'?'Nome completo':fieldHints[name]);}}
- for(const name of ['cpf','cep','numero']){const field=form.elements[name];field.inputMode='numeric';field.addEventListener('input',()=>{field.value=field.value.replace(/\\D/g,'');});}
+ for(const name of ['cpf','cep','numero']){const field=form.elements[name];field.inputMode='numeric';field.addEventListener('input',()=>{field.value=field.value.replace(/\D/g,'');});}
  form.elements.phone.inputMode='tel';
  form.elements.estado.inputMode='text';
  form.elements.estado.addEventListener('input',()=>{form.elements.estado.value=form.elements.estado.value.replace(/[^a-z]/gi,'').slice(0,2).toUpperCase();});
