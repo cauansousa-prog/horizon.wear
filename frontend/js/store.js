@@ -102,9 +102,35 @@ async function renderProduct(slug){
  showPage('produto');const el=document.getElementById('productDetail');el.textContent='Carregando a peça…';
  try{const p=await api('/api/products/'+encodeURIComponent(slug));document.title=p.nome+' | Horizon Wear';
  el.innerHTML=productDetailHTML(p);updateProductMetadata(p);wireProductGallery();
+ const addForm=document.getElementById('addProduct');
+ const quantityField=addForm.elements.quantity;
+ const addButton=addForm.querySelector('button[type="submit"]');
+ const stockHint=document.getElementById('productStockHint');
+ const selectedSize=()=>p.product_sizes.find(s=>String(s.id)===String(addForm.querySelector('input[name="size"]:checked')?.value));
+ const remainingFor=size=>Math.max(0,Number(size?.estoque||0)-(cart.find(i=>i.size_id===String(size?.id))?.quantity||0));
+ const updateProductStockLimit=()=>{
+  const size=selectedSize();
+  if(!size){quantityField.max='99';stockHint.textContent='Selecione um tamanho para consultar o estoque disponível.';addButton.disabled=p.product_sizes.every(s=>Number(s.estoque)<=0);return;}
+  const alreadyInCart=cart.find(i=>i.size_id===String(size.id))?.quantity||0;
+  const remaining=remainingFor(size);
+  quantityField.max=String(remaining);
+  if(remaining>0){const current=Number(quantityField.value)||1;quantityField.value=String(Math.min(Math.max(1,current),remaining));}
+  else quantityField.value='1';
+  addButton.disabled=remaining<1;
+  stockHint.textContent=remaining>0
+   ? (alreadyInCart? `Você já tem ${alreadyInCart} no carrinho. Pode adicionar mais ${remaining} deste tamanho.`:`Limite para adicionar deste tamanho: ${remaining} unidade(s).`)
+   : 'Limite atingido para este tamanho. Remova unidades do carrinho para adicionar mais.';
+ };
+ addForm.querySelectorAll('input[name="size"]').forEach(input=>input.addEventListener('change',updateProductStockLimit));
+ quantityField.addEventListener('input',()=>{
+  const size=selectedSize();if(!size)return;
+  const remaining=remainingFor(size),value=Number(quantityField.value);
+  if(remaining>0&&value>remaining)quantityField.value=String(remaining);
+ });
+ updateProductStockLimit();
 
  try{const reviews=await api('/api/reviews/'+p.id);document.getElementById('productReviews').innerHTML='<h3>Avaliações</h3>'+(reviews.length?reviews.map(r=>`<article class="order-row"><strong>${r.nota}/5</strong><p>${esc(r.comentario)}</p></article>`).join(''):'<p>Esta peça ainda não recebeu avaliações.</p>');}catch{document.getElementById('productReviews').textContent='Avaliações indisponíveis no momento.';}
- document.getElementById('addProduct').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button[type=submit],button.btn-gold');if(button.disabled)return;button.disabled=true;button.textContent='Adicionando…';try{const f=new FormData(e.target),id=f.get('size'),qty=Number(f.get('quantity')),old=cart.find(i=>i.size_id===id)?.quantity||0;await changeItem(id,old+qty);}finally{button.disabled=false;button.textContent='Adicionar ao carrinho';}};
+ addForm.onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button[type=submit],button.btn-gold');if(button.disabled)return;const f=new FormData(e.target),id=String(f.get('size')||''),qty=Number(f.get('quantity')),size=p.product_sizes.find(s=>String(s.id)===id),remaining=remainingFor(size);if(!size||!Number.isInteger(qty)||qty<1||qty>remaining){showToast(!size?'Selecione um tamanho disponível.':remaining<1?'Este tamanho não tem unidades disponíveis para adicionar.':`Há somente ${remaining} unidade(s) disponível(is) para adicionar neste tamanho.`);updateProductStockLimit();return;}button.disabled=true;button.textContent='Adicionando…';try{const old=cart.find(i=>i.size_id===id)?.quantity||0;await changeItem(id,old+qty);}finally{updateProductStockLimit();button.textContent='Adicionar ao carrinho';}};
  }catch(e){el.textContent=e.message;}
 }
 function toggleCart(open){
