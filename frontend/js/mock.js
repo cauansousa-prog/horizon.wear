@@ -268,16 +268,28 @@ function thumbFor(item){
 function orderHTML(o,i){
  var items=o.order_items||[];
  var st=statusOf(o);
+ var canCancel=o.status!=='recebido'&&o.status!=='cancelado';
+ var paid=(o.payments||[]).some(function(p){return p.status==='approved';});
  var mini=items.slice(1,3).map(function(it){return '<img src="'+h(thumbFor(it))+'" alt="" loading="lazy">';}).join('');
  var more=items.length>3?'<span>+'+(items.length-3)+'</span>':'';
  var first=items[0]?thumbFor(items[0]):'img/logo-icone.png';
+ var detail=items.map(function(it){return '<p>'+h(it.nome_produto)+' · '+h(it.tamanho)+' · '+h(it.quantidade)+' un.</p>';}).join('')+(o.rastreio?'<p>Rastreio: '+h(o.rastreio)+'</p>':'');
+ if(canCancel)detail+='<div class="acct-order-actions"><button type="button" class="acct-cancel" data-cancel-order="'+h(o.id)+'">Cancelar pedido</button>'+(paid?'<small>O pagamento aprovado não é estornado automaticamente. O atendimento precisará analisar a devolução.</small>':'<small>Disponível enquanto o pedido não estiver como recebido.</small>')+'</div>';
+ else if(o.status==='cancelado')detail+='<p class="acct-cancelled">Este pedido foi cancelado.</p>';
+ else detail+='<p class="acct-received">Recebimento confirmado. Obrigado pela compra!</p>';
  return '<article class="acct-order" data-order-row'+(i>2?' hidden':'')+'>'+
   '<img class="acct-thumb" src="'+h(first)+'" alt="" loading="lazy">'+
   '<div class="acct-order-info"><strong>Pedido #'+h(o.codigo)+'</strong><span>Realizado em '+h(fmtDate(o.created_at))+'</span><div class="acct-mini">'+mini+more+'</div></div>'+
   '<div class="acct-order-status"><span class="chip chip--'+st[1]+'">'+h(st[0])+'</span>'+(o.rastreio?'<small>Rastreio: '+h(o.rastreio)+'</small>':'')+'</div>'+
   '<div class="acct-order-end"><strong>'+h(money2(o.total))+'</strong><button type="button" class="acct-btn" data-order-toggle aria-expanded="false">Ver detalhes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>'+
-  '<div class="acct-detail" hidden>'+items.map(function(it){return '<p>'+h(it.nome_produto)+' · '+h(it.tamanho)+' · '+h(it.quantidade)+' un.</p>';}).join('')+(o.rastreio?'<p>Rastreio: '+h(o.rastreio)+'</p>':'')+'</div>'+
+  '<div class="acct-detail" hidden>'+detail+'</div>'+
   '</article>';
+}
+function reviewHTML(state){
+ var review=state&&state.review;
+ if(review&&review.approved)return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avaliação da Horizon Wear</h3><p>Obrigado por compartilhar sua experiência com a loja.</p></div><div class="acct-review-state"><strong>✓ Sua avaliação foi publicada</strong><div class="acct-review-stars" aria-label="Nota '+Number(review.nota)+' de 5">'+('★'.repeat(Number(review.nota))+'☆'.repeat(5-Number(review.nota)))+'</div><p>'+h(review.comentario||'')+'</p></div></section>';
+ if(!(state&&state.eligible))return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avalie a Horizon Wear</h3><p>Depois que um pedido for marcado como recebido, você poderá avaliar a loja.</p></div><p class="acct-review-locked">A avaliação será liberada após a confirmação do recebimento.</p></section>';
+ return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avalie a Horizon Wear</h3><p>Sua opinião ajuda a melhorar nossos produtos e atendimento.</p></div><form id="acctReviewForm" class="acct-review-form"><label>Nota<select name="nota" required><option value="">Selecione uma nota</option>'+[5,4,3,2,1].map(function(n){return '<option value="'+n+'" '+(review&&Number(review.nota)===n?'selected':'')+'>'+n+' estrela(s)'+(n===5?' · Excelente':n===4?' · Muito bom':n===3?' · Bom':n===2?' · Regular':' · Precisa melhorar')+'</option>';}).join('')+'</select></label><label>Comentário <span class="quiet">· opcional</span><textarea name="comentario" rows="3" maxlength="2000" placeholder="Conte como foi sua experiência com a Horizon Wear.">'+h(review&&review.comentario||'')+'</textarea></label><button type="submit" class="acct-btn acct-review-submit">'+(review?'Atualizar avaliação':'Enviar avaliação')+'</button><small>'+(review?'Sua avaliação está aguardando análise.':'A avaliação será enviada para análise antes da publicação.')+'</small></form></section>';
 }
 function addressHTML(a){
  return '<article class="acct-addr"><i class="fa-solid fa-house" aria-hidden="true"></i><div><strong>'+h(a.destinatario)+'</strong><p>'+h(a.rua)+', '+h(a.numero)+(a.bairro?' - '+h(a.bairro):'')+'</p><p>'+h(a.cidade)+' - '+h(a.estado)+(a.cep?', '+h(a.cep):'')+'</p><button type="button" class="text-button" data-delete-address="'+h(a.id)+'">Remover</button></div></article>';
@@ -290,8 +302,9 @@ window.renderAccount=async function(){
  var title=document.getElementById('accountTitle');if(title)title.hidden=true;
  el.textContent='Carregando sua conta…';
  try{
-  var r=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders')]);
-  var profile=r[0],addresses=r[1],orders=r[2];
+  var r=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store')]);
+  var profile=r[0],addresses=r[1],orders=r[2],reviewState=r[3];
+  window.__hwAccountOrders=orders;
   var since=profile.created_at?new Date(profile.created_at).getFullYear():null;
   var addrForm=[['Destinatário','destinatario'],['CEP (somente números)','cep'],['Rua','rua'],['Número','numero'],['Bairro','bairro'],['Cidade','cidade'],['Estado (UF)','estado'],['Telefone','telefone']].map(function(x){return input(x[0],x[1]);}).join('')+input('Complemento','complemento','text',false);
   el.innerHTML='<div class="acct">'+
@@ -320,6 +333,7 @@ window.renderAccount=async function(){
     '<section class="acct-card acct-orders" id="acct-orders"><div class="acct-card-head"><h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Seu histórico de pedidos</h3></div>'+
       (orders.length?orders.map(orderHTML).join('')+(orders.length>3?'<div class="acct-all"><button type="button" class="acct-btn" id="acctAllOrders">Ver todos os pedidos <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div>':''):'<p class="acct-empty">Seus pedidos aparecerão aqui depois da primeira compra.</p>')+
     '</section>'+
+    reviewHTML(reviewState)+
     '<section class="acct-support" id="acct-support"><img src="img/logo-vertical.png" alt="Horizon Wear"><div><h3><i class="fa-solid fa-headset" aria-hidden="true"></i> Ainda tem dúvidas?</h3><p>Nossa equipe está pronta para te ajudar!</p><button type="button" class="acct-btn" id="acctSupport">Falar com o suporte <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></div></section>'+
     (profile.role==='admin'?'<a class="acct-btn acct-admin" href="/admin.html">Abrir administração</a>':'')+
    '</div></div>';
@@ -336,7 +350,26 @@ window.renderAccount=async function(){
   q('#acctManage').onclick=function(){var d=q('#acctAddrDetails');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});};
   q('#acctSupport').onclick=function(){if(typeof showPage==='function')showPage('contato');};
   var all=q('#acctAllOrders');if(all)all.onclick=function(){el.querySelectorAll('[data-order-row]').forEach(function(r){r.hidden=false;});all.parentNode.remove();};
-  el.onclick=function(e){
+  var reviewForm=q('#acctReviewForm');
+  if(reviewForm)reviewForm.onsubmit=async function(e){
+   e.preventDefault();if(!reviewForm.reportValidity())return;
+   var button=reviewForm.querySelector('[type="submit"]');button.disabled=true;button.textContent='Enviando…';
+   try{var values=Object.fromEntries(new FormData(reviewForm));values.nota=Number(values.nota);await api('/api/reviews/store',{method:reviewState.review?'PATCH':'POST',body:JSON.stringify(values)});showToast('Sua avaliação foi enviada para análise.');await window.renderAccount();}
+   catch(err){showToast(err.message);button.disabled=false;button.textContent=reviewState.review?'Atualizar avaliação':'Enviar avaliação';}
+  };
+  el.onclick=async function(e){
+   var cancel=e.target.closest&&e.target.closest('[data-cancel-order]');
+   if(cancel){
+    var orderId=cancel.getAttribute('data-cancel-order');
+    var order=(window.__hwAccountOrders||[]).find(function(o){return o.id===orderId;});
+    var paid=order&&(order.payments||[]).some(function(p){return p.status==='approved';});
+    var warning=paid?'\\n\\nO pagamento aprovado não será estornado automaticamente. O atendimento precisará analisar a devolução.':'';
+    if(!window.confirm('Deseja realmente cancelar este pedido?'+warning))return;
+    cancel.disabled=true;cancel.textContent='Cancelando…';
+    try{await api('/api/orders/'+encodeURIComponent(orderId)+'/cancel',{method:'POST',body:JSON.stringify({motivo:'Solicitado pelo cliente'})});showToast('Pedido cancelado.');await window.renderAccount();}
+    catch(err){showToast(err.message);cancel.disabled=false;cancel.textContent='Cancelar pedido';}
+    return;
+   }
    var t=e.target.closest&&e.target.closest('[data-order-toggle]');
    if(t){var box=t.closest('.acct-order').querySelector('.acct-detail');var open=box.hidden;box.hidden=!open;t.setAttribute('aria-expanded',open?'true':'false');return;}
    var n=e.target.closest&&e.target.closest('[data-acct]');if(!n)return;
