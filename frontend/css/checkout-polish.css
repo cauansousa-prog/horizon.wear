@@ -64,8 +64,18 @@
 #page-checkout .checkout-steps li.complete{border-color:rgba(212,175,55,.5);color:#f3dc91}
 #page-checkout .checkout-steps li.complete>span{background:#5a4512;border-color:#d4af37;color:#fff0b0}
 #page-checkout .payment-details{margin:18px 0}
-#page-checkout .payment-method-info{padding:14px 16px;border:1px solid rgba(212,175,55,.3);border-radius:10px;background:rgba(212,175,55,.06);color:#e9d99e;font-size:13px;line-height:1.65}
-
+#page-checkout .demo-payment-notice{padding:12px 14px;border:1px solid rgba(212,175,55,.38);border-radius:10px;background:rgba(212,175,55,.08);color:#e9d99e;font-size:12px;line-height:1.6}
+#page-checkout .demo-payment-panel{padding:18px;border:1px solid rgba(212,175,55,.4);border-radius:13px;background:linear-gradient(145deg,rgba(212,175,55,.12),#17171e 68%)}
+#page-checkout .demo-payment-panel h3{margin:0 0 8px;color:#f3d77f;font-size:17px}
+#page-checkout .demo-payment-panel p{color:#c7c5ce;line-height:1.65;font-size:13px}
+#page-checkout .demo-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+#page-checkout .demo-card-grid label{display:flex;flex-direction:column;gap:7px;color:#f1e5bd;font-size:12px;font-weight:700}
+#page-checkout .demo-card-grid input,#page-checkout .demo-card-grid select{width:100%;min-height:48px;padding:12px;border:1px solid #5c512f;border-radius:9px;background:#101116;color:#fff;font-size:14px}
+#page-checkout .demo-card-grid input:focus,#page-checkout .demo-card-grid select:focus{outline:2px solid rgba(240,207,105,.55);border-color:#f0cf69}
+#page-checkout .demo-payment-facts{display:flex;justify-content:space-between;gap:12px;padding:12px 0 0;color:#c7c5ce;font-size:12px}
+#page-checkout .demo-payment-facts strong{color:#f3d77f;text-align:right}
+#page-checkout .demo-payment-success{border-color:#d4af37}
+@media(max-width:520px){#page-checkout .demo-card-grid{grid-template-columns:1fr}}
 
 #page-checkout .delivery-note{background:linear-gradient(110deg,rgba(212,175,55,.16),rgba(212,175,55,.045));border-color:rgba(212,175,55,.38)}
 #page-checkout .payment-option:has(input:checked){background:linear-gradient(110deg,rgba(212,175,55,.18),rgba(212,175,55,.055));border-color:#e8c75b;box-shadow:0 8px 24px rgba(212,175,55,.13)}
