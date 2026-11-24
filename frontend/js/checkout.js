@@ -4,7 +4,7 @@ function setupCheckoutAssist(form){
  const digits=value=>String(value||'').replace(/\\D/g,'');
  const maskCpf=value=>{const d=digits(value).slice(0,11);return d.replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d{1,2})$/,'$1-$2');};
  const maskPhone=value=>{
-  let d=digits(value);if(d.startsWith('55')&&d.length>11)d=d.slice(2);d=d.slice(0,11);
+  let d=digits(value);if(/^\\s*\\+55/.test(String(value)))d=d.slice(2);d=d.slice(0,11);
   if(d.length<=2)return d?'+55 ('+d:'';
   const area=d.slice(0,2),local=d.slice(2);
   if(local.length<=4)return '+55 ('+area+') '+local;
