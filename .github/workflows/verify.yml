@@ -32,3 +32,4 @@ jobs:
           node --check frontend/js/admin.js
           node --check frontend/js/admin-pedidos.js
           node --check frontend/js/store.js
+          node --check frontend/js/atelier.js
