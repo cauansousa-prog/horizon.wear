@@ -36,7 +36,7 @@ window.hwToggleFavorite=async function(slug){
  return true;
 };
 async function api(path,options={},retry=true){
-  const publicRead=(!options.method||options.method==='GET')&&/^\/api\/(products(?:[/?]|$)|categories(?:[/?]|$)|reviews\/)/.test(path);
+  const publicRead=(!options.method||options.method==='GET')&&/^\/api\/(products(?:[/?]|$)|categories(?:[/?]|$)|reviews\/(?!store(?:[/?]|$)))/.test(path);
   if(!publicRead && session?.refresh_token && session.expires_at*1000<Date.now()+30000 && !path.startsWith('/api/auth/')) {
     if(!refreshPromise) refreshPromise=fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})}).then(async r=>{if(!r.ok){const error=Error([400,401,403].includes(r.status)?'Sua sessão expirou. Entre novamente.':'Não foi possível renovar a sessão agora. Tente novamente.');error.invalidSession=[400,401,403].includes(r.status);throw error;}saveSession(await r.json());}).finally(()=>refreshPromise=null);
     try{await refreshPromise;}catch(e){if(e.invalidSession)saveSession(null);throw e;}
