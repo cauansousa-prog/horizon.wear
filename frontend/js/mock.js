@@ -286,6 +286,7 @@ function orderHTML(o,i){
   '</article>';
 }
 function reviewHTML(state){
+ if(state&&state.unavailable)return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avaliação da Horizon Wear</h3><p>A área de avaliações está temporariamente indisponível. Você ainda pode usar sua conta normalmente.</p></div></section>';
  var review=state&&state.review;
  if(review&&review.approved)return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avaliação da Horizon Wear</h3><p>Obrigado por compartilhar sua experiência com a loja.</p></div><div class="acct-review-state"><strong>✓ Sua avaliação foi publicada</strong><div class="acct-review-stars" aria-label="Nota '+Number(review.nota)+' de 5">'+('★'.repeat(Number(review.nota))+'☆'.repeat(5-Number(review.nota)))+'</div><p>'+h(review.comentario||'')+'</p></div></section>';
  if(!(state&&state.eligible))return '<section class="acct-review" id="acct-review"><div><p class="eyebrow">SUA EXPERIÊNCIA</p><h3>Avalie a Horizon Wear</h3><p>Depois que um pedido for marcado como recebido, você poderá avaliar a loja.</p></div><p class="acct-review-locked">A avaliação será liberada após a confirmação do recebimento.</p></section>';
@@ -302,7 +303,7 @@ window.renderAccount=async function(){
  var title=document.getElementById('accountTitle');if(title)title.hidden=true;
  el.textContent='Carregando sua conta…';
  try{
-  var r=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store')]);
+  var r=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store').catch(function(){return {review:null,eligible:false,unavailable:true};})]);
   var profile=r[0],addresses=r[1],orders=r[2],reviewState=r[3];
   window.__hwAccountOrders=orders;
   var since=profile.created_at?new Date(profile.created_at).getFullYear():null;
