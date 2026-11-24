@@ -106,7 +106,7 @@ async function openCheckout(fromRoute=false){
  }else if(method==='pix'){
   host.innerHTML='';
  }else{
-  host.innerHTML='<div class="demo-payment-panel"><h3>Boleto bancário</h3><p>Para a simulação, o boleto usaria o nome, CPF e endereço de entrega informados. Ao confirmar, será exibido um comprovante ilustrativo, sem linha digitável ou cobrança real.</p><div class="demo-payment-facts"><span>Dados necessários</span><strong>Nome + CPF + endereço</strong></div></div>';
+  host.innerHTML='';
  }
 }
 renderDemoPaymentFields();
