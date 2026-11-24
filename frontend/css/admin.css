@@ -929,3 +929,64 @@
 #adminMessage[data-state="error"]{border-left-color:#c65c5c;color:#f0aaaa}
 #adminMessage[data-state="success"]{border-left-color:#5c9b65;color:#a8ddb1}
 @media(max-width:700px){.admin-form.product-editor{grid-template-columns:1fr;gap:15px;margin:0 10px 18px;padding:16px}.product-flags{grid-template-columns:1fr}.product-form-actions{flex-direction:column;align-items:stretch}.product-form-actions button{width:100%}.product-form-heading h3{font-size:19px}}
+
+/* Horizon Wear — atualização visual do painel, indicadores e pagamentos */
+.admin-body{background:#0b0b0c!important;color:#f5f5f5!important}
+.admin-sidebar{background:#050505!important;border-right:1px solid #242424!important}
+.admin-topbar{background:#111!important;border-color:#292929!important;color:#aaa!important}
+.admin-topbar>a{color:#f0d878!important}
+.admin-main{color:#f5f5f5}
+.admin-heading h1,.panel-heading h2{color:#fff}
+.admin-heading p:last-child,.panel-subtitle{color:#a1a1aa!important}
+.admin-panel,.admin-panel .panel-heading{background:#171719!important;border-color:#2c2c30!important}
+.admin-panel{border-radius:16px!important;box-shadow:0 18px 48px rgba(0,0,0,.2)}
+.panel-heading{background:#1b1b1e!important;border-bottom:1px solid #303035!important}
+.table-tools{background:#101012!important;border-color:#2b2b30!important}
+.admin-body input,.admin-body select,.admin-body textarea{background:#101012!important;border-color:#38383d!important;color:#f5f5f5!important}
+.admin-body input:focus,.admin-body select:focus,.admin-body textarea:focus{border-color:#d4af37!important;box-shadow:0 0 0 3px rgba(212,175,55,.13)!important;outline:0}
+.admin-table th{background:#111113!important;color:#e3c477!important;border-color:#303035!important}
+.admin-table td{background:#1b1b1e!important;color:#e5e5e5!important;border-color:#2b2b30!important}
+.admin-table tbody tr:hover td{background:#242427!important}
+.admin-body .btn-outline{background:#171719!important;border-color:#444!important;color:#e5e5e5!important}
+.admin-body .btn-gold{background:#d4a72c!important;color:#17130a!important;border-color:#d4a72c!important;font-weight:800}
+.admin-body .btn-gold:hover{background:#edc85e!important}
+.count-badge{background:#2b2b2e!important;color:#f0d878!important;border:1px solid #444!important}
+.status-pill.positive,.status-pill.payment-approved{background:rgba(34,197,94,.15)!important;border:1px solid rgba(74,222,128,.42)!important;color:#4ade80!important}
+.status-pill.warning,.status-pill.payment-pending,.status-pill.payment-in_process,.status-pill.payment-authorized{background:rgba(245,158,11,.14)!important;border:1px solid rgba(251,191,36,.4)!important;color:#fbbf24!important}
+.status-pill.payment-cancelled,.status-pill.payment-rejected{background:rgba(239,68,68,.14)!important;border:1px solid rgba(248,113,113,.42)!important;color:#fca5a5!important}
+.status-pill.payment-refunded,.status-pill.payment-charged_back{background:rgba(139,92,246,.15)!important;border:1px solid rgba(167,139,250,.4)!important;color:#c4b5fd!important}
+.admin-insight-grid,.payment-metric-grid,.review-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:18px 24px}
+.payment-metric-grid article,.review-summary-grid article,.analytics-card{min-width:0;padding:17px 18px;border:1px solid #343439;border-radius:13px;background:linear-gradient(145deg,#202023,#151517);border-top:3px solid var(--metric-color,#d4af37)}
+.payment-metric-grid article span,.review-summary-grid article span,.analytics-card span{display:block;color:#a1a1aa;font-size:12px}
+.payment-metric-grid article strong,.review-summary-grid article strong,.analytics-card strong{display:block;margin-top:8px;color:#fff;font-size:clamp(18px,2vw,25px);font-weight:800;overflow-wrap:anywhere}
+.payment-filter-row{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 18px}
+.payment-filter-row button{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid #414148;border-radius:999px;background:#19191c;color:#d4d4d8;font-size:12px;font-weight:700}
+.payment-filter-row button[aria-pressed="true"]{background:#d4af37;border-color:#d4af37;color:#15120a}
+.payment-filter-row b{font-size:11px;opacity:.8}
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;padding:20px 24px}
+.analytics-products,.analytics-payment-status{margin:0 24px 22px;padding:22px;border:1px solid #333338;border-radius:15px;background:#171719}
+.analytics-products h3,.analytics-payment-status h3{margin:0;color:#f5f5f5;font-size:18px}
+.analytics-products .dashboard-card-head p{color:#a1a1aa;font-size:12px}
+.analytics-product-list{display:grid;gap:0;margin-top:14px}
+.analytics-product-row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #303035}
+.analytics-product-row:last-child{border-bottom:0}
+.analytics-rank{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:9px;background:rgba(212,175,55,.15);color:#f0d878;font-weight:900}
+.analytics-product-name{display:grid;gap:3px;flex:1;min-width:0}
+.analytics-product-name strong{color:#f5f5f5;overflow-wrap:anywhere}
+.analytics-product-name small{color:#a1a1aa}
+.analytics-product-row>strong{color:#f0d878;white-space:nowrap}
+.analytics-status-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
+.analytics-status-list>div{padding:12px;border-radius:10px;background:#222226;display:flex;justify-content:space-between;gap:10px}
+.analytics-status-list span{color:#b4b4bd;font-size:12px}
+.analytics-status-list strong{color:#f0d878}
+.analytics-payment-status .quiet{color:#a1a1aa;font-size:12px;line-height:1.6}
+.whatsapp-action{color:#4ade80!important;border-color:rgba(74,222,128,.4)!important;background:rgba(34,197,94,.1)!important}
+.review-summary-grid{padding:16px 24px 8px}
+#adminContent .empty-table{color:#aaa}
+@media(max-width:760px){
+ .analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}
+ .analytics-products,.analytics-payment-status{margin:0 14px 16px;padding:16px}
+ .payment-metric-grid,.review-summary-grid{padding:14px}
+ .payment-filter-row{padding:0 14px 14px;overflow-x:auto;flex-wrap:nowrap}
+ .payment-filter-row button{flex:none}
+}
