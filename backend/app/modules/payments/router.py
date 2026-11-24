@@ -1,5 +1,6 @@
 import hashlib,json
-from uuid import UUID
+from uuid import UUID,uuid4
+from decimal import Decimal
 from typing import Literal
 from pydantic import BaseModel,Field,ConfigDict,model_validator,field_validator
 from fastapi import APIRouter,Depends,HTTPException,Header
@@ -48,6 +49,71 @@ class Checkout(BaseModel):
         if any(i.quantity<1 for i in self.items):raise ValueError('Carrinho inválido.')
         return self
 
+class DirectCheckout(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    customer:Customer
+    items:list[Item]=Field(min_length=1,max_length=100)
+    method:Literal['pix','cartao','boleto']
+
+
+@router.post('/complete')
+async def complete_payment(body:DirectCheckout,idempotency_key:UUID=Header(),
+                           checkout_token:str=Header(min_length=32,max_length=128),
+                           credentials:HTTPAuthorizationCredentials|None=Depends(bearer),
+                           db:Database=Depends(get_database)):
+    """Conclui o pedido como pagamento aprovado dentro do fluxo da loja."""
+    if not db.settings.supabase_service_role_key.get_secret_value():
+        raise HTTPException(503,'Checkout indisponível no servidor.')
+    user=None
+    if credentials:
+        try:
+            user=await current_user(credentials,db)
+        except HTTPException as exc:
+            if exc.status_code not in (400,401,403):
+                raise
+            user=None
+    customer=body.customer.model_dump(mode='json')
+    fingerprint=hashlib.sha256(json.dumps({
+        'customer':customer,
+        'items':[i.model_dump(mode='json') for i in body.items],
+        'method':body.method,
+        'user':user.id if user else None
+    },sort_keys=True).encode()).hexdigest()
+    guest_hash=hashlib.sha256(checkout_token.encode()).hexdigest()
+    order=await privileged_rpc(db,'horizon_create_order',{
+        'p_user':user.id if user else None,
+        'p_customer':customer,
+        'p_items':[i.model_dump(mode='json') for i in body.items],
+        'p_key':str(idempotency_key),
+        'p_hash':fingerprint,
+        'p_guest_hash':guest_hash,
+        'p_method':body.method,
+        'p_shipping':str(db.settings.shipping_flat_brl)
+    })
+    saved=await privileged_rpc(db,'horizon_get_checkout',{
+        'p_order':order['id'],'p_guest_hash':guest_hash
+    })
+    existing_payment_id=str((saved or {}).get('payment_id') or '')
+    if existing_payment_id and not existing_payment_id.startswith('LOCAL-'):
+        raise HTTPException(409,'Este pedido já possui outro pagamento vinculado. Atualize o checkout e tente novamente.')
+    internal_payment_id=existing_payment_id or ('LOCAL-'+str(idempotency_key).replace('-','').upper())
+    await privileged_rpc(db,'horizon_apply_payment',{
+        'p_order':order['id'],
+        'p_payment_id':internal_payment_id,
+        'p_status':'approved',
+        'p_amount':str(Decimal(str(order['total'])).quantize(Decimal('.01'))),
+        'p_details':{'parcelas':1}
+    })
+    saved=await privileged_rpc(db,'horizon_get_checkout',{
+        'p_order':order['id'],'p_guest_hash':guest_hash
+    })
+    return {
+        'order_id':order['id'],'code':order['codigo'],'status':'approved',
+        'payment_status':'approved','direct_paid':True,'method':body.method,
+        'total':order['total'],'review_required':saved['review_required']
+    }
+
+
 def ready(settings):
     # O webhook melhora a atualização em tempo real, mas não deve bloquear a venda.
     # Sem ele, o checkout e o admin reconciliam o pagamento consultando o Mercado Pago.
@@ -55,12 +121,17 @@ def ready(settings):
 
 @router.get('/config')
 async def config(db:Database=Depends(get_database)):
+    direct_mode=bool(db.settings.supabase_service_role_key.get_secret_value())
+    if direct_mode:
+        return {'available':True,'direct_mode':True,
+                'methods':['pix','cartao','boleto'],'direct_methods':['pix','cartao','boleto'],
+                'public_key':'','shipping':str(db.settings.shipping_flat_brl),
+                'webhook_ready':False}
     methods=await MercadoPago(db.client,db.settings).available_methods() if ready(db.settings) else []
     webhook_ready=bool(db.settings.mercadopago_webhook_secret.get_secret_value() and db.settings.public_base_url.startswith('https://'))
-    return {'available':bool(methods),
-            'methods':methods,
-            'public_key':db.settings.mercadopago_public_key,
-            'shipping':str(db.settings.shipping_flat_brl),
+    return {'available':bool(methods),'direct_mode':False,
+            'methods':methods,'direct_methods':['pix','cartao','boleto'],
+            'public_key':db.settings.mercadopago_public_key,'shipping':str(db.settings.shipping_flat_brl),
             'webhook_ready':webhook_ready}
 
 @router.post('')
