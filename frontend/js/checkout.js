@@ -1,4 +1,49 @@
 let checkoutController=null, checkoutPoll=null;
+function setupCheckoutAssist(form){
+ const cpf=form.elements.cpf,phone=form.elements.phone,cep=form.elements.cep;
+ const digits=value=>String(value||'').replace(/\\D/g,'');
+ const maskCpf=value=>{const d=digits(value).slice(0,11);return d.replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d{1,2})$/,'$1-$2');};
+ const maskPhone=value=>{
+  let d=digits(value);if(d.startsWith('55')&&d.length>11)d=d.slice(2);d=d.slice(0,11);
+  if(d.length<=2)return d?'+55 ('+d:'';
+  const area=d.slice(0,2),local=d.slice(2);
+  if(local.length<=4)return '+55 ('+area+') '+local;
+  if(local.length<=8)return '+55 ('+area+') '+local.slice(0,4)+'-'+local.slice(4);
+  return '+55 ('+area+') '+local.slice(0,5)+'-'+local.slice(5);
+ };
+ const validCpf=value=>{
+  const d=digits(value);if(d.length!==11||/^([0-9])\\1{10}$/.test(d))return false;
+  let sum=0;for(let i=0;i<9;i++)sum+=Number(d[i])*(10-i);
+  let first=(sum*10)%11;if(first===10)first=0;if(first!==Number(d[9]))return false;
+  sum=0;for(let i=0;i<10;i++)sum+=Number(d[i])*(11-i);
+  let second=(sum*10)%11;if(second===10)second=0;return second===Number(d[10]);
+ };
+ cpf.addEventListener('input',()=>{cpf.value=maskCpf(cpf.value);cpf.setCustomValidity('');});
+ cpf.addEventListener('blur',()=>{if(cpf.value&&!validCpf(cpf.value))cpf.setCustomValidity('Confira o CPF informado.');else cpf.setCustomValidity('');});
+ phone.addEventListener('input',()=>{phone.value=maskPhone(phone.value);});
+ cep.addEventListener('input',()=>{const d=digits(cep.value).slice(0,8);cep.value=d.replace(/(\\d{5})(\\d)/,'$1-$2');cep.dataset.lookup='';});
+ cep.addEventListener('blur',async()=>{
+  const d=digits(cep.value);if(d.length!==8||cep.dataset.lookup===d)return;
+  cep.dataset.lookup=d;
+  const previous=cep.value;cep.setAttribute('aria-busy','true');
+  try{
+   const response=await fetch('https://viacep.com.br/ws/'+d+'/json/');
+   if(!response.ok)throw new Error('Falha na consulta');
+   const data=await response.json();
+   if(data.erro){cep.dataset.lookup='';showToast('CEP não encontrado. Confira os números.');return;}
+   for(const [field,value] of [['rua',data.logradouro],['bairro',data.bairro],['cidade',data.localidade],['estado',data.uf]]){
+    if(value)form.elements[field].value=value;
+   }
+   form.elements.numero.focus();
+   showToast('Endereço preenchido pelo CEP. Confira e informe o número.');
+  }catch{cep.dataset.lookup='';showToast('Não foi possível consultar o CEP agora. Você pode preencher o endereço manualmente.');}
+  finally{cep.removeAttribute('aria-busy');}
+ });
+ if(cpf.value)cpf.value=maskCpf(cpf.value);
+ if(phone.value)phone.value=maskPhone(phone.value);
+ if(cep.value){const d=digits(cep.value);if(d.length===8)cep.value=d.replace(/(\\d{5})(\\d)/,'$1-$2');}
+}
+
 async function openCheckout(fromRoute=false){
  if(!fromRoute){showPage('checkout');return;}
  toggleCart(false);clearInterval(checkoutPoll);
@@ -35,6 +80,7 @@ async function openCheckout(fromRoute=false){
  }
  form.elements.cpf.inputMode='numeric';form.elements.cep.inputMode='numeric';form.elements.estado.maxLength=2;
  for(const [name,ac] of Object.entries({name:'name',email:'email',phone:'tel',cep:'postal-code',rua:'address-line1',complemento:'address-line2',cidade:'address-level2',estado:'address-level1'}))form.elements[name].autocomplete=ac;
+ setupCheckoutAssist(form);
  function updateStep(){
   form.querySelectorAll('[data-step]').forEach((f,i)=>{f.hidden=i!==step;f.disabled=i!==step;});
   document.querySelectorAll('.checkout-steps li').forEach((li,i)=>{li.classList.toggle('current',i===step);li.classList.toggle('complete',i<step);i===step?li.setAttribute('aria-current','step'):li.removeAttribute('aria-current');});
