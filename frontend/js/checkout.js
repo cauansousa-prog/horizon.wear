@@ -100,9 +100,9 @@ async function openCheckout(fromRoute=false){
  if(method==='cartao'){
   host.innerHTML=`<div class="demo-payment-panel"><h3>Dados do cartão (somente demonstração)</h3><p>Preencha com dados fictícios. Essas informações não serão enviadas nem armazenadas.</p><div class="demo-card-grid"><label>Número do cartão<input id="demoCardNumber" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" required></label><label>Nome impresso no cartão<input id="demoCardName" autocomplete="off" maxlength="60" placeholder="NOME COMO NO CARTÃO" required></label><label>Validade<input id="demoCardExpiry" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/AA" required></label><label>CVV<input id="demoCardCvv" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="000" required></label><label>Parcelas<select id="demoCardInstallments"><option value="1">1x sem juros</option><option value="2">2x</option><option value="3">3x</option><option value="6">6x</option><option value="12">12x</option></select></label></div></div>`;
   const number=document.getElementById('demoCardNumber'),expiry=document.getElementById('demoCardExpiry'),cvv=document.getElementById('demoCardCvv');
-  number.addEventListener('input',()=>{number.value=number.value.replace(/\\D/g,'').slice(0,16).replace(/(\\d{4})(?=\\d)/g,'$1 ');});
-  expiry.addEventListener('input',()=>{const d=expiry.value.replace(/\\D/g,'').slice(0,4);expiry.value=d.length>2?d.slice(0,2)+'/'+d.slice(2):d;});
-  cvv.addEventListener('input',()=>{cvv.value=cvv.value.replace(/\\D/g,'').slice(0,4);});
+  number.addEventListener('input',()=>{number.value=number.value.replace(/\D/g,'').slice(0,16).replace(/(\d{4})(?=\d)/g,'$1 ');});
+  expiry.addEventListener('input',()=>{const d=expiry.value.replace(/\D/g,'').slice(0,4);expiry.value=d.length>2?d.slice(0,2)+'/'+d.slice(2):d;});
+  cvv.addEventListener('input',()=>{cvv.value=cvv.value.replace(/\D/g,'').slice(0,4);});
  }else if(method==='pix'){
   host.innerHTML='<div class="demo-payment-panel"><h3>Pagamento via Pix</h3><p>Para a simulação, usaremos o nome, CPF e e-mail informados na etapa de identificação. Ao confirmar, será exibida uma confirmação fictícia — nenhum QR Code ou cobrança real será criado.</p><div class="demo-payment-facts"><span>Identificação</span><strong>CPF + e-mail do cadastro</strong></div></div>';
  }else{
@@ -123,8 +123,8 @@ form.addEventListener('change',async e=>{if(e.target.name==='method'){document.g
  const customer={name:f.name,email:f.email,cpf:f.cpf.replace(/\D/g,''),phone:f.phone,address};const body={customer,items:cart.map(i=>({...i})),method:f.method};
  if(f.method==='cartao'){
   const cn=document.getElementById('demoCardNumber'),ce=document.getElementById('demoCardExpiry'),cc=document.getElementById('demoCardCvv'),nm=document.getElementById('demoCardName');
-  const digits=v=>String(v||'').replace(/\\D/g,'');
-  if(!cn||digits(cn.value).length<13||!nm?.value.trim()||!ce||!/^\\d{2}\\/\\d{2}$/.test(ce.value)||!cc||digits(cc.value).length<3){showToast('Confira os campos fictícios do cartão para continuar.');return;}
+  const digits=v=>String(v||'').replace(/\D/g,'');
+  if(!cn||digits(cn.value).length<13||!nm?.value.trim()||!ce||!/^\d{2}\/\d{2}$/.test(ce.value)||!cc||digits(cc.value).length<3){showToast('Confira os campos fictícios do cartão para continuar.');return;}
  }
  document.getElementById('paymentReview').innerHTML=`<div class="checkout-review"><h3>Revisar pedido</h3><p>${esc(customer.name)} · ${esc(customer.email)}</p><p>${esc(address.rua)}, ${esc(address.numero)} · ${esc(address.cidade)}/${esc(address.estado)}</p><strong>Total: ${money(Number(quote.subtotal)+Number(config.shipping))}</strong><button class="btn-gold" id="confirmPayment">Pagar</button></div>`;
  if(checkoutController){await checkoutController.unmount();checkoutController=null;}
