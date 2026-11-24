@@ -22,6 +22,10 @@ class Address(BaseModel):
     referencia:str=Field(default='',max_length=200)
     telefone:str=Field(default='',max_length=25)
     padrao:bool=False
+class OrderCancellation(BaseModel):
+    model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
+    motivo:str=Field(default='',max_length=500)
+
 class Favorite(BaseModel):
     model_config=ConfigDict(extra='forbid')
     product_id:UUID
@@ -32,6 +36,11 @@ async def update_profile(body:Profile,user:User=Depends(current_user),db:Databas
         params={'id':'eq.'+user.id,'select':'id,full_name:nome_completo,phone:telefone'},json=body.model_dump())
     if not rows:raise HTTPException(409,'Seus dados não foram salvos. Atualize a página e tente novamente.')
     return rows[0]
+
+@router.post('/orders/{order_id}/cancel')
+async def cancel_order(order_id:UUID,body:OrderCancellation,user:User=Depends(current_user),db:Database=Depends(get_database)):
+    return await db.request('/rest/v1/rpc/horizon_cancel_my_order',method='POST',
+        token=user.token,json={'p_order':str(order_id),'p_reason':body.motivo},explain_data_errors=True)
 
 @router.get('/addresses')
 async def addresses(user:User=Depends(current_user),db:Database=Depends(get_database)):
