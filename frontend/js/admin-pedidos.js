@@ -7,20 +7,21 @@
 'use strict';
 
 /* Antes "recebido" aparecia como "Recebido", mas na verdade é o pedido novo que ainda não foi pago. */
-if(typeof statusLabels==='object'&&statusLabels)statusLabels.recebido='Aguardando pagamento';
+if(typeof statusLabels==='object'&&statusLabels)statusLabels.aguardando_pagamento='Aguardando pagamento';
 
 var ST={
- recebido:{label:'Aguardando pagamento',c:'wait'},
+ aguardando_pagamento:{label:'Aguardando pagamento',c:'wait'},
  pagamento_aprovado:{label:'Pagamento aprovado',c:'paid'},
  preparando:{label:'Em preparação',c:'prep'},
  enviado:{label:'Enviado',c:'ship'},
  entregue:{label:'Entregue',c:'done'},
+ recebido:{label:'Recebido pelo cliente',c:'received'},
  cancelado:{label:'Cancelado',c:'bad'}
 };
-var FLOW=['pagamento_aprovado','preparando','enviado','entregue'];
-var NEXT={pagamento_aprovado:'preparando',preparando:'enviado',enviado:'entregue'};
-var CHIPS=['pagamento_aprovado','preparando','enviado','entregue'];
-var OPTIONAL_CHIPS=['recebido','cancelado'];
+var FLOW=['pagamento_aprovado','preparando','enviado','entregue','recebido'];
+var NEXT={pagamento_aprovado:'preparando',preparando:'enviado',enviado:'entregue',entregue:'recebido'};
+var CHIPS=['pagamento_aprovado','preparando','enviado','entregue','recebido'];
+var OPTIONAL_CHIPS=['aguardando_pagamento','cancelado'];
 
 var activeStatus='todos',query='';
 
@@ -55,8 +56,7 @@ function actionHTML(o,i){
  var next=NEXT[o.status];
  if(o.review_required)return '<span class="ord-hint">Resolva o estoque primeiro</span>';
  if(next)return '<button type="button" class="ord-advance ord-advance--'+info(next).c+'" data-order="'+i+'">Avançar para '+esc(info(next).label)+' <span aria-hidden="true">→</span></button>';
- if(o.status==='entregue')return '<span class="ord-final">✓ Finalizado</span>';
- if(o.status==='recebido')return '<span class="ord-hint">Aguardando o cliente pagar</span>';
+ if(o.status==='recebido')return '<span class="ord-final">✓ Recebimento confirmado</span>';
  return '<span class="ord-none">—</span>';
 }
 
@@ -114,7 +114,7 @@ function enhance(){
 
  wrap.innerHTML='<table class="ord-table"><thead><tr><th scope="col">Pedido</th><th scope="col">Cliente</th><th scope="col">Situação</th><th scope="col">Conferência</th><th scope="col">Total</th><th scope="col">Rastreamento</th><th scope="col">Ações</th></tr></thead><tbody>'+currentRows.map(rowHTML).join('')+'</tbody></table>';
 
- if(activeStatus!=='todos'&&activeStatus!=='recebido'&&activeStatus!=='cancelado'&&CHIPS.indexOf(activeStatus)<0)activeStatus='todos';
+ if(activeStatus!=='todos'&&activeStatus!=='aguardando_pagamento'&&activeStatus!=='cancelado'&&CHIPS.indexOf(activeStatus)<0)activeStatus='todos';
  var input=document.getElementById('adminSearch');
  input.value=query;
  input.oninput=function(e){query=norm(e.target.value);applyFilter();};
