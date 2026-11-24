@@ -2,7 +2,7 @@ import hashlib,json
 from uuid import UUID,uuid4
 from decimal import Decimal
 from typing import Literal
-from pydantic import BaseModel,Field,ConfigDict,model_validator
+from pydantic import BaseModel,Field,ConfigDict,model_validator,field_validator
 from fastapi import APIRouter,Depends,HTTPException,Header
 from fastapi.security import HTTPAuthorizationCredentials
 from ...auth import bearer,current_user
@@ -19,6 +19,21 @@ class Customer(BaseModel):
     cpf:str=Field(pattern=r'^\d{11}$')
     phone:str=Field(min_length=10,max_length=20)
     address:Address
+    @field_validator('cpf')
+    @classmethod
+    def valid_cpf(cls,value):
+        d=''.join(ch for ch in value if ch.isdigit())
+        if len(d)!=11 or len(set(d))==1:
+            raise ValueError('CPF inválido.')
+        total=sum(int(d[i])*(10-i) for i in range(9))
+        first=(total*10)%11
+        if first==10:first=0
+        if first!=int(d[9]):raise ValueError('CPF inválido.')
+        total=sum(int(d[i])*(11-i) for i in range(10))
+        second=(total*10)%11
+        if second==10:second=0
+        if second!=int(d[10]):raise ValueError('CPF inválido.')
+        return d
 class Checkout(BaseModel):
     model_config=ConfigDict(extra='forbid')
     customer:Customer
