@@ -453,10 +453,15 @@ async def export_resource(resource:str,format:Literal['csv','xlsx']='csv',
         headers={'Content-Disposition':f'attachment; filename="{resource}.csv"'})
 
 @router.get('/{resource}')
-async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
+async def listing(resource:str,offset:int=Query(0,ge=0),search:str|None=Query(default=None,max_length=100),user:User=Depends(admin),db:Database=Depends(get_database)):
     if resource not in {'products','categories','product_sizes','product_images','orders','profiles','payments','coupons','reviews'}:raise HTTPException(404)
     order='criado_em.desc' if resource=='payments' else 'created_at.desc' if resource in {'orders','reviews'} else 'id'
-    return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':order,'limit':'100','offset':str(offset)})
+    params={'select':'*','order':order,'limit':'100','offset':str(offset)}
+    if resource=='orders' and search:
+        term=re.sub(r'[^\\w\\s@.+-]','',search,flags=re.UNICODE).strip()
+        if term:
+            params['or']=f'(nome_cliente.ilike.*{term}*,codigo.ilike.*{term}*)'
+    return await db.request('/rest/v1/'+resource,token=user.token,params=params)
 
 @router.post('/product-images/upload',status_code=201)
 async def upload_product_image(request:Request,user:User=Depends(admin),db:Database=Depends(get_database)):
