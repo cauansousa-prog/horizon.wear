@@ -118,7 +118,22 @@ function enhance(){
  if(activeStatus!=='todos'&&activeStatus!=='aguardando_pagamento'&&activeStatus!=='cancelado'&&CHIPS.indexOf(activeStatus)<0)activeStatus='todos';
  var input=document.getElementById('adminSearch');
  input.value=query;
- input.oninput=function(e){query=norm(e.target.value);applyFilter();};
+ var searchTimer=null,searchRequest=0;
+ input.oninput=function(e){
+  var raw=e.target.value.trim();query=norm(raw);applyFilter();
+  clearTimeout(searchTimer);
+  var request=++searchRequest;
+  if(!raw)return;
+  searchTimer=setTimeout(async function(){
+   try{
+    var results=await call('orders?offset=0&search='+encodeURIComponent(raw));
+    if(request!==searchRequest||!Array.isArray(results))return;
+    currentRows=results;enhance();
+   }catch(error){
+    if(request===searchRequest&&typeof message==='function')message(error.message||'Não foi possível pesquisar os pedidos.','error');
+   }
+  },250);
+ };
  applyFilter();
 }
 
