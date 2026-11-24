@@ -12,7 +12,6 @@ create table if not exists public.store_reviews (
   comentario text not null default '' check (char_length(comentario) <= 2000),
   approved boolean not null default false,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
 );
 
 create index if not exists store_reviews_created_at_idx
@@ -63,10 +62,6 @@ create policy store_reviews_admin_update
     select 1 from public.profiles p
     where p.id = (select auth.uid()) and p.role = 'admin'
   ));
-
-create trigger store_reviews_touch_updated_at
-  before update on public.store_reviews
-  for each row execute function private.touch_updated_at();
 
 create or replace function public.horizon_cancel_my_order(
   p_order uuid,
