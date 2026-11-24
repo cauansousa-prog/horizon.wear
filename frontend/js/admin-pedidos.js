@@ -87,7 +87,7 @@ function applyFilter(){
  if(count)count.textContent='Mostrando '+shown+' de '+rows.length+' pedidos';
  var empty=document.getElementById('emptyTable');
  if(empty){
-  empty.hidden=shown>0||rows.length===0;
+  empty.hidden=shown>0;
   empty.textContent=query?'Nenhum pedido encontrado para essa busca.':'Nenhum pedido nesta situação.';
  }
 }
