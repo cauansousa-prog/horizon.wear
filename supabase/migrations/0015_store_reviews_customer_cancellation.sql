@@ -11,7 +11,7 @@ create table if not exists public.store_reviews (
   nota integer not null check (nota between 1 and 5),
   comentario text not null default '' check (char_length(comentario) <= 2000),
   approved boolean not null default false,
-  created_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
 );
 
 create index if not exists store_reviews_created_at_idx
