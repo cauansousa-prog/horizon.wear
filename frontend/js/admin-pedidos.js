@@ -1,8 +1,5 @@
-/* Horizon Wear — Administração: tela de Pedidos mais clara e funcional.
-   Camada apenas visual e de filtros no navegador: busca por cliente (lupa), categorias de situação
-   com contagem, selos coloridos, etapas do pedido e botão da próxima etapa.
-   Não altera banco de dados, pagamentos nem login. A confirmação de etapa continua usando o
-   mesmo fluxo e a mesma API do admin.js. */
+/* Horizon Wear — Administração: pedidos, pesquisa global, filtros por situação e etapas visuais.
+   As transições continuam protegidas pelo backend e pela função transacional do Supabase. */
 (function(){
 'use strict';
 
