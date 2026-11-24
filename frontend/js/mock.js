@@ -252,8 +252,8 @@ function money2(v){return typeof money==='function'?money(v):String(v);}
 
 function statusOf(o){
  var approved=(o.payments||[]).some(function(p){return p.status==='approved';});
- var map={recebido:['Pedido recebido','info'],pagamento_aprovado:['Pagamento aprovado','ok'],preparando:['Preparando pedido','info'],enviado:['Em transporte','ship'],entregue:['Entregue','ok'],cancelado:['Pedido cancelado','bad']};
- if(o.status==='enviado'||o.status==='entregue'||o.status==='cancelado')return map[o.status];
+ var map={aguardando_pagamento:['Aguardando pagamento','info'],recebido:['Recebido pelo cliente','ok'],pagamento_aprovado:['Pagamento aprovado','ok'],preparando:['Em preparação','info'],enviado:['Em transporte','ship'],entregue:['Entregue','ok'],cancelado:['Pedido cancelado','bad']};
+ if(map[o.status])return map[o.status];
  if(approved)return map.pagamento_aprovado;
  if(o.review_required)return ['Pagamento em revisão de estoque','info'];
  return map[o.status]||[String(o.status||'Pedido'),'info'];
