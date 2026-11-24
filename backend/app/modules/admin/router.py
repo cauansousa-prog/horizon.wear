@@ -19,7 +19,7 @@ from ...database import Database,get_database
 from ..payments.gateway import MercadoPago,apply_payment,privileged_rpc
 
 router=APIRouter(prefix='/admin',tags=['administração'])
-PAID_ORDER_STATUSES={'pagamento_aprovado','preparando','enviado','entregue'}
+PAID_ORDER_STATUSES={'pagamento_aprovado','preparando','enviado','entregue','recebido'}
 MONTHS_PT=('Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez')
 FORTALEZA_TZ=timezone(timedelta(hours=-3))
 
@@ -101,7 +101,7 @@ class Category(BaseModel):
 
 class Fulfillment(BaseModel):
     model_config=ConfigDict(extra='forbid')
-    status:Literal['preparando','enviado','entregue']
+    status:Literal['preparando','enviado','entregue','recebido']
     rastreio:str=Field(default='',max_length=120)
 
 def _as_datetime(value):
@@ -164,7 +164,7 @@ async def _reconcile_open_payments(db,user):
     try:
         open_orders=await db.request('/rest/v1/orders',token=user.token,params={
             'select':'id,status,created_at,payments(status,mercadopago_payment_id)',
-            'status':'eq.recebido','order':'created_at.desc','limit':'20'
+            'status':'eq.aguardando_pagamento','order':'created_at.desc','limit':'20'
         })
     except HTTPException:
         open_orders=[]
@@ -453,10 +453,15 @@ async def export_resource(resource:str,format:Literal['csv','xlsx']='csv',
         headers={'Content-Disposition':f'attachment; filename="{resource}.csv"'})
 
 @router.get('/{resource}')
-async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
+async def listing(resource:str,offset:int=Query(0,ge=0),search:str|None=Query(default=None,max_length=100),user:User=Depends(admin),db:Database=Depends(get_database)):
     if resource not in {'products','categories','product_sizes','product_images','orders','profiles','payments','coupons','reviews'}:raise HTTPException(404)
     order='criado_em.desc' if resource=='payments' else 'created_at.desc' if resource in {'orders','reviews'} else 'id'
-    return await db.request('/rest/v1/'+resource,token=user.token,params={'select':'*','order':order,'limit':'100','offset':str(offset)})
+    params={'select':'*','order':order,'limit':'100','offset':str(offset)}
+    if resource=='orders' and search:
+        term=re.sub(r'[^\\w\\s@.+-]','',search,flags=re.UNICODE).strip()
+        if term:
+            params['or']=f'(nome_cliente.ilike.*{term}*,codigo.ilike.*{term}*)'
+    return await db.request('/rest/v1/'+resource,token=user.token,params=params)
 
 @router.post('/product-images/upload',status_code=201)
 async def upload_product_image(request:Request,user:User=Depends(admin),db:Database=Depends(get_database)):
@@ -508,7 +513,7 @@ async def fulfillment(order_id:UUID,body:Fulfillment,user:User=Depends(admin),db
     if not rows:raise HTTPException(404,'Pedido não encontrado.')
     current=rows[0]
     if current['review_required']:raise HTTPException(409,'Pedido em revisão de estoque.')
-    next_status={'pagamento_aprovado':'preparando','preparando':'enviado','enviado':'entregue'}.get(current['status'])
+    next_status={'pagamento_aprovado':'preparando','preparando':'enviado','enviado':'entregue','entregue':'recebido'}.get(current['status'])
     if body.status!=next_status:raise HTTPException(409,'Confirme o pagamento e avance uma etapa por vez.')
     if body.status=='enviado' and not body.rastreio.strip():raise HTTPException(422,'Informe o código de rastreio.')
     return await privileged_rpc(db,'horizon_advance_order',

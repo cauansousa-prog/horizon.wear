@@ -73,3 +73,26 @@
  .ord-chip{padding:9px 12px;font-size:12px}
  .ord-search{width:100%}
 }
+
+
+/* Etapa final: confirmação do recebimento pelo cliente */
+.ord-c-received{--c:#34d399;--bg:rgba(16,185,129,.16);--bd:rgba(52,211,153,.58)}
+.ord-c-done{--c:#a78bfa;--bg:rgba(139,92,246,.17);--bd:rgba(167,139,250,.58)}
+.ord-tools{background:linear-gradient(110deg,#111827,#17140a)}
+.ord-filters{background:#101010}
+.ord-table thead th{background:#171717;color:#d6bd7b;border-bottom:1px solid #51421b}
+.ord-table tbody tr{background:#151515}
+.ord-table tbody tr:nth-child(even){background:#191919}
+.ord-table tbody tr:hover{background:#222016}
+.ord-table .ord-name{color:#f8f7f2}
+.ord-track{max-width:220px}
+.ord-track--empty{max-width:none}
+.ord-stepcap{letter-spacing:.02em}
+.fulfillment-confirm-note{flex:1 1 100%;margin:0;color:#9fe3c4;font-size:13px;font-weight:600}
+#fulfillmentForm.admin-form label input{min-height:46px}
+#fulfillmentForm.admin-form button{min-height:46px}
+@media(max-width:700px){
+ .ord-filters{background:#101010}
+ .ord-table{min-width:980px}
+ .ord-track{max-width:170px;font-size:11px}
+}
