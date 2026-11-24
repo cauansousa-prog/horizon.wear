@@ -19,7 +19,7 @@ var NEXT={pagamento_aprovado:'preparando',preparando:'enviado',enviado:'entregue
 var CHIPS=['pagamento_aprovado','preparando','enviado','entregue','recebido'];
 var OPTIONAL_CHIPS=['aguardando_pagamento','cancelado'];
 
-var activeStatus='todos',query='';
+var activeStatus='todos',query='',remoteSearchTimer=null,remoteSearchRequest=0;
 
 var ICON_SEARCH='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
 var ICON_TRUCK='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>';
@@ -115,19 +115,18 @@ function enhance(){
  if(activeStatus!=='todos'&&activeStatus!=='aguardando_pagamento'&&activeStatus!=='cancelado'&&CHIPS.indexOf(activeStatus)<0)activeStatus='todos';
  var input=document.getElementById('adminSearch');
  input.value=query;
- var searchTimer=null,searchRequest=0;
  input.oninput=function(e){
   var raw=e.target.value.trim();query=norm(raw);applyFilter();
-  clearTimeout(searchTimer);
-  var request=++searchRequest;
+  clearTimeout(remoteSearchTimer);
+  var request=++remoteSearchRequest;
   if(!raw)return;
-  searchTimer=setTimeout(async function(){
+  remoteSearchTimer=setTimeout(async function(){
    try{
     var results=await call('orders?offset=0&search='+encodeURIComponent(raw));
-    if(request!==searchRequest||!Array.isArray(results))return;
+    if(request!==remoteSearchRequest||!Array.isArray(results))return;
     currentRows=results;enhance();
    }catch(error){
-    if(request===searchRequest&&typeof message==='function')message(error.message||'Não foi possível pesquisar os pedidos.','error');
+    if(request===remoteSearchRequest&&typeof message==='function')message(error.message||'Não foi possível pesquisar os pedidos.','error');
    }
   },250);
  };
