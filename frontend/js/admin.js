@@ -18,7 +18,7 @@ async function listing(resource,offset=0){try{
  if(resource==='orders'){
   const head=document.querySelector('#adminContent thead tr');head.insertAdjacentHTML('beforeend','<th scope="col">Ações</th>');
   document.querySelectorAll('#adminContent tbody tr').forEach((tr,i)=>{
-   const order=currentRows[i],allowed=!order.review_required&&['pagamento_aprovado','preparando','enviado'].includes(order.status);
+   const order=currentRows[i],allowed=!order.review_required&&['pagamento_aprovado','preparando','enviado','entregue'].includes(order.status);
    tr.insertAdjacentHTML('beforeend',`<td>${allowed?`<button class="row-action" data-order="${i}">Avançar pedido</button>`:''}</td>`);
   });
  }
