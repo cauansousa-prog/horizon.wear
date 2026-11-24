@@ -174,7 +174,7 @@ document.addEventListener('click',async e=>{
   const orderId=cancel.dataset.cancelOrder;
   const order=Array.isArray(window.__hwAccountOrders)?window.__hwAccountOrders.find(o=>o.id===orderId):null;
   const paid=order&&(order.payments||[]).some(p=>p.status==='approved');
-  const warning=paid?'\\n\\nAtenção: se o pagamento já foi aprovado, o estorno não é automático e precisará ser tratado pelo atendimento.':'';
+  const warning=paid?'\n\nAtenção: se o pagamento já foi aprovado, o estorno não é automático e precisará ser tratado pelo atendimento.':'';
   if(!window.confirm('Deseja realmente cancelar este pedido?'+warning))return;
   cancel.disabled=true;cancel.textContent='Cancelando…';
   try{await api('/api/orders/'+encodeURIComponent(orderId)+'/cancel',{method:'POST',body:JSON.stringify({motivo:'Solicitado pelo cliente'})});showToast('Pedido cancelado.');await renderAccount();}
