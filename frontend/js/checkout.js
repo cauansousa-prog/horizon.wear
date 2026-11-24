@@ -64,6 +64,12 @@ async function openCheckout(fromRoute=false){
  const limits={name:[2,120],email:[5,254],phone:[10,20],rua:[2,200],numero:[1,20],bairro:[2,100],cidade:[2,100],complemento:[0,100]};
  for(const [name,[min,max]] of Object.entries(limits)){form.elements[name].minLength=min;form.elements[name].maxLength=max;}
  form.elements.phone.maxLength=20;
+ const fieldHints={name:'Como aparece no seu documento',email:'Ex.: voce@email.com',cpf:'000.000.000-00',phone:'+55 (00) 00000-0000',cep:'00000-000',estado:'Ex.: CE',rua:'Nome da rua ou avenida',numero:'Somente números',bairro:'Seu bairro',cidade:'Sua cidade',complemento:'Apartamento, bloco ou referência (opcional)'};
+ for(const [name,hint] of Object.entries(fieldHints)){const field=form.elements[name];if(field){field.placeholder=hint;field.setAttribute('aria-label',name==='name'?'Nome completo':fieldHints[name]);}}
+ for(const name of ['cpf','cep','numero']){const field=form.elements[name];field.inputMode='numeric';field.addEventListener('input',()=>{field.value=field.value.replace(/\\D/g,'');});}
+ form.elements.phone.inputMode='tel';
+ form.elements.estado.inputMode='text';
+ form.elements.estado.addEventListener('input',()=>{form.elements.estado.value=form.elements.estado.value.replace(/[^a-z]/gi,'').slice(0,2).toUpperCase();});
  if(session?.user?.email)form.elements.email.value=session.user.email;
  if(session)api('/api/users/me').then(p=>{if(!form.elements.name.value)form.elements.name.value=p.full_name||'';if(!form.elements.phone.value)form.elements.phone.value=p.phone||'';}).catch(()=>{});
  if(savedAddresses.length){
