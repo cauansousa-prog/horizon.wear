@@ -124,6 +124,7 @@ async function openCheckout(fromRoute=false){
     finally{busy=false;}
    };
    if(f.method==='cartao'){
+    document.getElementById('confirmPayment').hidden=true;
     if(!config.public_key){showToast('Pagamento por cartão indisponível no momento.');return;}
     try{
      if(!window.MercadoPago)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://sdk.mercadopago.com/js/v2';script.onload=resolve;script.onerror=reject;document.head.appendChild(script);});
