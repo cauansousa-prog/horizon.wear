@@ -39,8 +39,8 @@ async def admin(request:Request,user:User=Depends(current_user),db:Database=Depe
 RESOURCE_PERMISSIONS={
     'products':'catalog','categories':'catalog','sizes':'catalog','images':'catalog',
     'product_sizes':'catalog','product_images':'catalog','orders':'orders',
-    'profiles':'customers','payments':'payments','coupons':'coupons','reviews':'reviews',
-    'dashboard':'dashboard','revenue':'dashboard',
+    'profiles':'customers','customers':'customers','payments':'payments','coupons':'coupons','reviews':'reviews','store-reviews':'reviews',
+    'analytics':'dashboard','dashboard':'dashboard','revenue':'dashboard',
 }
 ADMIN_PERMISSIONS=sorted(set(RESOURCE_PERMISSIONS.values())|{'exports'})
 
@@ -193,7 +193,7 @@ async def _reconcile_open_payments(db,user):
 
 async def _orders_with_sales(db,user):
     orders=[];offset=0
-    select='id,codigo,nome_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade),payments(order_id,metodo,status,valor,aprovado_em,mercadopago_payment_id)'
+    select='id,user_id,codigo,nome_cliente,telefone_cliente,status,review_required,total,created_at,order_items(nome_produto,tamanho,quantidade,preco_unitario),payments(order_id,metodo,status,valor,aprovado_em,mercadopago_payment_id)'
     while True:
         page=await db.request('/rest/v1/orders',token=user.token,params={
             'select':select,'order':'created_at.desc','offset':str(offset),'limit':'1000'})
@@ -451,6 +451,119 @@ async def export_resource(resource:str,format:Literal['csv','xlsx']='csv',
     writer.writerow(headers);writer.writerows(values)
     return Response(('\ufeff'+output.getvalue()).encode('utf-8'),media_type='text/csv; charset=utf-8',
         headers={'Content-Disposition':f'attachment; filename="{resource}.csv"'})
+
+
+class StoreReviewModeration(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    approved:bool
+
+@router.get('/analytics')
+async def analytics(user:User=Depends(admin),db:Database=Depends(get_database)):
+    reconciled=await _reconcile_open_payments(db,user)
+    orders=await _orders_with_sales(db,user)
+    payment_counts={}
+    gross=Decimal('0')
+    refunds=Decimal('0')
+    top={}
+    cancelled_orders=0
+    for order in orders:
+        if order.get('status')=='cancelado':
+            cancelled_orders+=1
+        order_payments=order.get('payments') or []
+        has_approved=any(p.get('status')=='approved' for p in order_payments)
+        has_refund=any(p.get('status') in {'refunded','charged_back'} for p in order_payments)
+        for payment in order_payments:
+            status=str(payment.get('status') or 'unknown')
+            payment_counts[status]=payment_counts.get(status,0)+1
+            amount=Decimal(str(payment.get('valor') or 0))
+            if status=='approved':
+                gross+=amount
+            elif status in {'refunded','charged_back'}:
+                refunds+=amount
+        if has_approved and not has_refund and order.get('status')!='cancelado':
+            for item in order.get('order_items') or []:
+                name=str(item.get('nome_produto') or 'Produto')
+                qty=int(item.get('quantidade') or 0)
+                unit=Decimal(str(item.get('preco_unitario') or 0))
+                row=top.setdefault(name,{'produto':name,'quantidade':0,'faturamento':Decimal('0')})
+                row['quantidade']+=qty
+                row['faturamento']+=unit*qty
+    top_products=sorted(top.values(),key=lambda row:(row['quantidade'],row['faturamento']),reverse=True)[:10]
+    for row in top_products:
+        row['faturamento']=str(row['faturamento'].quantize(Decimal('.01')))
+    gross=gross.quantize(Decimal('.01'))
+    refunds=refunds.quantize(Decimal('.01'))
+    return {
+        'orders_total':len(orders),
+        'cancelled_orders':cancelled_orders,
+        'approved_payments':payment_counts.get('approved',0),
+        'cancelled_payments':payment_counts.get('cancelled',0),
+        'rejected_payments':payment_counts.get('rejected',0),
+        'pending_payments':sum(payment_counts.get(s,0) for s in ('pending','in_process','authorized')),
+        'refunded_payments':payment_counts.get('refunded',0)+payment_counts.get('charged_back',0),
+        'gross_received':str(gross),
+        'refunds_total':str(refunds),
+        'net_received':str((gross-refunds).quantize(Decimal('.01'))),
+        'top_products':top_products,
+        'payments_reconciled':reconciled
+    }
+
+@router.get('/customers/summary')
+async def customers_summary(user:User=Depends(admin),db:Database=Depends(get_database)):
+    profiles=[];offset=0
+    while True:
+        batch=await db.request('/rest/v1/profiles',token=user.token,params={
+            'select':'id,nome_completo,telefone,role,created_at',
+            'order':'created_at.desc','limit':'1000','offset':str(offset)})
+        profiles.extend(batch or [])
+        if len(batch or [])<1000:break
+        offset+=1000
+    orders=await _orders_with_sales(db,user)
+    summaries={}
+    for order in orders:
+        user_id=order.get('user_id')
+        if not user_id:continue
+        row=summaries.setdefault(user_id,{'total_spent':Decimal('0'),'orders_count':0,'cancelled_orders':0,'last_order_at':None})
+        row['orders_count']+=1
+        if order.get('status')=='cancelado':row['cancelled_orders']+=1
+        created=order.get('created_at')
+        if created and (not row['last_order_at'] or created>row['last_order_at']):row['last_order_at']=created
+        for payment in order.get('payments') or []:
+            amount=Decimal(str(payment.get('valor') or 0))
+            if payment.get('status')=='approved':row['total_spent']+=amount
+            elif payment.get('status') in {'refunded','charged_back'}:row['total_spent']-=amount
+    result=[]
+    for profile in profiles:
+        summary=summaries.get(profile['id'],{})
+        result.append({
+            **profile,
+            'total_spent':str(max(Decimal('0'),summary.get('total_spent',Decimal('0'))).quantize(Decimal('.01'))),
+            'orders_count':summary.get('orders_count',0),
+            'cancelled_orders':summary.get('cancelled_orders',0),
+            'last_order_at':summary.get('last_order_at')
+        })
+    return result
+
+@router.get('/store-reviews')
+async def store_reviews_listing(offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/store_reviews',token=user.token,params={
+        'select':'id,user_id,nota,comentario,approved,created_at',
+        'order':'created_at.desc','limit':'100','offset':str(offset)})
+    ids=list(dict.fromkeys(row['user_id'] for row in rows if row.get('user_id')))
+    names={}
+    if ids:
+        profiles=await db.request('/rest/v1/profiles',token=user.token,params={
+            'select':'id,nome_completo','id':'in.('+','.join(ids)+')','limit':str(len(ids))})
+        names={row['id']:row.get('nome_completo') or 'Cliente' for row in profiles or []}
+    return [{**row,'cliente':names.get(row.get('user_id'),'Cliente')} for row in rows or []]
+
+@router.patch('/store-reviews/{review_id}')
+async def moderate_store_review(review_id:UUID,body:StoreReviewModeration,user:User=Depends(admin),db:Database=Depends(get_database)):
+    rows=await db.request('/rest/v1/store_reviews',method='PATCH',token=user.token,
+        params={'id':'eq.'+str(review_id),'select':'id,approved'},
+        json={'approved':body.approved})
+    if not rows:raise HTTPException(404,'Avaliação não encontrada.')
+    return rows[0]
 
 @router.get('/{resource}')
 async def listing(resource:str,offset:int=Query(0,ge=0),user:User=Depends(admin),db:Database=Depends(get_database)):
