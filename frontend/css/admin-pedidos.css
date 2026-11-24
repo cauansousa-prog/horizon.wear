@@ -1,0 +1,75 @@
+/* Horizon Wear — Administração: tela de Pedidos (cores por situação, busca, filtros e etapas).
+   Camada apenas visual. Não altera banco de dados, pagamentos nem login. */
+
+/* Cores por situação (usadas por linhas, selos e filtros) */
+.ord-c-all{--c:#e8e8e8;--bg:rgba(232,232,232,.08);--bd:rgba(232,232,232,.32)}
+.ord-c-wait{--c:#cbd5e1;--bg:rgba(148,163,184,.14);--bd:rgba(148,163,184,.45)}
+.ord-c-paid{--c:#4ade80;--bg:rgba(34,197,94,.14);--bd:rgba(74,222,128,.5)}
+.ord-c-prep{--c:#fbbf24;--bg:rgba(245,158,11,.15);--bd:rgba(251,191,36,.5)}
+.ord-c-ship{--c:#60a5fa;--bg:rgba(59,130,246,.16);--bd:rgba(96,165,250,.55)}
+.ord-c-done{--c:#c4b5fd;--bg:rgba(139,92,246,.17);--bd:rgba(167,139,250,.55)}
+.ord-c-bad{--c:#f87171;--bg:rgba(239,68,68,.15);--bd:rgba(248,113,113,.5)}
+
+/* Busca com lupa */
+.admin-body .table-tools.ord-tools{align-items:center}
+.ord-search{display:flex!important;align-items:center;gap:10px;width:min(440px,100%);padding:0 14px;border:1.5px solid #8d7428;border-radius:12px;background:#0e0e0e!important;color:#d4af37!important;font-size:13px!important}
+.ord-search:focus-within{border-color:#f0d878;box-shadow:0 0 0 3px rgba(212,175,55,.16)}
+.ord-lupa{display:inline-flex;flex:none}
+.admin-body .ord-search input{display:block;width:100%!important;margin:0!important;padding:13px 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#f5f5f5!important;font-size:14px}
+.admin-body .ord-search input:focus{box-shadow:none!important;background:transparent!important}
+
+/* Categorias de situação */
+.ord-filters{display:flex;flex-wrap:wrap;gap:10px;padding:16px 25px;border-bottom:1px solid #292929}
+.ord-chip{display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:999px;border:1.5px solid var(--bd)!important;background:var(--bg)!important;color:var(--c)!important;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.ord-chip:hover{transform:translateY(-1px)}
+.ord-chip i,.ord-badge i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c)}
+.ord-chip b{min-width:22px;padding:2px 8px;border-radius:999px;background:var(--c);color:#0b0b0b;font-size:12px;text-align:center}
+.ord-chip[aria-pressed="true"]{background:var(--c)!important;color:#0b0b0b!important;box-shadow:0 0 0 3px var(--bg),0 6px 18px rgba(0,0,0,.35)}
+.ord-chip[aria-pressed="true"] i{background:#0b0b0b}
+.ord-chip[aria-pressed="true"] b{background:#0b0b0b;color:var(--c)}
+
+/* Tabela */
+.ord-table{border-collapse:collapse;width:100%;min-width:1040px;font-size:13px}
+.admin-table .ord-table td{padding:16px 18px;vertical-align:middle;max-width:none}
+.admin-table .ord-row td:first-child{box-shadow:inset 5px 0 0 var(--c);padding-left:24px}
+.ord-code{font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.ord-client{display:flex;align-items:center;gap:11px;min-width:190px}
+.ord-avatar{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#30260e;border:1px solid #8d7428;color:#f0d878;font-weight:800}
+.ord-name{font-weight:700;color:#f5f5f5;overflow-wrap:anywhere}
+
+.ord-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--bd);background:var(--bg);color:var(--c)!important;font-size:13px;font-weight:800;white-space:nowrap}
+.ord-steps{display:flex;gap:5px;margin:11px 0 4px;padding:0;list-style:none}
+.ord-steps li{width:30px;height:6px;border-radius:99px;background:#333}
+.ord-steps li.is-done{background:var(--c);opacity:.55}
+.ord-steps li.is-now{background:var(--c);box-shadow:0 0 10px var(--c)}
+.ord-stepcap{display:block;color:#9a9a9a;font-size:11px}
+
+.ord-ok{display:inline-flex;padding:6px 11px;border-radius:9px;background:rgba(34,197,94,.14);border:1px solid rgba(74,222,128,.4);color:#4ade80;font-weight:700;font-size:12px;white-space:nowrap}
+.ord-review{display:inline-flex;padding:6px 11px;border-radius:9px;background:rgba(239,68,68,.15);border:1px solid rgba(248,113,113,.5);color:#f87171;font-weight:800;font-size:12px;white-space:nowrap}
+.admin-table .ord-total{font-weight:800;font-size:15px;color:#f0d878!important;white-space:nowrap}
+
+.ord-track{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(59,130,246,.16);border:1px solid rgba(96,165,250,.5);color:#93c5fd;font-weight:800;font-size:13px;letter-spacing:.02em;word-break:break-all}
+.ord-track svg{flex:none}
+.ord-track--empty{background:transparent;border:1px dashed #6b6b6b;color:#b8b8b8;font-weight:600;font-size:12px;word-break:normal}
+.ord-none{color:#6f6f6f}
+
+.ord-advance{display:inline-flex;align-items:center;gap:7px;padding:11px 15px;border:0;border-radius:11px;font:inherit;font-size:12.5px;font-weight:800;color:#0b0b0b!important;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.3);transition:transform .15s,filter .15s}
+.ord-advance:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.ord-advance--prep{background:#fbbf24!important}
+.ord-advance--ship{background:#60a5fa!important}
+.ord-advance--done{background:#a78bfa!important}
+.ord-final{color:#4ade80;font-weight:800;font-size:12.5px;white-space:nowrap}
+.ord-hint{color:#a8a8a8;font-size:12px}
+
+/* Formulário de confirmar etapa */
+#fulfillmentForm.admin-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;border:1px solid #8d7428!important;border-left:6px solid #d4af37!important;background:#17140a!important}
+#fulfillmentForm h3{flex:1 1 100%;margin:0;color:#f5f5f5}
+#fulfillmentForm>p{flex:1 1 100%;margin:0;color:#f0d878;font-weight:800;font-size:15px}
+#fulfillmentForm label{flex:1 1 280px}
+#fulfillmentForm .btn-gold{flex:0 0 auto;min-width:200px;min-height:46px}
+
+@media(max-width:700px){
+ .ord-filters{padding:14px 16px;gap:8px}
+ .ord-chip{padding:9px 12px;font-size:12px}
+ .ord-search{width:100%}
+}
