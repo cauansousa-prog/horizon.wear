@@ -147,7 +147,8 @@ async function renderAccount(){
  return;}
  el.textContent='Carregando sua conta…';try{const [profile,addresses,orders,storeReviewState]=await Promise.all([api('/api/users/me'),api('/api/addresses'),api('/api/orders'),api('/api/reviews/store')]);
  const spentTotal=orders.reduce((sum,o)=>sum+(o.payments||[]).reduce((value,p)=>value+(p.status==='approved'?Number(p.valor||0):['refunded','charged_back'].includes(p.status)?-Number(p.valor||0):0),0),0);
- window.__hwAccountOrders=orders;\n const storeReview=storeReviewState.review||null;
+ window.__hwAccountOrders=orders;
+ const storeReview=storeReviewState.review||null;
  const reviewForm=storeReview&&storeReview.approved
   ? '<div class="store-review-state is-approved"><strong>✓ Sua avaliação já foi publicada</strong><p>Obrigado por compartilhar sua experiência com a Horizon Wear.</p><div class="review-stars" aria-label="Nota '+Number(storeReview.nota)+' de 5">'+('★'.repeat(Number(storeReview.nota))+'☆'.repeat(5-Number(storeReview.nota)))+'</div><p>'+esc(storeReview.comentario||'')+'</p></div>'
   : storeReviewState.eligible
