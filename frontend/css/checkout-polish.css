@@ -1,0 +1,59 @@
+/* Horizon Wear — checkout mais claro, acolhedor e responsivo */
+#page-checkout .checkout-heading{margin-bottom:18px}
+#page-checkout .checkout-heading h1{background:linear-gradient(100deg,#fff 10%,#f1d58a 60%,#d4af37);-webkit-background-clip:text;background-clip:text;color:transparent}
+#page-checkout .checkout-heading>a{padding:10px 14px;border:1px solid rgba(212,175,55,.35);border-radius:999px;background:rgba(212,175,55,.07)}
+#page-checkout .checkout-steps{max-width:none;gap:10px;padding:24px 0 30px}
+#page-checkout .checkout-steps li{padding:12px 14px;border:1px solid #414047;border-radius:12px;background:linear-gradient(145deg,#242329,#1b1b20);transition:.2s}
+#page-checkout .checkout-steps li.current{border-color:#d4af37;background:linear-gradient(145deg,rgba(212,175,55,.18),#242329);box-shadow:0 8px 24px rgba(212,175,55,.08)}
+#page-checkout .checkout-steps li.complete{border-color:rgba(45,190,140,.45);color:#9ce4c6}
+#page-checkout .checkout-steps li.complete>span{background:#174b3c;border-color:#2bb889;color:#b7f7dc}
+#page-checkout .checkout-card,#page-checkout .checkout-summary{background:linear-gradient(150deg,#202027 0%,#17171c 100%);border:1px solid #373640;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+#page-checkout .checkout-card{position:relative;overflow:hidden}
+#page-checkout .checkout-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#d4af37,#e8c988,#39b98b,#5b9cf5)}
+#page-checkout .checkout-card fieldset{padding-top:8px}
+#page-checkout .checkout-card .eyebrow,#page-checkout .checkout-summary .eyebrow{color:#e7c76d;letter-spacing:.16em}
+#page-checkout .checkout-card h2{font-size:clamp(23px,3vw,30px);color:#fff}
+#page-checkout .step-intro{color:#b8b8c3;line-height:1.7}
+#page-checkout .form-grid{gap:8px 18px;margin:26px 0}
+#page-checkout .form-grid label{display:flex;flex-direction:column;gap:9px;margin:8px 0;color:#e1e0e8;font-size:12px;font-weight:700;letter-spacing:.025em}
+#page-checkout .form-grid input{width:100%;min-height:52px;padding:14px 15px;border:1px solid #41414d;border-radius:10px;background:#111218;color:#fff;font-size:14px;transition:border-color .18s,box-shadow .18s,background .18s}
+#page-checkout .form-grid input::placeholder{color:#777985;font-size:12px;font-weight:400}
+#page-checkout .form-grid input:hover{border-color:#69616a}
+#page-checkout .form-grid input:focus{outline:none;border-color:#d4af37;background:#15151b;box-shadow:0 0 0 3px rgba(212,175,55,.13)}
+#page-checkout .form-grid input:valid:not(:placeholder-shown){border-color:rgba(45,190,140,.45)}
+#page-checkout .form-grid input[aria-busy=true]{border-color:#5b9cf5}
+#page-checkout .delivery-note{background:linear-gradient(100deg,rgba(212,175,55,.12),rgba(45,190,140,.08));border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:18px}
+#page-checkout .delivery-note strong{color:#f1d58a}
+#page-checkout .payment-option{background:#17171e;border:1px solid #3c3c49;border-radius:12px;padding:18px;transition:.2s}
+#page-checkout .payment-option:hover{border-color:#8b7843;transform:translateY(-1px)}
+#page-checkout .payment-option:has(input:checked){background:linear-gradient(110deg,rgba(212,175,55,.13),rgba(91,156,245,.08));border-color:#d4af37;box-shadow:0 8px 22px rgba(212,175,55,.08)}
+#page-checkout .payment-option strong{color:#fff;font-size:14px}
+#page-checkout .payment-option small{color:#aeb0bd;margin-top:4px}
+#page-checkout .payment-icon{color:#e7c76d}
+#page-checkout .checkout-review{background:#111218;border:1px solid #343541;border-radius:12px}
+#page-checkout .checkout-review small{color:#e7c76d}
+#page-checkout .checkout-summary{background:linear-gradient(155deg,#22222a,#17171d)}
+#page-checkout .checkout-summary h2{color:#fff;font-size:22px}
+#page-checkout .summary-product{border-color:#343541}
+#page-checkout .summary-product img{border:1px solid #41414d}
+#page-checkout .summary-product span{color:#f1d58a;font-weight:700}
+#page-checkout .summary-totals .summary-total{border-color:#49434a}
+#page-checkout .summary-totals .summary-total dd{color:#f1d58a}
+#page-checkout .step-actions{border-color:#373640}
+#page-checkout .step-actions .btn-gold{background:linear-gradient(100deg,#d4af37,#f0d58b);color:#17130a;border:0;border-radius:9px;box-shadow:0 8px 22px rgba(212,175,55,.17);font-size:12px;font-weight:800;padding:15px 22px}
+#page-checkout .step-actions .btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+#page-checkout .step-actions .text-button{color:#b9c8e8}
+#page-checkout .saved-address-choice{display:flex;flex-direction:column;gap:8px;margin:22px 0 8px;color:#e7c76d;font-size:12px;font-weight:700}
+#page-checkout .saved-address-choice select{width:100%;min-height:48px;border:1px solid #41414d;border-radius:9px;background:#111218;color:#fff;padding:12px}
+#page-checkout .saved-address-notice{color:#91d8b7}
+#page-checkout .checkout-empty{background:linear-gradient(145deg,#202027,#17171c);border-color:#41414d}
+#page-checkout .quiet{line-height:1.7}
+@media(max-width:700px){
+ #page-checkout .checkout-steps{display:grid;grid-template-columns:1fr;gap:8px}
+ #page-checkout .checkout-steps li{padding:10px 12px;border-bottom:1px solid #414047}
+ #page-checkout .checkout-card,#page-checkout .checkout-summary{border-radius:14px;padding:24px 18px}
+ #page-checkout .form-grid{gap:2px;margin:18px 0}
+ #page-checkout .form-grid input{min-height:50px;font-size:16px}
+ #page-checkout .step-actions{align-items:stretch}
+ #page-checkout .step-actions .btn-gold{padding:14px 15px}
+}
