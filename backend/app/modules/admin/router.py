@@ -458,7 +458,7 @@ async def listing(resource:str,offset:int=Query(0,ge=0),search:str|None=Query(de
     order='criado_em.desc' if resource=='payments' else 'created_at.desc' if resource in {'orders','reviews'} else 'id'
     params={'select':'*','order':order,'limit':'100','offset':str(offset)}
     if resource=='orders' and search:
-        term=re.sub(r'[^\\w\\s@.+-]','',search,flags=re.UNICODE).strip()
+        term=re.sub(r'[^\w\s@.+-]','',search,flags=re.UNICODE).strip()
         if term:
             params['or']=f'(nome_cliente.ilike.*{term}*,codigo.ilike.*{term}*)'
     return await db.request('/rest/v1/'+resource,token=user.token,params=params)
