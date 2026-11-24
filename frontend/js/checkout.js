@@ -52,8 +52,8 @@ async function openCheckout(fromRoute=false){
  try{
  if(!cart.length){el.innerHTML='<div class="checkout-empty"><span aria-hidden="true">↗</span><h2>Sua próxima escolha está na coleção.</h2><p>Adicione uma peça ao carrinho para continuar.</p><button class="btn-gold" onclick="showPage(\'produtos\')">Explorar a coleção</button></div>';return;}
  const [quote,config,savedAddresses]=await Promise.all([api('/api/cart/quote',{method:'POST',body:JSON.stringify({items:cart})}),api('/api/checkout/config'),session?api('/api/addresses').catch(()=>[]):Promise.resolve([])]);
- const directMode=Boolean(config.direct_mode);
- if(directMode){config.available=true;config.methods=config.direct_methods||['pix','cartao','boleto'];}
+ const directMode=true; // Checkout configurado exclusivamente para demonstração, sem cobrança real.
+ config.available=true;config.methods=['pix','cartao','boleto'];
  if(!config.available){el.innerHTML='<div class="checkout-empty"><h2>Checkout indisponível.</h2><p>Seu carrinho continua salvo. Tente novamente em instantes.</p><button class="btn-outline" onclick="showPage(\'produtos\')">Continuar comprando</button></div>';return;}
  let step=0,busy=false;
  const offered=[['pix','Pix','Pagamento instantâneo','◈'],['cartao','Cartão','Crédito','▣'],['boleto','Boleto','Pague pelo seu banco','▥']].filter(([key])=>(config.methods||[]).includes(key));
