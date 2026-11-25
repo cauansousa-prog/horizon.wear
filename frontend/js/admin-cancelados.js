@@ -1,7 +1,7 @@
 /* Concilia a aba Pagamentos com Dados & Insights.
-   - Pedidos cancelados sem registro de pagamento aparecem como "Cancelado".
    - Pedidos aguardando pagamento sem registro aparecem como "Pendente".
    - Pedido cancelado que ainda tem pagamento aprovado recebe o aviso "Pedido cancelado".
+   - A linha, o card e o filtro "Cancelados" ficam ocultos na aba Pagamentos.
    Só altera a exibição: nenhum valor recebido e nenhum dado do banco é modificado. */
 (function(){
  if(typeof call!=='function'||typeof loadAllOrders!=='function')return;
@@ -20,12 +20,11 @@
   state.cancelledCodes=new Set();state.cancelledPaid=0;
   orders.forEach(o=>{
    const has=ids.has(String(o.id));
-   const row=status=>({id:status+'-'+o.id,order_id:o.id,status,metodo:o.metodo||null,valor:o.total,criado_em:o.created_at});
    if(o.status==='cancelado'){
     state.cancelledCodes.add(o.codigo);
-    if(has)state.cancelledPaid++;else extra.push(row('cancelled'));
+    if(has)state.cancelledPaid++;
    }else if(o.status==='aguardando_pagamento'&&!has){
-    extra.push(row('pending'));
+    extra.push({id:'pending-'+o.id,order_id:o.id,status:'pending',metodo:o.metodo||null,valor:o.total,criado_em:o.created_at});
    }
   });
   state.cancelledOrders=state.cancelledCodes.size;
@@ -42,8 +41,7 @@
    }
    if(path==='analytics'&&data&&typeof data==='object'){
     const extra=await analyze();
-    data.cancelled_payments=Number(data.cancelled_payments||0)+extra.filter(r=>r.status==='cancelled').length;
-    data.pending_payments=Number(data.pending_payments||0)+extra.filter(r=>r.status==='pending').length;
+    data.pending_payments=Number(data.pending_payments||0)+extra.length;
    }
   }catch(e){}
   return data;
@@ -58,8 +56,16 @@
     cell.insertAdjacentHTML('beforeend',' <span class="status-pill warning" data-cancel-flag>Pedido cancelado</span>');
   });
   const grid=root.querySelector('.payment-metric-grid');
-  if(grid&&!grid.querySelector('[data-cancel-card]'))
-   grid.insertAdjacentHTML('beforeend','<article data-cancel-card style="--metric-color:#f87171"><span>Pedidos cancelados</span><strong>'+state.cancelledOrders+'</strong></article>');
+  if(grid){
+   Array.from(grid.querySelectorAll('article')).forEach(a=>{
+    const label=a.querySelector('span');
+    if(label&&label.textContent.trim()==='Cancelados')a.hidden=true;
+   });
+   if(!grid.querySelector('[data-cancel-card]'))
+    grid.insertAdjacentHTML('beforeend','<article data-cancel-card style="--metric-color:#f87171"><span>Pedidos cancelados</span><strong>'+state.cancelledOrders+'</strong></article>');
+  }
+  const chip=root.querySelector('[data-payment-filter="cancelled"]');
+  if(chip)chip.hidden=true;
   const note=Array.from(root.querySelectorAll('p')).find(p=>p.textContent.indexOf('Um pedido cancelado não significa')>=0);
   if(note&&!note.dataset.cancelNote&&state.cancelledPaid>0){
    note.dataset.cancelNote='1';
