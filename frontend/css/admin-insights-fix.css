@@ -1,0 +1,12 @@
+/* Corrige cards de indicadores: valores em R$ não podem quebrar em duas linhas
+   (ex.: "R$ 3.245,8" / "9"). Camada apenas visual. */
+.analytics-grid,.payment-metric-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.analytics-card,.payment-metric-grid article{overflow:hidden}
+.analytics-card strong,.payment-metric-grid article strong,.review-summary-grid article strong{
+  overflow-wrap:normal!important;word-break:normal!important;white-space:nowrap;
+  font-size:clamp(17px,1.7vw,24px)
+}
+@media(max-width:760px){
+  .analytics-grid,.payment-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .analytics-card strong,.payment-metric-grid article strong{font-size:clamp(16px,5vw,22px)}
+}
