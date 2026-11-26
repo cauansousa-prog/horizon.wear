@@ -11,7 +11,7 @@ const statusLabels={aguardando_pagamento:'Aguardando pagamento',pagamento_aprova
 const icons={products:'▧',product_sizes:'▤',orders:'▱',profiles:'◎',payments:'◈',coupons:'◇','store-reviews':'☆',analytics:'◉'};
 let productNames={};
 function whatsappDigits(phone){let digits=String(phone||'').replace(/\D/g,'');if(digits.length===10||digits.length===11)digits='55'+digits;return digits.length>=12?digits:'';}
-let paymentFilter='all',reviewFilter='all';
+let paymentFilter='all',reviewFilter='all',cancelledOrdersRows=[];
 async function loadAllOrders(){
  const all=[];let offset=0,batch=[];
  do{batch=await call('orders?offset='+offset);if(!Array.isArray(batch))throw Error('Não foi possível carregar os pedidos para relacionar os pagamentos.');all.push(...batch);offset+=batch.length;}while(batch.length===100&&offset<50000);
@@ -45,18 +45,22 @@ function renderAnalytics(){
 function enhancePayments(){
  const rows=currentRows,counts={};let approvedTotal=0;
  rows.forEach(row=>{counts[row.status]=(counts[row.status]||0)+1;if(row.status==='approved')approvedTotal+=Number(row.valor||0);});
- const pendingCount=Number(counts.pending||0)+Number(counts.in_process||0)+Number(counts.authorized||0);
  const refundedCount=Number(counts.refunded||0)+Number(counts.charged_back||0);
- const metrics=[['Registros',rows.length,'#60a5fa'],['Aprovados',counts.approved||0,'#4ade80'],['Pendentes',pendingCount,'#fbbf24'],['Cancelados',counts.cancelled||0,'#f87171'],['Valor aprovado',currency(approvedTotal),'#f0d878']];
- document.getElementById('resourceInsights').innerHTML='<div class="payment-metric-grid">'+metrics.map(([label,value,color])=>'<article style="--metric-color:'+color+'"><span>'+label+'</span><strong>'+escapeHTML(value)+'</strong></article>').join('')+'</div><div class="payment-filter-row">'+[['all','Todos'],['approved','Aprovados'],['pending','Pendentes'],['cancelled','Cancelados'],['rejected','Recusados'],['refunded','Estornados']].map(([key,label])=>'<button type="button" data-payment-filter="'+key+'" aria-pressed="'+(paymentFilter===key)+'">'+label+' <b>'+(key==='all'?rows.length:key==='pending'?pendingCount:key==='refunded'?refundedCount:counts[key]||0)+'</b></button>').join('')+'</div>';
- const matchesStatus=status=>{
-  if(paymentFilter==='all')return true;
-  if(paymentFilter==='pending')return ['pending','authorized','in_process'].includes(status);
-  if(paymentFilter==='refunded')return ['refunded','charged_back'].includes(status);
-  return status===paymentFilter;
- };
- const apply=()=>{const q=(document.getElementById('adminSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');let shown=0;document.querySelectorAll('#adminContent tbody tr').forEach(tr=>{const status=tr.dataset.paymentStatus;const ok=matchesStatus(status)&&tr.dataset.search.includes(q);tr.hidden=!ok;if(ok)shown++;});const empty=document.getElementById('emptyTable');if(empty){empty.hidden=shown>0;empty.textContent='Nenhum pagamento encontrado com esses filtros.';}const count=document.querySelector('#adminContent .table-tools>span');if(count)count.textContent='Mostrando '+shown+' de '+rows.length+' pagamentos';document.querySelectorAll('[data-payment-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.paymentFilter===paymentFilter)));};
- document.getElementById('adminSearch').oninput=apply;document.querySelectorAll('[data-payment-filter]').forEach(b=>b.onclick=()=>{paymentFilter=b.dataset.paymentFilter;apply();});apply();
+ const metrics=[['Registros',rows.length,'#60a5fa'],['Aprovados',counts.approved||0,'#4ade80'],['Pagamentos cancelados',counts.cancelled||0,'#f87171'],['Valor aprovado',currency(approvedTotal),'#f0d878']];
+ document.getElementById('resourceInsights').innerHTML='<div class="payment-metric-grid">'+metrics.map(([label,value,color])=>'<article style="--metric-color:'+color+'"><span>'+label+'</span><strong>'+escapeHTML(value)+'</strong></article>').join('')+'</div><div class="payment-filter-row">'+[['all','Todos'],['approved','Aprovados'],['cancelled','Pagamentos cancelados'],['rejected','Recusados'],['refunded','Estornados']].map(([key,label])=>'<button type="button" data-payment-filter="'+key+'" aria-pressed="'+(paymentFilter===key)+'">'+label+' <b>'+(key==='all'?rows.length:key==='refunded'?refundedCount:counts[key]||0)+'</b></button>').join('')+'<button type="button" data-cancelled-orders>Pedidos cancelados <b>'+cancelledOrdersRows.length+'</b></button></div>';
+ const matchesStatus=status=>paymentFilter==='all'||(paymentFilter==='refunded'?['refunded','charged_back'].includes(status):status===paymentFilter);
+ const apply=()=>{const q=(document.getElementById('adminSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');let shown=0;document.querySelectorAll('#adminContent tbody tr').forEach(tr=>{const ok=matchesStatus(tr.dataset.paymentStatus)&&tr.dataset.search.includes(q);tr.hidden=!ok;if(ok)shown++;});const empty=document.getElementById('emptyTable');if(empty){empty.hidden=shown>0;empty.textContent='Nenhum pagamento encontrado com esses filtros.';}const count=document.querySelector('#adminContent .table-tools>span');if(count)count.textContent='Mostrando '+shown+' de '+rows.length+' pagamentos';document.querySelectorAll('[data-payment-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.paymentFilter===paymentFilter)));};
+ document.getElementById('adminSearch').oninput=apply;document.querySelectorAll('[data-payment-filter]').forEach(b=>b.onclick=()=>{paymentFilter=b.dataset.paymentFilter;apply();});
+ document.querySelector('[data-cancelled-orders]').onclick=showCancelledOrders;apply();
+}
+function showCancelledOrders(){
+ const rows=cancelledOrdersRows,cols=[['codigo','Pedido'],['nome_cliente','Cliente'],['status','Situação'],['total','Total'],['created_at','Data']];
+ const table=document.querySelector('#adminContent .admin-table');
+ const header=cols.map(([key,label])=>'<th scope="col">'+label+'</th>').join('');
+ const render=()=>{const query=(document.getElementById('adminSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');const visible=rows.filter(row=>cols.map(([key])=>row[key]||'').join(' ').toLocaleLowerCase('pt-BR').includes(query));table.innerHTML='<table><thead><tr>'+header+'</tr></thead><tbody>'+visible.map(row=>'<tr>'+cols.map(([key])=>'<td>'+cellValue(key,row[key])+'</td>').join('')+'</tr>').join('')+'</tbody></table>';const empty=document.getElementById('emptyTable');empty.hidden=visible.length>0;empty.textContent='Nenhum pedido cancelado encontrado.';const count=document.querySelector('#adminContent .table-tools>span');if(count)count.textContent='Mostrando '+visible.length+' de '+rows.length+' pedidos cancelados';};
+ document.getElementById('adminSearch').oninput=render;
+ document.querySelector('#resourceInsights').innerHTML='<div class="payment-filter-row"><button type="button" id="backToPayments">← Voltar aos pagamentos</button><strong>Pedidos cancelados: '+rows.length+'</strong></div>';
+ document.getElementById('backToPayments').onclick=()=>listing('payments');render();
 }
 function enhanceStoreReviews(){
  const rows=currentRows,approved=rows.filter(r=>r.approved).length;
@@ -72,6 +76,7 @@ async function listing(resource,offset=0){try{
  if(resource==='profiles')currentRows=await call('customers/summary');
  else if(resource==='payments'){
   const [payments,orders]=await Promise.all([loadAllPayments(),loadAllOrders()]);
+  cancelledOrdersRows=orders.filter(o=>['cancelado','cancelled'].includes(String(o.status||'').toLowerCase()));
   const byId=new Map(orders.map(o=>[String(o.id),o]));
   currentRows=(payments||[]).map(p=>{const o=byId.get(String(p.order_id))||{};return {...p,codigo_pedido:o.codigo||String(p.order_id||'').slice(0,8),cliente:o.nome_cliente||'Cliente'};});
  }else if(resource==='store-reviews')currentRows=await call('store-reviews?offset='+offset);
