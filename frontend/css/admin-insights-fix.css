@@ -1,5 +1,4 @@
-/* Corrige cards de indicadores: valores em R$ não podem quebrar em duas linhas
-   (ex.: "R$ 3.245,8" / "9"). Camada apenas visual. */
+/* Cards de indicadores, barras de andamento e filtros do painel. Camada apenas visual. */
 .analytics-grid,.payment-metric-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 .analytics-card,.payment-metric-grid article{overflow:hidden}
 .analytics-card strong,.payment-metric-grid article strong,.review-summary-grid article strong{
@@ -10,3 +9,12 @@
   .analytics-grid,.payment-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .analytics-card strong,.payment-metric-grid article strong{font-size:clamp(16px,5vw,22px)}
 }
+/* Barras de Andamento dos pedidos */
+.admin-status meter{width:120px;height:10px;border:0;border-radius:99px;background:#2a2a2d;vertical-align:middle}
+.admin-status meter::-webkit-meter-bar{background:#2a2a2d;border:0;border-radius:99px;height:10px}
+.admin-status meter::-webkit-meter-optimum-value,.admin-status meter::-webkit-meter-suboptimum-value,.admin-status meter::-webkit-meter-even-less-good-value{background:#d4af37;border-radius:99px}
+.admin-status meter::-moz-meter-bar{background:#d4af37;border-radius:99px}
+.admin-status b{min-width:18px;text-align:right}
+/* Filtros de pagamentos (mesmo visual dos outros) */
+.payment-filter-row button b{margin-left:4px}
+.admin-table tbody tr[hidden]{display:none}
