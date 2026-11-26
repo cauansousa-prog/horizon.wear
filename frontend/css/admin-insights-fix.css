@@ -18,3 +18,5 @@
 /* Filtros de pagamentos (mesmo visual dos outros) */
 .payment-filter-row button b{margin-left:4px}
 .admin-table tbody tr[hidden]{display:none}
+/* Área de Cupons removida do menu do painel (apenas oculta; nada foi apagado do banco ou da API) */
+#adminNav [data-resource="coupons"]{display:none!important}
